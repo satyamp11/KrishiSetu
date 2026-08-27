@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* Outdoor High-Contrast Sunlight Mode Utility */
+  .sunlight-mode {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+  }
+
+  .sunlight-mode .card-shadow {
+    box-shadow: 0 0 0 3px #000000 !important;
+    border-radius: 12px;
+  }
+}
+
+/* Custom Keyframe Animations for Hackathon Visual WOW */
+@keyframes laserScan {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0.8;
+  }
+}
+
+@keyframes pulseRadar {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+@keyframes beaconGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 1), 0 0 50px rgba(239, 68, 68, 0.7);
+  }
+}
+
+.animate-laser {
+  animation: laserScan 2s ease-in-out infinite alternate;
+}
+
+.animate-radar {
+  animation: pulseRadar 3s ease-in-out infinite;
+}
+
+.animate-beacon {
+  animation: beaconGlow 1.5s infinite;
+}
+
+.font-serif-title {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-script {
+  font-family: 'Caveat', cursive;
+}
+
+.font-sans-body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
