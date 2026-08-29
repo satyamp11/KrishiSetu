@@ -156,21 +156,22 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       </div>
 
-      {/* 4. KRISHI SHIELD AI OPAQUE LOGO BADGE (Completely masks any underlying diamond/sparkle element) */}
-      <div className="absolute right-6 bottom-6 sm:right-10 sm:bottom-10 lg:right-14 lg:bottom-14 z-50 pointer-events-none transition-all duration-300">
-        <div className="relative w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full bg-[#0b2b1d] border-2 border-emerald-400/50 shadow-2xl shadow-black/80 flex items-center justify-center overflow-hidden">
+      {/* 4. KRISHI SHIELD AI PREMIUM BRAND EMBLEM (Refined ~82px badge size with dark deep-green background & subtle border) */}
+      <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-9 lg:bottom-8 z-50 pointer-events-none transition-all duration-300">
+        <div className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-[82px] lg:h-[82px] rounded-full bg-[#071d13] border border-emerald-500/40 shadow-xl shadow-black/60 flex items-center justify-center overflow-hidden">
           {/* Subtle inner gradient fill */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950 via-[#0b2b1d] to-emerald-900/60 rounded-full" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#05150d] via-[#071d13] to-emerald-950/70 rounded-full" />
           <img
             src="/logo.png"
             alt="Krishi Shield AI Logo"
-            className="relative z-10 w-2/3 h-2/3 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]"
+            className="relative z-10 w-[58%] h-[58%] object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.4)]"
           />
         </div>
       </div>
     </section>
   );
 };
+
 
 
 
