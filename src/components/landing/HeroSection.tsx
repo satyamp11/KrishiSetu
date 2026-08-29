@@ -155,8 +155,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         </div>
       </div>
+
+      {/* 4. KRISHI SHIELD AI FIXED OVERLAY LOGO (Floats independently above canvas animation layer) */}
+      <div className="absolute right-6 bottom-6 sm:right-12 sm:bottom-12 z-30 pointer-events-none transition-all duration-300">
+        <img
+          src="/logo.png"
+          alt="Krishi Shield AI Logo"
+          className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
+        />
+      </div>
     </section>
   );
 };
+
 
 
