@@ -155,6 +155,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         </div>
       </div>
+
+      {/* 4. OFFICIAL KRISHI SHIELD AI LOGO WATERMARK BADGE (Bottom Right Corner) */}
+      <div className="absolute bottom-6 right-6 z-30 pointer-events-none flex items-center gap-3 bg-slate-950/80 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-emerald-400/40 shadow-2xl">
+        <img src="/logo.png" alt="Krishi Shield AI Logo" className="w-8 h-8 object-contain filter drop-shadow" />
+        <div className="flex flex-col">
+          <span className="text-xs font-black text-white leading-tight font-serif-title flex items-center gap-1">
+            कृषि शील्ड <span className="text-emerald-400 font-sans-body text-[10px] font-black px-1.5 py-0.5 bg-emerald-950 rounded border border-emerald-500/40">AI</span>
+          </span>
+          <span className="text-[10px] font-bold text-emerald-300/90 leading-none mt-0.5">
+            Krishi Shield AI • Crop Protection
+          </span>
+        </div>
+      </div>
     </section>
   );
 };
+
