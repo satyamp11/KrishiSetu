@@ -156,21 +156,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       </div>
 
-      {/* 4. KRISHI SHIELD AI PREMIUM BRAND EMBLEM (Refined ~82px badge size with dark deep-green background & subtle border) */}
-      <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-9 lg:bottom-8 z-50 pointer-events-none transition-all duration-300">
-        <div className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-[82px] lg:h-[82px] rounded-full bg-[#071d13] border border-emerald-500/40 shadow-xl shadow-black/60 flex items-center justify-center overflow-hidden">
-          {/* Subtle inner gradient fill */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#05150d] via-[#071d13] to-emerald-950/70 rounded-full" />
+      {/* 4. KRISHI SHIELD AI THREE-LAYER FIXED OVERLAY BADGE (120px Opaque Deep-Green Mask completely hiding the diamond underneath) */}
+      <div className="absolute right-[20px] bottom-[20px] sm:right-[30px] sm:bottom-[30px] lg:right-[35px] lg:bottom-[35px] z-[100] pointer-events-none transition-all duration-300">
+        {/* Layer 2: OPAQUE DEEP-GREEN MASK (120px Diameter, 100% Solid Background) */}
+        <div className="relative w-[85px] h-[85px] sm:w-[105px] sm:h-[105px] lg:w-[120px] lg:h-[120px] rounded-full bg-[#061c12] border-2 border-emerald-500/50 shadow-2xl shadow-black flex items-center justify-center overflow-hidden">
+          {/* Solid 100% Opaque Gradient Fill */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a2e1e] via-[#061c12] to-[#04130c] rounded-full" />
+          
+          {/* Layer 3: KRISHI SHIELD AI LOGO (70px centered inside mask) */}
           <img
             src="/logo.png"
             alt="Krishi Shield AI Logo"
-            className="relative z-10 w-[58%] h-[58%] object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.4)]"
+            className="relative z-10 w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px] object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
           />
         </div>
       </div>
     </section>
   );
 };
+
 
 
 
