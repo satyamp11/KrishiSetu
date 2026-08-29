@@ -22,9 +22,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       {/* 1. FULL-SCREEN CANVAS ANIMATION BACKGROUND */}
       <HeroFrameCanvas totalFrames={300} targetFps={25} fullScreenBackground={true} />
 
-      {/* 2. SOPHISTICATED DUAL GRADIENT OVERLAY (Darker on Left for Text, Natural on Right) */}
-      <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-r from-[#071710]/95 via-[#0d2a1d]/80 to-transparent" />
-      <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-t from-[#071710] via-transparent to-[#071710]/50" />
+      {/* 2. SUBTLE NEUTRAL OVERLAY (Minimal green tint for maximum animation clarity) */}
+      <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-r from-black/70 via-black/25 to-transparent" />
+      <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-t from-black/50 via-transparent to-black/30" />
+
 
       {/* 3. HERO CONTENT CONTAINER (ABOVE ANIMATION Z-20) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full">
@@ -114,7 +115,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="lg:col-span-5 relative mt-6 lg:mt-0 flex flex-col gap-4 items-start lg:items-end">
             
             {/* Indicator 1: AI Crop Sentinel */}
-            <div className="bg-[#0b2419]/80 backdrop-blur-md p-3.5 px-4 rounded-2xl border border-emerald-400/30 shadow-2xl flex items-center gap-3 text-white max-w-xs animate-bounce-slow">
+            <div className="bg-black/50 backdrop-blur-md p-3.5 px-4 rounded-2xl border border-white/20 shadow-2xl flex items-center gap-3 text-white max-w-xs animate-bounce-slow">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0">
                 <Cpu className="w-5 h-5" />
               </div>
@@ -128,7 +129,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
 
             {/* Indicator 2: 5km Protection Shield */}
-            <div className="bg-[#0b2419]/80 backdrop-blur-md p-3.5 px-4 rounded-2xl border border-emerald-400/30 shadow-2xl flex items-center gap-3 text-white max-w-xs">
+            <div className="bg-black/50 backdrop-blur-md p-3.5 px-4 rounded-2xl border border-white/20 shadow-2xl flex items-center gap-3 text-white max-w-xs">
               <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-5 h-5" />
               </div>
@@ -139,7 +140,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
 
             {/* Indicator 3: Live Radar Alert */}
-            <div className="bg-[#0b2419]/80 backdrop-blur-md p-3.5 px-4 rounded-2xl border border-emerald-400/30 shadow-2xl flex items-center gap-3 text-white max-w-xs">
+            <div className="bg-black/50 backdrop-blur-md p-3.5 px-4 rounded-2xl border border-white/20 shadow-2xl flex items-center gap-3 text-white max-w-xs">
               <div className="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/40 text-teal-300 flex items-center justify-center shrink-0">
                 <Radio className="w-5 h-5 animate-pulse" />
               </div>
@@ -148,6 +149,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <p className="text-[11px] font-bold text-slate-300 mt-0.5">Instant Farmer Alerts Broadcast</p>
               </div>
             </div>
+
 
           </div>
 
