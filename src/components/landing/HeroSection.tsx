@@ -156,12 +156,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       </div>
 
-      {/* 4. KRISHI SHIELD AI THREE-LAYER FIXED OVERLAY BADGE (120px Opaque Deep-Green Mask completely hiding the diamond underneath) */}
+      {/* 4. KRISHI SHIELD AI THREE-LAYER FIXED OVERLAY BADGE (Translucent Deep-Green Circular Backplate with Backdrop Blur) */}
       <div className="absolute right-[20px] bottom-[20px] sm:right-[30px] sm:bottom-[30px] lg:right-[35px] lg:bottom-[35px] z-[100] pointer-events-none transition-all duration-300">
-        {/* Layer 2: OPAQUE DEEP-GREEN MASK (120px Diameter, 100% Solid Background, No Outer Stroke Border) */}
-        <div className="relative w-[85px] h-[85px] sm:w-[105px] sm:h-[105px] lg:w-[120px] lg:h-[120px] rounded-full bg-[#061c12] shadow-2xl shadow-black flex items-center justify-center overflow-hidden">
-          {/* Solid 100% Opaque Gradient Fill */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0a2e1e] via-[#061c12] to-[#04130c] rounded-full" />
+        {/* Layer 2: TRANSLUCENT DEEP-GREEN MASK (120px Diameter, Semi-Transparent with Backdrop Blur) */}
+        <div className="relative w-[85px] h-[85px] sm:w-[105px] sm:h-[105px] lg:w-[120px] lg:h-[120px] rounded-full bg-[#061c12]/85 backdrop-blur-md shadow-2xl shadow-black/80 flex items-center justify-center overflow-hidden">
+          {/* Translucent Gradient Fill */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a2e1e]/85 via-[#061c12]/80 to-[#04130c]/85 rounded-full backdrop-blur-md" />
           
           {/* Layer 3: KRISHI SHIELD AI LOGO (70px centered inside mask) */}
           <img
@@ -174,6 +174,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     </section>
   );
 };
+
 
 
 
