@@ -66,23 +66,22 @@
 }
 
 .font-serif-title {
-  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  letter-spacing: -0.02em;
+  font-family: 'Manrope', 'Noto Sans Devanagari', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
-
-
-
 
 .font-script {
   font-family: 'Caveat', cursive;
 }
 
 .font-sans-body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
 }
 
 /* Smooth Scrolling */
 html {
   scroll-behavior: smooth;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
 }
+
