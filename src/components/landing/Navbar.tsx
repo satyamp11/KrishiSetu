@@ -20,13 +20,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
+      const heroElement = document.getElementById('hero');
+      const heroHeight = heroElement ? heroElement.offsetHeight : window.innerHeight;
+      // Remain transparent throughout hero section; turn white only after scrolling past full hero
+      setIsScrolled(window.scrollY > (heroHeight - 90));
     };
 
     handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
 
   const navLinks = [
     { id: 'hero', labelEn: 'Home', labelHi: 'मुख्य पृष्ठ' },
