@@ -156,17 +156,22 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       </div>
 
-      {/* 4. KRISHI SHIELD AI FIXED OVERLAY LOGO (Floats independently above canvas animation layer) */}
-      <div className="absolute right-6 bottom-6 sm:right-12 sm:bottom-12 z-30 pointer-events-none transition-all duration-300">
-        <img
-          src="/logo.png"
-          alt="Krishi Shield AI Logo"
-          className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
-        />
+      {/* 4. KRISHI SHIELD AI OPAQUE LOGO BADGE (Completely masks any underlying diamond/sparkle element) */}
+      <div className="absolute right-6 bottom-6 sm:right-10 sm:bottom-10 lg:right-14 lg:bottom-14 z-50 pointer-events-none transition-all duration-300">
+        <div className="relative w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full bg-[#0b2b1d] border-2 border-emerald-400/50 shadow-2xl shadow-black/80 flex items-center justify-center overflow-hidden">
+          {/* Subtle inner gradient fill */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950 via-[#0b2b1d] to-emerald-900/60 rounded-full" />
+          <img
+            src="/logo.png"
+            alt="Krishi Shield AI Logo"
+            className="relative z-10 w-2/3 h-2/3 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]"
+          />
+        </div>
       </div>
     </section>
   );
 };
+
 
 
 
