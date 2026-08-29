@@ -251,6 +251,16 @@ export const INITIAL_REPORTS: OutbreakReport[] = [
   }
 ];
 
+export const FARMER_IMAGES = {
+  farmerPrimary: "/hero.jpg",
+  farmerInspect: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80",
+  farmerGroup: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=800&q=80",
+  cropWheat: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80",
+  cropTomato: "https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc?auto=format&fit=crop&w=800&q=80",
+  cropField: "/hero.jpg"
+};
+
+
 export const COMMUNITY_ACTIVITIES: CommunityActivity[] = [
   {
     id: "act-1",
@@ -289,3 +299,144 @@ export const COMMUNITY_ACTIVITIES: CommunityActivity[] = [
     actionType: "scan"
   }
 ];
+
+
+export const MOCK_MARKET_RATES: import('./types').MarketRate[] = [
+  {
+    id: "mkt-wheat",
+    name: "Wheat",
+    nameHindi: "गेहूं",
+    category: "Grains",
+    price: 2450,
+    unit: "Quintal",
+    unitHindi: "क्विंटल",
+    mandi: "Rohtak Mandi",
+    mandiHindi: "रोहतक मंडी",
+    state: "Haryana",
+    priceChange: 2.4,
+    lastUpdated: "Today, 10:30 AM",
+    trend7d: [2380, 2400, 2410, 2425, 2430, 2440, 2450],
+    trend30d: [2300, 2320, 2350, 2380, 2400, 2420, 2450],
+    image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=300&q=80"
+  },
+  {
+    id: "mkt-rice",
+    name: "Basmati Rice",
+    nameHindi: "बासमती धान",
+    category: "Grains",
+    price: 3180,
+    unit: "Quintal",
+    unitHindi: "क्विंटल",
+    mandi: "Karnal Mandi",
+    mandiHindi: "करनाल मंडी",
+    state: "Haryana",
+    priceChange: -0.8,
+    lastUpdated: "Today, 10:15 AM",
+    trend7d: [3220, 3210, 3200, 3195, 3190, 3185, 3180],
+    trend30d: [3300, 3280, 3250, 3220, 3200, 3190, 3180],
+    image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=300&q=80"
+  },
+  {
+    id: "mkt-tomato",
+    name: "Tomato",
+    nameHindi: "टमाटर",
+    category: "Vegetables",
+    price: 32,
+    unit: "Kg",
+    unitHindi: "किग्रा",
+    mandi: "Azadpur Mandi",
+    mandiHindi: "आज़ादपुर मंडी",
+    state: "Delhi",
+    priceChange: 4.1,
+    lastUpdated: "Today, 09:45 AM",
+    trend7d: [28, 29, 29, 30, 31, 31, 32],
+    trend30d: [22, 24, 25, 27, 29, 30, 32],
+    image: "https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc?auto=format&fit=crop&w=300&q=80"
+  },
+  {
+    id: "mkt-potato",
+    name: "Potato",
+    nameHindi: "आलू",
+    category: "Vegetables",
+    price: 18,
+    unit: "Kg",
+    unitHindi: "किग्रा",
+    mandi: "Agra Mandi",
+    mandiHindi: "आगरा मंडी",
+    state: "Uttar Pradesh",
+    priceChange: 1.2,
+    lastUpdated: "Today, 11:00 AM",
+    trend7d: [17, 17.2, 17.5, 17.5, 17.8, 17.9, 18],
+    trend30d: [15, 15.5, 16, 16.5, 17, 17.5, 18],
+    image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=300&q=80"
+  },
+  {
+    id: "mkt-onion",
+    name: "Onion",
+    nameHindi: "प्याज",
+    category: "Vegetables",
+    price: 28,
+    unit: "Kg",
+    unitHindi: "किग्रा",
+    mandi: "Nashik Mandi",
+    mandiHindi: "नाशिक मंडी",
+    state: "Maharashtra",
+    priceChange: -2.5,
+    lastUpdated: "Today, 10:00 AM",
+    trend7d: [30, 29.5, 29, 28.8, 28.5, 28.2, 28],
+    trend30d: [34, 33, 32, 30, 29, 28.5, 28],
+    image: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=300&q=80"
+  },
+  {
+    id: "mkt-mustard",
+    name: "Mustard",
+    nameHindi: "सरसों",
+    category: "Oilseeds",
+    price: 5650,
+    unit: "Quintal",
+    unitHindi: "क्विंटल",
+    mandi: "Bharatpur Mandi",
+    mandiHindi: "भरतपुर मंडी",
+    state: "Rajasthan",
+    priceChange: 3.8,
+    lastUpdated: "Today, 10:45 AM",
+    trend7d: [5420, 5460, 5500, 5530, 5580, 5610, 5650],
+    trend30d: [5200, 5300, 5380, 5450, 5520, 5600, 5650],
+    image: "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&w=300&q=80"
+  },
+  {
+    id: "mkt-maize",
+    name: "Maize",
+    nameHindi: "मक्का",
+    category: "Grains",
+    price: 2120,
+    unit: "Quintal",
+    unitHindi: "क्विंटल",
+    mandi: "Ludhiana Mandi",
+    mandiHindi: "लुधियाना मंडी",
+    state: "Punjab",
+    priceChange: 0.5,
+    lastUpdated: "Today, 09:30 AM",
+    trend7d: [2100, 2105, 2110, 2110, 2115, 2118, 2120],
+    trend30d: [2050, 2060, 2080, 2090, 2100, 2110, 2120],
+    image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=300&q=80"
+  },
+  {
+    id: "mkt-chana",
+    name: "Gram (Chana)",
+    nameHindi: "चना",
+    category: "Pulses",
+    price: 5800,
+    unit: "Quintal",
+    unitHindi: "क्विंटल",
+    mandi: "Indore Mandi",
+    mandiHindi: "इंदौर मंडी",
+    state: "Madhya Pradesh",
+    priceChange: 1.9,
+    lastUpdated: "Today, 11:15 AM",
+    trend7d: [5690, 5710, 5730, 5750, 5765, 5780, 5800],
+    trend30d: [5500, 5550, 5600, 5680, 5720, 5760, 5800],
+    image: "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&w=300&q=80"
+  }
+];
+

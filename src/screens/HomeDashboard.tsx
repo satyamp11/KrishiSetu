@@ -176,12 +176,13 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
           {/* Right Column Visual Banner Photo */}
           <div className="lg:col-span-6 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-gradient-to-tr from-[#1b4332] to-[#2d6a4f] p-3">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-gradient-to-tr from-[#1b4332] to-[#2d6a4f] p-2">
               <img 
-                src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=1000&q=80" 
-                alt="Fresh Organic Vegetables & Healthy Crop Harvest" 
+                src="/hero.jpg" 
+                alt="Krishi Shield AI - Farmer Protection & Healthy Harvest" 
                 className="w-full h-[400px] sm:h-[480px] object-cover rounded-2xl transform hover:scale-105 transition-transform duration-500"
               />
+
               
               {/* Floating GreenBasket Badge on Image */}
               <div className="absolute bottom-6 left-6 bg-[#1b4332]/95 backdrop-blur-md text-white px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl border border-white/20">

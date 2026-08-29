@@ -1,6 +1,7 @@
 export type Language = 'en' | 'hi' | 'mr';
 
-export type TabType = 'home' | 'scan' | 'map' | 'alerts' | 'profile' | 'community' | 'splash' | 'login' | 'result' | 'report';
+export type TabType = 'landing' | 'home' | 'scan' | 'map' | 'alerts' | 'profile' | 'community' | 'splash' | 'login' | 'result' | 'report';
+
 
 export type RiskLevel = 'safe' | 'warning' | 'outbreak';
 
@@ -89,3 +90,22 @@ export interface CommunityActivity {
   timeAgo: string;
   actionType: 'scan' | 'report' | 'contained';
 }
+
+export interface MarketRate {
+  id: string;
+  name: string;
+  nameHindi: string;
+  category: 'Grains' | 'Vegetables' | 'Oilseeds' | 'Pulses';
+  price: number;
+  unit: string;
+  unitHindi: string;
+  mandi: string;
+  mandiHindi: string;
+  state: string;
+  priceChange: number;
+  lastUpdated: string;
+  trend7d: number[];
+  trend30d: number[];
+  image?: string;
+}
+

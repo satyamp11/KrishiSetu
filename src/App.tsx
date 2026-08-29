@@ -13,6 +13,7 @@ import { HeaderBar } from './components/HeaderBar';
 import { BottomNavigation } from './components/BottomNavigation';
 import { MobileFrameWrapper } from './components/MobileFrameWrapper';
 import { OutbreakSimulatorModal } from './components/OutbreakSimulatorModal';
+import { KrishiLandingPage } from './components/landing/KrishiLandingPage';
 
 // Screen Components
 import { SplashScreen } from './screens/SplashScreen';
@@ -27,10 +28,11 @@ import { CommunityScreen } from './screens/CommunityScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 
 export function App() {
-  // App State
-  const [activeTab, setActiveTab] = useState<TabType>('splash');
+  // App State - Default to 'landing' for Homepage
+  const [activeTab, setActiveTab] = useState<TabType>('landing');
   const [language, setLanguage] = useState<Language>('hi');
   const [sunlightMode, setSunlightMode] = useState<boolean>(false);
+
   
   // Data State
   const [farmer, setFarmer] = useState<FarmerProfile>(INITIAL_FARMER);
@@ -116,12 +118,12 @@ export function App() {
     }, 8000);
   };
 
-  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login';
+  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing';
 
   return (
     <MobileFrameWrapper sunlightMode={sunlightMode}>
       
-      {/* Top Header Bar */}
+      {/* Top Header Bar (When in App Dashboard view) */}
       {showHeaderAndNav && (
         <HeaderBar
           language={language}
@@ -153,6 +155,15 @@ export function App() {
 
       {/* Screen Router */}
       <div className={sunlightMode ? 'sunlight-mode' : ''}>
+        {activeTab === 'landing' && (
+          <KrishiLandingPage
+            language={language}
+            onLanguageChange={setLanguage}
+            onLaunchApp={() => setActiveTab('home')}
+            onLaunchScanner={() => setActiveTab('scan')}
+          />
+        )}
+
         {activeTab === 'splash' && (
           <SplashScreen
             language={language}
@@ -161,6 +172,7 @@ export function App() {
             sunlightMode={sunlightMode}
           />
         )}
+
 
         {activeTab === 'login' && (
           <LoginScreen

@@ -79,12 +79,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         {/* Center: Desktop Navigation Links (GreenBasket Underline Style) */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
           {[
+            { id: 'landing', label: '🌐 Homepage' },
             { id: 'home', label: t.navHome },
             { id: 'scan', label: 'AI Crop Scan' },
             { id: 'map', label: t.navMap },
             { id: 'alerts', label: t.navAlerts, badge: unreadAlertsCount },
             { id: 'community', label: 'Community Hub' },
           ].map((item) => {
+
             const isActive = activeTab === item.id;
             return (
               <button

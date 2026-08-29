@@ -66,8 +66,12 @@
 }
 
 .font-serif-title {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.02em;
 }
+
+
+
 
 .font-script {
   font-family: 'Caveat', cursive;
