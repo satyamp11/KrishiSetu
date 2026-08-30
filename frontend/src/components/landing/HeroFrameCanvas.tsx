@@ -15,7 +15,7 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Animation & Cache state in Refs (Zero React state re-renders during loop!)
+  // Animation & Cache state in Refs
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const loadedCountRef = useRef<number>(0);
   const currentFrameRef = useRef<number>(0);
@@ -24,7 +24,7 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
   const isIntersectingRef = useRef<boolean>(true);
   const isReducedMotionRef = useRef<boolean>(false);
 
-  // UI state for initial loading indicator & reduced motion
+  // UI state
   const [loadProgress, setLoadProgress] = useState<number>(0);
   const [isInitialReady, setIsInitialReady] = useState<boolean>(false);
   const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
@@ -47,11 +47,11 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
     };
     motionQuery.addEventListener('change', handleMotionChange);
 
-    // 2. Responsive Device Directory
+    // 2. Responsive Device Directory (/animation/mobile or /animation/desktop)
     const isMobile = window.innerWidth < 768;
-    const folder = isMobile ? '/animation/mobile' : '/animation/desktop';
+    const folder = isMobile ? '/mobile' : '/desktop';
 
-    // 3. Canvas Dynamic Cover Resize
+    // 3. Canvas Cover Resize
     const updateCanvasDimensions = () => {
       if (!canvas || !container) return;
       const rect = container.getBoundingClientRect();
@@ -103,66 +103,71 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
       ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
     };
 
-    // Fast-path: Load Poster / Frame 1 immediately
-    const firstImg = new Image();
-    firstImg.src = `${folder}/frame_001.webp`;
-    firstImg.onload = () => {
-      imagesCache[0] = firstImg;
-      loadedCountRef.current += 1;
-      drawFrame(0);
-      setIsInitialReady(true);
-    };
+    // 5. Preload ALL 300 Frames Concurrently in Parallel Chunks
+    let isCancelled = false;
 
-    // Load initial batch (frames 2 to 15) for fast smooth start
-    const initialBatch = 15;
-    for (let i = 1; i < Math.min(initialBatch, totalFrames); i++) {
-      const img = new Image();
-      const numStr = String(i + 1).padStart(3, '0');
-      img.src = `${folder}/frame_${numStr}.webp`;
-      img.onload = () => {
-        imagesCache[i] = img;
-        loadedCountRef.current += 1;
-        setLoadProgress(Math.floor((loadedCountRef.current / totalFrames) * 100));
-      };
-    }
+    const loadAllFrames = () => {
+      const concurrencyLimit = 16;
+      let activeIndex = 0;
 
-    // Progressive background chunk loader for remaining frames
-    let bgIndex = initialBatch;
-    const loadNextBatchInIdle = () => {
-      if (bgIndex >= totalFrames) return;
-      const chunkSize = 10;
-      const end = Math.min(bgIndex + chunkSize, totalFrames);
-
-      for (let i = bgIndex; i < end; i++) {
-        const img = new Image();
+      const loadNext = () => {
+        if (isCancelled || activeIndex >= totalFrames) return;
+        const i = activeIndex++;
         const numStr = String(i + 1).padStart(3, '0');
+        
+        const img = new Image();
         img.src = `${folder}/frame_${numStr}.webp`;
+
         img.onload = () => {
+          if (isCancelled) return;
           imagesCache[i] = img;
           loadedCountRef.current += 1;
+
+          if (i === 0) {
+            drawFrame(0);
+            setIsInitialReady(true);
+          }
+
           const prog = Math.floor((loadedCountRef.current / totalFrames) * 100);
           setLoadProgress(prog);
-        };
-      }
 
-      bgIndex = end;
-      if (bgIndex < totalFrames) {
-        if ('requestIdleCallback' in window) {
-          (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(loadNextBatchInIdle);
-        } else {
-          setTimeout(loadNextBatchInIdle, 50);
-        }
+          // Chain next image load
+          loadNext();
+        };
+
+        img.onerror = () => {
+          if (isCancelled) return;
+          // Fallback to root png frame if webp missing
+          const fallbackImg = new Image();
+          fallbackImg.src = `/ezgif-frame-${numStr}.png`;
+          fallbackImg.onload = () => {
+            if (isCancelled) return;
+            imagesCache[i] = fallbackImg;
+            loadedCountRef.current += 1;
+            if (i === 0) {
+              drawFrame(0);
+              setIsInitialReady(true);
+            }
+            setLoadProgress(Math.floor((loadedCountRef.current / totalFrames) * 100));
+            loadNext();
+          };
+          fallbackImg.onerror = () => loadNext();
+        };
+      };
+
+      // Launch initial concurrent batch workers
+      for (let w = 0; w < concurrencyLimit; w++) {
+        loadNext();
       }
     };
 
-    const idleTimer = setTimeout(loadNextBatchInIdle, 200);
+    loadAllFrames();
 
-    // 5. Animation Loop (requestAnimationFrame)
+    // 6. Continuous Sequential Animation Loop (Plays frames 0 -> 299 continuously)
     const frameInterval = 1000 / targetFps;
 
     const renderLoop = (timestamp: number) => {
       if (!isIntersectingRef.current || isReducedMotionRef.current) {
-        // Pause playback when offscreen or reduced motion enabled
         animFrameIdRef.current = requestAnimationFrame(renderLoop);
         return;
       }
@@ -172,18 +177,29 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
       if (elapsed >= frameInterval) {
         lastTimeRef.current = timestamp - (elapsed % frameInterval);
 
-        // Advance to next available frame
-        let nextFrame = (currentFrameRef.current + 1) % totalFrames;
-        let attempts = 0;
+        // Advance to exact next sequential frame
+        const nextFrame = (currentFrameRef.current + 1) % totalFrames;
 
-        while (!imagesCache[nextFrame] && attempts < totalFrames) {
-          nextFrame = (nextFrame + 1) % totalFrames;
-          attempts++;
-        }
-
-        if (imagesCache[nextFrame]) {
+        if (imagesCache[nextFrame] && imagesCache[nextFrame].complete) {
           currentFrameRef.current = nextFrame;
           drawFrame(nextFrame);
+        } else {
+          // If next frame is still loading, find closest preloaded frame without resetting to 0
+          let lookahead = 1;
+          let found = false;
+          while (lookahead < 5) {
+            const checkIdx = (currentFrameRef.current + lookahead) % totalFrames;
+            if (imagesCache[checkIdx] && imagesCache[checkIdx].complete) {
+              currentFrameRef.current = checkIdx;
+              drawFrame(checkIdx);
+              found = true;
+              break;
+            }
+            lookahead++;
+          }
+          if (!found && imagesCache[currentFrameRef.current]) {
+            drawFrame(currentFrameRef.current);
+          }
         }
       }
 
@@ -192,7 +208,7 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
 
     animFrameIdRef.current = requestAnimationFrame(renderLoop);
 
-    // 6. IntersectionObserver Pause / Resume
+    // 7. IntersectionObserver Pause / Resume
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -206,7 +222,7 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
 
     // Cleanup
     return () => {
-      clearTimeout(idleTimer);
+      isCancelled = true;
       window.removeEventListener('resize', handleResize);
       if (animFrameIdRef.current) {
         cancelAnimationFrame(animFrameIdRef.current);
@@ -252,7 +268,7 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
     );
   }
 
-  // Card view fallback (if used inside non-fullscreen container)
+  // Card view fallback
   return (
     <div
       ref={containerRef}

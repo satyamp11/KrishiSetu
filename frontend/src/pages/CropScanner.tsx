@@ -111,6 +111,9 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                 <img 
                   src={selectedImage} 
                   alt="Crop Leaf Sample" 
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/crops/tomato.jpg";
+                  }}
                   className="w-full h-full object-cover opacity-90"
                 />
 
@@ -189,6 +192,9 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                       <img 
                         src={preset.image} 
                         alt={preset.label} 
+                        onError={(e) => {
+                          e.currentTarget.src = "/images/crops/tomato.jpg";
+                        }}
                         className="w-12 h-12 rounded-xl object-cover border border-slate-200"
                       />
                       <div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { 
   TabType, Language, FarmerProfile, WeatherData, OutbreakCluster, 
   OutbreakReport, CommunityActivity, DiseaseInfo, RiskLevel 
@@ -13,6 +13,8 @@ import { HeaderBar } from './components/HeaderBar';
 import { BottomNavigation } from './components/BottomNavigation';
 import { MobileFrameWrapper } from './layouts/MobileFrameWrapper';
 import { OutbreakSimulatorModal } from './components/OutbreakSimulatorModal';
+import { AuthModal } from './components/auth/AuthModal';
+import { useAuth } from './context/AuthContext';
 import { KrishiLandingPage } from './components/landing/KrishiLandingPage';
 
 // Page Components
@@ -27,15 +29,67 @@ import { ReportScreen } from './pages/ReportScreen';
 import { CommunityScreen } from './pages/CommunityScreen';
 import { ProfileScreen } from './pages/ProfileScreen';
 
+import { apiService } from './services/apiService';
+
+const PROTECTED_TABS: TabType[] = ['home', 'scan', 'result', 'map', 'alerts', 'report', 'community', 'profile'];
+
 export function App() {
   // App State - Default to 'landing' for Homepage
   const [activeTab, setActiveTab] = useState<TabType>('landing');
   const [language, setLanguage] = useState<Language>('hi');
   const [sunlightMode, setSunlightMode] = useState<boolean>(false);
 
-  
+  const { user, token, isAuthenticated, isLoading, setOnAuthSuccessCallback, openAuthModal, logout } = useAuth();
+
+  // Store intended destination tab for post-authentication redirect
+  const pendingTabRef = useRef<TabType | null>(null);
+
+  // Protected route guard logic
+  const handleNavigateWithAuth = (targetTab: TabType) => {
+    if (isAuthenticated) {
+      setActiveTab(targetTab);
+    } else {
+      pendingTabRef.current = targetTab;
+      openAuthModal('login');
+    }
+  };
+
+  // Route protection effect for direct tab access
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!isAuthenticated && PROTECTED_TABS.includes(activeTab)) {
+      pendingTabRef.current = activeTab;
+      setActiveTab('landing');
+      openAuthModal('login');
+    }
+  }, [activeTab, isAuthenticated, isLoading, openAuthModal]);
+
+  // Set post-login / post-registration redirect to intended destination (e.g. 'scan' or 'home')
+  useEffect(() => {
+    setOnAuthSuccessCallback(() => {
+      const destination = pendingTabRef.current || 'scan';
+      pendingTabRef.current = null;
+      setActiveTab(destination);
+    });
+  }, [setOnAuthSuccessCallback]);
+
   // Data State
   const [farmer, setFarmer] = useState<FarmerProfile>(INITIAL_FARMER);
+
+  // Sync authenticated user into profile
+  useEffect(() => {
+    if (user) {
+      setFarmer((prev) => ({
+        ...prev,
+        name: user.name,
+        state: user.state,
+        district: user.district,
+        village: user.village || prev.village,
+        mainCrops: user.primaryCrop ? [user.primaryCrop] : prev.mainCrops
+      }));
+    }
+  }, [user]);
   const [weather] = useState<WeatherData>(INITIAL_WEATHER);
   const [riskLevel, setRiskLevel] = useState<RiskLevel>('warning');
   const [clusters, setClusters] = useState<OutbreakCluster[]>(INITIAL_CLUSTERS);
@@ -61,6 +115,20 @@ export function App() {
     setCurrentDiagnosis(result);
     setScannedImage(uploadedImage);
     setActiveTab('result');
+
+    // Automatically save scan record to backend for authenticated farmer
+    if (token) {
+      apiService.saveCropScan(token, {
+        cropName: result.crop || 'Crop',
+        diseaseName: result.name,
+        diseaseHindi: result.nameHindi,
+        confidence: result.confidence || 95,
+        imageUrl: uploadedImage,
+        result: result.name.toLowerCase().includes('healthy') ? 'Healthy' : 'Infected',
+        recommendations: result.chemicalAction || result.organicAction || [],
+        recommendationsHindi: result.chemicalActionHindi || result.organicActionHindi || []
+      });
+    }
   };
 
   const handleReportSubmitted = (newReport: OutbreakReport) => {
@@ -82,11 +150,9 @@ export function App() {
 
   // Hackathon WOW Demo Trigger Flow
   const handleExecuteOutbreakDemo = () => {
-    // Step 1: Elevate risk level
     setRiskLevel('outbreak');
     setUnreadAlertsCount(prev => prev + 1);
 
-    // Step 2: Add severe outbreak cluster
     const newDemoCluster: OutbreakCluster = {
       id: `demo-cluster-${Date.now()}`,
       diseaseName: 'Tomato Early Blight',
@@ -105,20 +171,27 @@ export function App() {
     };
 
     setClusters([newDemoCluster, ...clusters]);
-
-    // Step 3: Trigger push notification banner
     setDemoNotification('⚠️ HIGH RISK OUTBREAK ALERT: 5 farmers in your village reported Tomato Blight within 3.2 km!');
+    handleNavigateWithAuth('alerts');
 
-    // Navigate to Alerts screen to show live emergency response
-    setActiveTab('alerts');
-
-    // Auto hide notification banner after 6 seconds
     setTimeout(() => {
       setDemoNotification(null);
     }, 8000);
   };
 
   const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing';
+
+  // Prevent flickering while checking stored authentication token
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-3 text-white">
+        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-bold text-emerald-200 tracking-wider">
+          Checking farmer authentication status...
+        </span>
+      </div>
+    );
+  }
 
   return (
     <MobileFrameWrapper sunlightMode={sunlightMode}>
@@ -133,7 +206,7 @@ export function App() {
           onTriggerDemo={() => setIsSimulatorOpen(true)}
           unreadAlertsCount={unreadAlertsCount}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleNavigateWithAuth}
         />
       )}
 
@@ -159,8 +232,8 @@ export function App() {
           <KrishiLandingPage
             language={language}
             onLanguageChange={setLanguage}
-            onLaunchApp={() => setActiveTab('home')}
-            onLaunchScanner={() => setActiveTab('scan')}
+            onLaunchApp={() => handleNavigateWithAuth('home')}
+            onLaunchScanner={() => handleNavigateWithAuth('scan')}
           />
         )}
 
@@ -172,7 +245,6 @@ export function App() {
             sunlightMode={sunlightMode}
           />
         )}
-
 
         {activeTab === 'login' && (
           <LoginScreen
@@ -190,9 +262,10 @@ export function App() {
             riskLevel={riskLevel}
             activeClusters={clusters}
             activities={activities}
-            onNavigateToScan={() => setActiveTab('scan')}
-            onNavigateToMap={() => setActiveTab('map')}
-            onNavigateToAlerts={() => setActiveTab('alerts')}
+            onNavigateToScan={() => handleNavigateWithAuth('scan')}
+            onNavigateToMap={() => handleNavigateWithAuth('map')}
+            onNavigateToAlerts={() => handleNavigateWithAuth('alerts')}
+            onNavigateToProfile={() => handleNavigateWithAuth('profile')}
             sunlightMode={sunlightMode}
           />
         )}
@@ -201,7 +274,7 @@ export function App() {
           <CropScanner
             language={language}
             onScanComplete={handleScanComplete}
-            onBack={() => setActiveTab('home')}
+            onBack={() => handleNavigateWithAuth('home')}
             sunlightMode={sunlightMode}
           />
         )}
@@ -211,8 +284,8 @@ export function App() {
             language={language}
             disease={currentDiagnosis}
             scannedImage={scannedImage}
-            onReportCase={() => setActiveTab('report')}
-            onBack={() => setActiveTab('scan')}
+            onReportCase={() => handleNavigateWithAuth('report')}
+            onBack={() => handleNavigateWithAuth('scan')}
             sunlightMode={sunlightMode}
           />
         )}
@@ -223,7 +296,7 @@ export function App() {
             clusters={clusters}
             reports={reports}
             sunlightMode={sunlightMode}
-            onNavigateToScan={() => setActiveTab('scan')}
+            onNavigateToScan={() => handleNavigateWithAuth('scan')}
           />
         )}
 
@@ -231,8 +304,8 @@ export function App() {
           <AlertsScreen
             language={language}
             clusters={clusters}
-            onNavigateToScan={() => setActiveTab('scan')}
-            onNavigateToMap={() => setActiveTab('map')}
+            onNavigateToScan={() => handleNavigateWithAuth('scan')}
+            onNavigateToMap={() => handleNavigateWithAuth('map')}
             sunlightMode={sunlightMode}
           />
         )}
@@ -243,7 +316,7 @@ export function App() {
             farmer={farmer}
             initialDisease={currentDiagnosis}
             onReportSubmitted={handleReportSubmitted}
-            onBack={() => setActiveTab('result')}
+            onBack={() => handleNavigateWithAuth('result')}
             sunlightMode={sunlightMode}
           />
         )}
@@ -264,7 +337,10 @@ export function App() {
             submittedReports={reports}
             sunlightMode={sunlightMode}
             onToggleSunlightMode={() => setSunlightMode(!sunlightMode)}
-            onLogout={() => setActiveTab('login')}
+            onLogout={() => {
+              logout();
+              setActiveTab('landing');
+            }}
           />
         )}
       </div>
@@ -273,7 +349,7 @@ export function App() {
       {showHeaderAndNav && (
         <BottomNavigation
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleNavigateWithAuth}
           language={language}
           unreadAlertsCount={unreadAlertsCount}
           sunlightMode={sunlightMode}
@@ -287,6 +363,9 @@ export function App() {
         onRunSimulation={handleExecuteOutbreakDemo}
         language={language}
       />
+
+      {/* Global Authentication Modal */}
+      <AuthModal language={language} />
 
     </MobileFrameWrapper>
   );

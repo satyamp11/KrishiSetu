@@ -1,4 +1,5 @@
 import type { MarketRate } from '../types';
+export type { MarketRate };
 import { MOCK_MARKET_RATES, ALL_INDIAN_STATES } from '../mockData';
 
 const API_BASE_URL = '/api';
@@ -27,7 +28,177 @@ export interface MandiPricesApiResponse {
   rates: MarketRate[];
 }
 
+export interface AuthUser {
+  id: string;
+  name: string;
+  emailOrPhone: string;
+  state: string;
+  district: string;
+  village?: string;
+  primaryCrop?: string;
+  createdAt: string;
+}
+
+export interface AuthApiResponse {
+  success: boolean;
+  message?: string;
+  token?: string;
+  user?: AuthUser;
+}
+
+export interface CropScanRecord {
+  id: string;
+  farmerId: string;
+  cropName: string;
+  diseaseName: string;
+  diseaseHindi: string;
+  confidence: number;
+  imageUrl?: string;
+  result: 'Healthy' | 'Infected';
+  recommendations?: string[];
+  recommendationsHindi?: string[];
+  createdAt: string;
+}
+
+export interface CommunityAlertRecord {
+  id: string;
+  diseaseName: string;
+  diseaseHindi: string;
+  crop: string;
+  state: string;
+  district: string;
+  centerVillage: string;
+  severity: 'Critical' | 'Warning' | 'Low';
+  reportCount: number;
+  description: string;
+  descriptionHindi: string;
+  recommendations: string[];
+  recommendationsHindi: string[];
+  createdAt: string;
+}
+
 export const apiService = {
+  // Authentication API Methods
+  async registerUser(data: {
+    name: string;
+    emailOrPhone: string;
+    password: string;
+    state: string;
+    district: string;
+    village?: string;
+    primaryCrop?: string;
+  }): Promise<AuthApiResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      return { success: false, message: 'Network error during registration. Please try again.' };
+    }
+  },
+
+  async loginUser(credentials: {
+    emailOrPhone: string;
+    password: string;
+  }): Promise<AuthApiResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      return { success: false, message: 'Network error during login. Please try again.' };
+    }
+  },
+
+  async getCurrentUser(token: string): Promise<AuthApiResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      return { success: false, message: 'Session validation failed.' };
+    }
+  },
+
+  async logoutUser(): Promise<AuthApiResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST' });
+      return await response.json();
+    } catch {
+      return { success: true };
+    }
+  },
+
+  // Crop Scan History API Methods
+  async saveCropScan(token: string, data: {
+    cropName: string;
+    diseaseName: string;
+    diseaseHindi?: string;
+    confidence?: number;
+    imageUrl?: string;
+    result?: 'Healthy' | 'Infected';
+    recommendations?: string[];
+    recommendationsHindi?: string[];
+  }): Promise<{ success: boolean; scan?: CropScanRecord; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/scans`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to save scan history.' };
+    }
+  },
+
+  async getFarmerScans(token: string): Promise<{ success: boolean; total: number; scans: CropScanRecord[] }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/scans`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (err) {}
+    return { success: false, total: 0, scans: [] };
+  },
+
+  // Location-based Community Alerts API Method
+  async getCommunityAlerts(params?: { state?: string; district?: string; crop?: string }): Promise<{ success: boolean; count: number; alerts: CommunityAlertRecord[] }> {
+    try {
+      const query = new URLSearchParams();
+      if (params?.state) query.append('state', params.state);
+      if (params?.district) query.append('district', params.district);
+      if (params?.crop) query.append('crop', params.crop);
+
+      const response = await fetch(`${API_BASE_URL}/alerts?${query.toString()}`);
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (err) {}
+    return { success: false, count: 0, alerts: [] };
+  },
+
   // Fetch real-time Mandi prices from backend Express API
   async getMarketRates(params?: MandiPricesFilterParams): Promise<MandiPricesApiResponse> {
     try {

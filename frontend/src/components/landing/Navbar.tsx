@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Menu, X, ArrowRight } from 'lucide-react';
+import { Globe, Menu, X, ArrowRight, User, LogIn, LogOut, UserCheck } from 'lucide-react';
 import type { Language } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 
 interface NavbarProps {
   language: Language;
@@ -17,12 +18,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, isAuthenticated, openAuthModal, logout } = useAuth();
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       const heroElement = document.getElementById('hero');
       const heroHeight = heroElement ? heroElement.offsetHeight : window.innerHeight;
-      // Remain transparent throughout hero section; turn white only after scrolling past full hero
       setIsScrolled(window.scrollY > (heroHeight - 90));
     };
 
@@ -30,7 +32,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
 
   const navLinks = [
     { id: 'hero', labelEn: 'Home', labelHi: 'मुख्य पृष्ठ' },
@@ -97,8 +98,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             ))}
           </nav>
 
-          {/* Desktop Right Actions: Language Selector & CTA */}
-          <div className="hidden lg:flex items-center gap-4">
+          {/* Desktop Right Actions: Language Selector & Auth / CTA */}
+          <div className="hidden lg:flex items-center gap-3">
+            
             {/* Language Switcher */}
             <div className={`flex items-center p-1 rounded-full text-xs font-bold transition-colors ${
               isScrolled
@@ -127,14 +129,91 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
 
-            {/* Get Started Button */}
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-emerald-500 to-[#1b4332] hover:from-[#2d6a4f] hover:to-[#1b4332] text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2 group border border-emerald-400/30"
-            >
-              <span>{language === 'hi' ? 'शुरू करें' : 'Get Started'}</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+            {/* Authentication Buttons & User Profile Menu */}
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onGetStarted}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full font-bold text-xs shadow-md transition-all flex items-center gap-1.5 border border-emerald-400/30"
+                >
+                  <UserCheck className="w-3.5 h-3.5" />
+                  <span>{language === 'hi' ? 'मेरा डैशबोर्ड' : 'My Dashboard'}</span>
+                </button>
+
+                <div className="relative">
+                  <button
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-white hover:bg-emerald-900 transition-all shadow-sm"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-emerald-500 text-[#1b4332] font-black text-xs flex items-center justify-center">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="text-left leading-tight hidden xl:block">
+                      <span className="block text-xs font-extrabold text-white truncate max-w-[120px]">{user.name}</span>
+                      <span className="block text-[9px] font-bold text-emerald-300 truncate max-w-[120px]">{user.district}, {user.state}</span>
+                    </div>
+                  </button>
+
+                  {/* Logged-in Dropdown Menu */}
+                  {userDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-slate-200 shadow-xl py-2 z-50 text-slate-800 animate-in fade-in slide-in-from-top-2 duration-150">
+                      <div className="px-4 py-2.5 border-b border-slate-100">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Signed in as</p>
+                        <p className="text-sm font-black text-[#1b4332] truncate">{user.name}</p>
+                        <p className="text-xs text-slate-500 truncate">{user.emailOrPhone}</p>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          onGetStarted();
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 flex items-center gap-2"
+                      >
+                        <UserCheck className="w-4 h-4 text-emerald-600" />
+                        <span>{language === 'hi' ? 'मेरा डैशबोर्ड / प्रोफाइल' : 'Dashboard / Profile'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          logout();
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-slate-100"
+                      >
+                        <LogOut className="w-4 h-4 text-red-500" />
+                        <span>{language === 'hi' ? 'लॉगआउट (Logout)' : 'Logout'}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                {/* Login Button */}
+                <button
+                  onClick={() => openAuthModal('login')}
+                  className={`px-4 py-2 rounded-full font-bold text-xs transition-all flex items-center gap-1.5 border ${
+                    isScrolled
+                      ? 'border-slate-300 text-slate-800 hover:bg-slate-100'
+                      : 'border-white/30 text-white hover:bg-white/10'
+                  }`}
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>{language === 'hi' ? 'लॉगइन' : 'Login'}</span>
+                </button>
+
+                {/* Get Started / Register Button */}
+                <button
+                  onClick={() => openAuthModal('register')}
+                  className="bg-gradient-to-r from-emerald-500 to-[#1b4332] hover:from-[#2d6a4f] hover:to-[#1b4332] text-white px-5 py-2.5 rounded-full font-bold text-xs shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 border border-emerald-400/30"
+                >
+                  <span>{language === 'hi' ? 'शुरू करें' : 'Get Started'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
           </div>
 
           {/* Mobile Hamburger Toggle */}
@@ -187,17 +266,50 @@ export const Navbar: React.FC<NavbarProps> = ({
               {language === 'hi' ? link.labelHi : link.labelEn}
             </button>
           ))}
+
           <div className="pt-4 border-t border-slate-700/50 flex flex-col gap-3">
-            <button
-              onClick={() => {
-                onGetStarted();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-center shadow-md flex items-center justify-center gap-2"
-            >
-              <span>{language === 'hi' ? 'फसल जांच शुरू करें' : 'Get Started / Check Crop'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {isAuthenticated && user ? (
+              <div className="space-y-2">
+                <div className="px-4 py-2 bg-emerald-900/40 rounded-xl text-xs text-emerald-200 border border-emerald-500/30 flex items-center gap-2">
+                  <User className="w-4 h-4 text-emerald-400" />
+                  <span className="font-bold">{user.name} ({user.district}, {user.state})</span>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold text-center flex items-center justify-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>{language === 'hi' ? 'लॉगआउट (Logout)' : 'Logout'}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    openAuthModal('login');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-bold text-center border border-slate-600 flex items-center justify-center gap-1.5 text-xs"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>{language === 'hi' ? 'लॉगइन' : 'Login'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    openAuthModal('register');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-center shadow-md flex items-center justify-center gap-1 text-xs"
+                >
+                  <span>{language === 'hi' ? 'शुरू करें' : 'Get Started'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

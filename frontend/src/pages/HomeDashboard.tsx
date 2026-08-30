@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, AlertTriangle, CloudSun, 
-  ChevronRight, ArrowRight, CheckCircle2, Phone, MessageSquare, MapPin,
-  Leaf, Award, Truck
+  ChevronRight, Camera, FileText, AlertCircle, TrendingUp, User, MapPin,
+  CheckCircle2, RefreshCw, Sprout, ArrowRight
 } from 'lucide-react';
 import type { Language, FarmerProfile, WeatherData, OutbreakCluster, CommunityActivity, RiskLevel } from '../types';
-import { translations } from '../translations';
+import { apiService, CropScanRecord, CommunityAlertRecord, MarketRate } from '../services/apiService';
+import { useAuth } from '../context/AuthContext';
 
 interface HomeDashboardProps {
   language: Language;
@@ -13,10 +14,12 @@ interface HomeDashboardProps {
   weather: WeatherData;
   riskLevel: RiskLevel;
   activeClusters: OutbreakCluster[];
-  activities: CommunityActivity[];
+  activities?: CommunityActivity[];
   onNavigateToScan: () => void;
   onNavigateToMap: () => void;
   onNavigateToAlerts: () => void;
+  onNavigateToMandi?: () => void;
+  onNavigateToProfile?: () => void;
   sunlightMode: boolean;
 }
 
@@ -26,463 +29,420 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   weather,
   riskLevel,
   activeClusters,
-  activities: _activities,
   onNavigateToScan,
   onNavigateToMap,
   onNavigateToAlerts,
+  onNavigateToProfile,
   sunlightMode
 }) => {
-  const t = translations[language];
+  const { user, token } = useAuth();
+  const [scanHistory, setScanHistory] = useState<CropScanRecord[]>([]);
+  const [loadingScans, setLoadingScans] = useState<boolean>(true);
+  const [communityAlerts, setCommunityAlerts] = useState<CommunityAlertRecord[]>([]);
+  const [mandiRates, setMandiRates] = useState<MarketRate[]>([]);
+  const [loadingMandi, setLoadingMandi] = useState<boolean>(true);
+
+  const farmerName = user?.name || farmer.name || (language === 'hi' ? 'किसान भाई' : 'Farmer');
+  const farmerState = user?.state || farmer.state || 'Uttar Pradesh';
+  const farmerDistrict = user?.district || farmer.district || 'Gorakhpur';
+  const farmerVillage = user?.village || farmer.village || 'Pipraich';
+  const primaryCrop = user?.primaryCrop || farmer.mainCrops[0] || 'Wheat';
+
+  // Load Farmer's Scan History from Backend
+  useEffect(() => {
+    async function loadScans() {
+      if (token) {
+        setLoadingScans(true);
+        const res = await apiService.getFarmerScans(token);
+        if (res.success && res.scans) {
+          setScanHistory(res.scans);
+        }
+        setLoadingScans(false);
+      } else {
+        setLoadingScans(false);
+      }
+    }
+    loadScans();
+  }, [token]);
+
+  // Load Community Alerts relevant to farmer's location
+  useEffect(() => {
+    async function loadAlerts() {
+      const res = await apiService.getCommunityAlerts({
+        state: farmerState,
+        district: farmerDistrict,
+        crop: primaryCrop
+      });
+      if (res.success && res.alerts) {
+        setCommunityAlerts(res.alerts);
+      }
+    }
+    loadAlerts();
+  }, [farmerState, farmerDistrict, primaryCrop]);
+
+  // Load Mandi Rates for Farmer's Location
+  useEffect(() => {
+    async function loadMandi() {
+      setLoadingMandi(true);
+      const res = await apiService.getMarketRates({
+        state: farmerState,
+        district: farmerDistrict,
+        limit: 4
+      });
+      if (res.success && res.rates) {
+        setMandiRates(res.rates);
+      }
+      setLoadingMandi(false);
+    }
+    loadMandi();
+  }, [farmerState, farmerDistrict]);
 
   return (
-    <div className={`w-full min-h-screen transition-colors ${
-      sunlightMode ? 'bg-white text-black' : 'bg-[#faf9f6] text-slate-900'
+    <div className={`w-full min-h-screen pb-20 transition-colors ${
+      sunlightMode ? 'bg-white text-black' : 'bg-slate-50 text-slate-900'
     }`}>
       
-      {/* 0. TOP ACTIVE VILLAGE & RISK STATUS BANNER */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2">
-        <div className={`rounded-2xl p-4 shadow-sm border transition-all flex flex-col md:flex-row items-center justify-between gap-4 ${
-          riskLevel === 'safe'
-            ? 'bg-[#e8f5e9] border-[#2d6a4f]/30 text-[#1b4332]'
-            : 'bg-red-50 border-red-300 text-red-950 animate-beacon'
-        }`}>
-          <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-2xl ${
-              riskLevel === 'safe' ? 'bg-[#1b4332] text-white' : 'bg-red-600 text-white animate-bounce'
-            }`}>
-              {riskLevel === 'safe' ? (
-                <ShieldCheck className="w-7 h-7 stroke-[2.2]" />
-              ) : (
-                <AlertTriangle className="w-7 h-7 stroke-[2.2]" />
-              )}
+      {/* 1. TOP GREETING & LOCATION HEADER BANNER */}
+      <div className="bg-gradient-to-r from-[#1b4332] via-[#2d6a4f] to-[#1b4332] text-white pt-6 pb-12 px-4 sm:px-6 lg:px-8 shadow-md relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                <span>{farmerVillage}, {farmerDistrict} ({farmerState})</span>
+              </span>
+              <span className="bg-emerald-950/80 text-emerald-200 border border-white/10 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                🌾 {primaryCrop}
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                  riskLevel === 'safe' ? 'bg-[#2d6a4f] text-white' : 'bg-red-600 text-white'
-                }`}>
-                  📍 {farmer.village} ({farmer.district})
-                </span>
-                <span className="text-xs text-[#2d6a4f] font-bold">• GPS Node Connected ({activeClusters.length} Clusters Active)</span>
-              </div>
-              <h2 className="text-lg font-extrabold text-[#1b4332] mt-0.5 font-serif-title">
-                {riskLevel === 'safe' ? t.farmStatusSafe : t.farmStatusAlert}
-              </h2>
-            </div>
+
+            {/* Farmer Greeting */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black font-serif-title tracking-tight text-white mt-1">
+              {language === 'hi' ? `नमस्ते, ${farmerName} 👋` : `Namaste, ${farmerName} 👋`}
+            </h1>
+            <p className="text-emerald-100 text-sm sm:text-base font-medium max-w-2xl mt-1.5 leading-relaxed">
+              {language === 'hi'
+                ? 'अपनी फसल के स्वास्थ्य की जांच करें और नजदीकी बीमारी के प्रकोप से सुरक्षित रहें।'
+                : 'Check your crop health and stay protected from nearby disease outbreaks.'}
+            </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-            <div className="bg-white/80 backdrop-blur px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs flex items-center gap-2">
-              <CloudSun className="w-4 h-4 text-amber-500" />
-              <div>
-                <span className="font-bold text-slate-800">{weather.temp}°C {weather.condition}</span>
-                <span className="text-[10px] text-slate-500 ml-1.5">💧 {weather.humidity}% Hum</span>
-              </div>
+          {/* Weather Status & Outbreak Alert Summary */}
+          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/20 shrink-0">
+            <div className="p-2.5 bg-amber-400/20 rounded-xl text-amber-300">
+              <CloudSun className="w-6 h-6" />
             </div>
-            {riskLevel !== 'safe' && (
-              <button
-                onClick={onNavigateToAlerts}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-bold rounded-xl shadow flex items-center gap-1"
-              >
-                <span>View Affected Zone</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
+            <div>
+              <div className="text-sm font-extrabold text-white">{weather.temp}°C • {weather.condition}</div>
+              <div className="text-xs text-emerald-200 font-medium">💧 {weather.humidity}% Humidity • {farmerDistrict}</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 1. GREENBASKET HERO SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          
-          {/* Left Column Text & CTAs */}
-          <div className="lg:col-span-6 space-y-6">
-            
-            {/* Script Subhead Tag */}
-            <div className="flex items-center gap-2">
-              <span className="font-script text-3xl sm:text-4xl text-[#2d6a4f] font-bold">
-                Farm Protection 
-              </span>
-              <Leaf className="w-6 h-6 text-[#2d6a4f] stroke-[2.2]" />
-            </div>
-
-            {/* Massive Elegant Serif Headline */}
-            <h1 className="font-serif-title text-5xl sm:text-6xl lg:text-7xl font-extrabold text-[#1b4332] leading-[1.05] tracking-tight">
-              Good crops <br />
-              <span className="text-[#2d6a4f]">Good harvest</span> <br />
-              Good life
-            </h1>
-
-            {/* Paragraph Subtitle */}
-            <p className="text-slate-600 text-base sm:text-lg max-w-lg font-medium leading-relaxed">
-              AI-powered crop diagnosis, real-time outbreak mapping & disease remedies delivered directly to your farm.
-            </p>
-
-            {/* Action Buttons Row */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <button
-                onClick={onNavigateToScan}
-                className="bg-[#1b4332] hover:bg-[#143326] text-white px-7 py-3.5 rounded-full font-bold shadow-lg shadow-[#1b4332]/25 flex items-center gap-3 text-base transition-transform transform active:scale-95 group"
-              >
-                <span>Scan Crop Now</span>
-                <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                  <ArrowRight className="w-4 h-4 text-white" />
-                </div>
-              </button>
-
-              <button
-                onClick={onNavigateToMap}
-                className="border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 px-7 py-3.5 rounded-full font-bold text-base transition-colors shadow-sm"
-              >
-                Explore Outbreak Map
-              </button>
-            </div>
-
-            {/* 3 Feature Badges Row */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200/80">
-              <div className="flex items-start gap-2.5">
-                <div className="p-2 rounded-xl bg-[#e8f5e9] text-[#1b4332] shrink-0 mt-0.5">
-                  <Award className="w-4 h-4 stroke-[2.5]" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-extrabold text-[#1b4332]">100% AI Accuracy</h4>
-                  <p className="text-[11px] text-slate-500">Certified & Natural</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2.5">
-                <div className="p-2 rounded-xl bg-[#e8f5e9] text-[#1b4332] shrink-0 mt-0.5">
-                  <Truck className="w-4 h-4 stroke-[2.5]" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-extrabold text-[#1b4332]">Fast Outbreak Alerts</h4>
-                  <p className="text-[11px] text-slate-500">On-Time, Every Time</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2.5">
-                <div className="p-2 rounded-xl bg-[#e8f5e9] text-[#1b4332] shrink-0 mt-0.5">
-                  <Leaf className="w-4 h-4 stroke-[2.5]" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-extrabold text-[#1b4332]">Community Sourced</h4>
-                  <p className="text-[11px] text-slate-500">Good for Farmers</p>
-                </div>
-              </div>
-            </div>
-
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-20 space-y-6">
+        
+        {/* 2. PRIMARY ACTION HERO CARD: SCAN YOUR CROP */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-emerald-100 shadow-xl relative overflow-hidden group hover:border-emerald-300 transition-all">
+          <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-x-8 translate-y-8">
+            <Sprout className="w-64 h-64 text-[#1b4332]" />
           </div>
 
-          {/* Right Column Visual Banner Photo */}
-          <div className="lg:col-span-6 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-gradient-to-tr from-[#1b4332] to-[#2d6a4f] p-2">
-              <img 
-                src="/hero.jpg" 
-                alt="Krishi Shield AI - Farmer Protection & Healthy Harvest" 
-                className="w-full h-[400px] sm:h-[480px] object-cover rounded-2xl transform hover:scale-105 transition-transform duration-500"
-              />
-
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-2 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="text-xs font-black text-emerald-700 uppercase tracking-widest">
+                  {language === 'hi' ? 'मुख्य सेवा / PRIMARY ACTION' : 'PRIMARY ACTION'}
+                </span>
+              </div>
               
-              {/* Floating GreenBasket Badge on Image */}
-              <div className="absolute bottom-6 left-6 bg-[#1b4332]/95 backdrop-blur-md text-white px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl border border-white/20">
-                <div className="w-10 h-10 rounded-xl bg-[#2d6a4f] flex items-center justify-center text-emerald-300">
-                  <Leaf className="w-6 h-6 stroke-[2.5]" />
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-emerald-200 font-extrabold block">AI Certified</span>
-                  <span className="font-serif-title font-bold text-base text-white">Always Protected</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 2. SHOP BY CATEGORY / CROP DEFENSE CATEGORIES */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center space-y-2 mb-10">
-          <span className="text-xs font-black tracking-widest text-[#1b4332] uppercase">
-            EXPLORE BY CROP
-          </span>
-          <h2 className="font-serif-title text-3xl sm:text-4xl font-extrabold text-[#1b4332]">
-            Best of Nature, Handpicked for You
-          </h2>
-        </div>
-
-        {/* 5 Crop Category Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {[
-            {
-              title: 'Vegetables',
-              subtitle: 'Blight & Leaf Spot',
-              icon: '🥬',
-              image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80'
-            },
-            {
-              title: 'Fruits',
-              subtitle: 'Mildew & Rot Shield',
-              icon: '🍎',
-              image: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=400&q=80'
-            },
-            {
-              title: 'Wheat & Grains',
-              subtitle: 'Rust & Smut Warning',
-              icon: '🌾',
-              image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=400&q=80'
-            },
-            {
-              title: 'Pulses & Mustard',
-              subtitle: 'Wilt & Rot Advisory',
-              icon: '🫘',
-              image: 'https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&w=400&q=80'
-            },
-            {
-              title: 'Cotton & Cash Crops',
-              subtitle: 'Bollworm & Red Rot',
-              icon: '🌱',
-              image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&w=400&q=80'
-            }
-          ].map((cat, idx) => (
-            <div 
-              key={idx}
-              onClick={onNavigateToScan}
-              className="bg-white rounded-3xl p-4 shadow-sm hover:shadow-xl border border-slate-100 transition-all duration-300 group cursor-pointer flex flex-col justify-between"
-            >
-              {/* Image Container with Badge */}
-              <div className="relative h-44 rounded-2xl overflow-hidden bg-[#f4f7f4] mb-3">
-                <img 
-                  src={cat.image} 
-                  alt={cat.title} 
-                  onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80";
-                  }}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur w-9 h-9 rounded-full flex items-center justify-center text-lg shadow">
-                  {cat.icon}
-                </div>
-              </div>
-
-              {/* Title & Arrow */}
-              <div className="flex items-center justify-between pt-1">
-                <div>
-                  <h3 className="font-bold text-slate-900 text-base group-hover:text-[#1b4332] transition-colors">
-                    {cat.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium">{cat.subtitle}</p>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-[#1b4332] group-hover:text-white text-slate-700 flex items-center justify-center transition-all">
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 3. TRACKING & FEATURE HIGHLIGHT SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          
-          {/* Left Column Text & Feature Bullets */}
-          <div className="lg:col-span-5 space-y-6">
-            <div>
-              <span className="font-script text-3xl text-[#2d6a4f] font-bold block mb-1">
-                From Our Farm
-              </span>
-              <h2 className="font-serif-title text-4xl sm:text-5xl font-extrabold text-[#1b4332] leading-tight">
-                To Your Home, <br />
-                Fresh & Fast
+              <h2 className="text-2xl sm:text-3xl font-black font-serif-title text-[#1b4332]">
+                {language === 'hi' ? 'अपनी फसल की जांच करें (SCAN YOUR CROP)' : 'SCAN YOUR CROP'}
               </h2>
+              
+              <p className="text-slate-600 text-sm sm:text-base font-semibold leading-relaxed">
+                {language === 'hi'
+                  ? 'अपनी फसल की पत्ती की स्पष्ट फोटो अपलोड करें या खींचें। तुरंत AI द्वारा बीमारी की सटीक पहचान और दवा की सिफारिश पाएं।'
+                  : 'Upload or capture a clear photo of your crop leaf. Get instant AI-powered disease assessment and certified spray remedies.'}
+              </p>
             </div>
 
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-medium">
-              We ensure that every order and outbreak report is processed with care and broadcasted instantly to protect your village.
-            </p>
+            {/* Prominent Scan Action Button */}
+            <button
+              onClick={onNavigateToScan}
+              className="w-full md:w-auto bg-[#1b4332] hover:bg-[#2d6a4f] text-white px-8 py-4 rounded-2xl font-black text-lg shadow-lg shadow-[#1b4332]/30 hover:shadow-xl transition-all flex items-center justify-center gap-3 group/btn shrink-0"
+            >
+              <Camera className="w-6 h-6 text-emerald-400 group-hover/btn:scale-110 transition-transform" />
+              <span>{language === 'hi' ? '📷 फसल की जांच करें' : '📷 Scan Crop Now'}</span>
+              <ArrowRight className="w-5 h-5 text-emerald-300 group-hover/btn:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
 
-            {/* 3 Feature Bullets */}
-            <div className="space-y-4 pt-2">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#1b4332] text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <MapPin className="w-4 h-4" />
+        {/* 3. QUICK ACTIONS GRID */}
+        <div>
+          <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-3 px-1">
+            {language === 'hi' ? 'त्वरित सेवाएं / QUICK ACTIONS' : 'QUICK ACTIONS'}
+          </h3>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            
+            {/* Quick Button 1: Scan Crop */}
+            <button
+              onClick={onNavigateToScan}
+              className="bg-emerald-700 text-white p-4 rounded-2xl font-black text-sm shadow-md hover:bg-emerald-800 transition-all flex flex-col items-center justify-center gap-2 text-center"
+            >
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
+              <span>{language === 'hi' ? 'फसल जांच' : 'Scan Crop'}</span>
+            </button>
+
+            {/* Quick Button 2: Scan History */}
+            <a
+              href="#scans-section"
+              className="bg-white border border-slate-200 text-slate-800 p-4 rounded-2xl font-black text-sm shadow-sm hover:border-emerald-500 hover:text-emerald-900 transition-all flex flex-col items-center justify-center gap-2 text-center"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <FileText className="w-6 h-6" />
+              </div>
+              <span>{language === 'hi' ? 'जांच इतिहास' : 'Scan History'}</span>
+            </a>
+
+            {/* Quick Button 3: Community Alerts */}
+            <button
+              onClick={onNavigateToAlerts}
+              className="bg-white border border-slate-200 text-slate-800 p-4 rounded-2xl font-black text-sm shadow-sm hover:border-amber-500 hover:text-amber-900 transition-all flex flex-col items-center justify-center gap-2 text-center"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <span>{language === 'hi' ? 'बीमारी अलर्ट' : 'Community Alerts'}</span>
+            </button>
+
+            {/* Quick Button 4: Mandi Rates */}
+            <a
+              href="#mandi-section"
+              className="bg-white border border-slate-200 text-slate-800 p-4 rounded-2xl font-black text-sm shadow-sm hover:border-emerald-500 hover:text-emerald-900 transition-all flex flex-col items-center justify-center gap-2 text-center"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <span>{language === 'hi' ? 'आज का मंडी भाव' : 'Mandi Rates'}</span>
+            </a>
+
+          </div>
+        </div>
+
+        {/* 4. DASHBOARD SECTIONS GRID: SCAN HISTORY & COMMUNITY ALERTS */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* LEFT COLUMN: MY SCAN HISTORY */}
+          <div id="scans-section" className="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Real-Time Outbreak Tracking</h4>
-                  <p className="text-xs text-slate-500 font-medium">Track your disease alerts in real-time</p>
+                  <h3 className="text-lg font-extrabold text-[#1b4332] font-serif-title">
+                    {language === 'hi' ? 'मेरा फसल जांच इतिहास' : 'My Scan History'}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    {language === 'hi' ? 'आपकी पिछली फसल स्वास्थ्य रिपोर्ट' : 'Your previous AI disease diagnosis records'}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#1b4332] text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Freshness & Remedy Guaranteed</h4>
-                  <p className="text-xs text-slate-500 font-medium">100% quality checked AI diagnosis</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#1b4332] text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Easy Alerts & Advisory</h4>
-                  <p className="text-xs text-slate-500 font-medium">Hassle-free community protection</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2">
               <button
                 onClick={onNavigateToScan}
-                className="bg-[#1b4332] hover:bg-[#143326] text-white px-7 py-3.5 rounded-full font-bold shadow-lg flex items-center gap-2 transition-transform transform active:scale-95"
+                className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1"
               >
-                <span>Scan Crop Now</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>+ {language === 'hi' ? 'नई जांच' : 'New Scan'}</span>
               </button>
             </div>
 
+            {/* Scan History Records */}
+            {loadingScans ? (
+              <div className="py-8 text-center text-slate-400 text-xs font-bold flex items-center justify-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin text-emerald-600" />
+                <span>Loading your scan history...</span>
+              </div>
+            ) : scanHistory.length === 0 ? (
+              <div className="py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-6 space-y-3">
+                <Sprout className="w-10 h-10 text-slate-400 mx-auto" />
+                <p className="text-xs font-bold text-slate-600">No previous crop scans found.</p>
+                <button
+                  onClick={onNavigateToScan}
+                  className="bg-emerald-700 text-white text-xs font-black px-4 py-2 rounded-xl shadow"
+                >
+                  Scan Crop Now
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {scanHistory.map((scan) => {
+                  const formattedDate = new Date(scan.createdAt).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                  });
+
+                  return (
+                    <div
+                      key={scan.id}
+                      className="p-4 rounded-2xl border border-slate-200 hover:border-emerald-300 bg-slate-50/50 hover:bg-white transition-all flex items-center justify-between gap-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
+                          scan.result === 'Healthy'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {scan.result === 'Healthy' ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <AlertTriangle className="w-5 h-5 text-red-600" />}
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-extrabold text-slate-900">{scan.cropName}</h4>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                              scan.result === 'Healthy' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {scan.result === 'Healthy' ? (language === 'hi' ? 'स्वस्थ' : 'Healthy') : (language === 'hi' ? 'संक्रमित' : 'Infected')}
+                            </span>
+                          </div>
+                          
+                          <p className="text-xs font-bold text-slate-600 mt-0.5">
+                            {language === 'hi' ? scan.diseaseHindi : scan.diseaseName}
+                          </p>
+                          <span className="text-[10px] text-slate-400 font-semibold">{formattedDate} • Confidence {scan.confidence}%</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={onNavigateToScan}
+                        className="text-xs font-extrabold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition-colors shrink-0"
+                      >
+                        {language === 'hi' ? 'देखें' : 'View Details'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Right Column: GreenBasket Track Your Order Live Card Mockup */}
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 space-y-6 relative overflow-hidden">
-              
-              {/* Card Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <h3 className="font-bold text-slate-900 text-lg">Track Your Order</h3>
-                <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                  Live
+          {/* RIGHT COLUMN: RELEVANT COMMUNITY ALERTS & TODAY'S MANDI RATES */}
+          <div className="lg:col-span-5 space-y-6">
+            
+            {/* COMMUNITY ALERTS CARD */}
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
+                  <h3 className="text-base font-extrabold text-[#1b4332] font-serif-title">
+                    {language === 'hi' ? 'सामुदायिक बीमारी अलर्ट' : 'Community Alerts'}
+                  </h3>
+                </div>
+                <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full">
+                  📍 {farmerDistrict}
                 </span>
               </div>
 
-              {/* Delivery Partner Profile */}
-              <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl">
-                <div className="flex items-center gap-3">
-                  <img 
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" 
-                    alt="Rahul Sharma" 
-                    onError={(e) => {
-                      e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80";
-                    }}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow"
-                  />
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-sm">Rahul Sharma</h4>
-                    <p className="text-xs text-slate-500 font-medium">Your delivery partner</p>
-                    <div className="flex items-center gap-1 mt-0.5 text-amber-500 text-xs">
-                      {'★'.repeat(5)}
-                      <span className="text-slate-700 font-bold ml-1">4.8</span>
+              <div className="space-y-3">
+                {communityAlerts.map((alert) => (
+                  <div key={alert.id} className="p-3.5 bg-amber-50/60 border border-amber-200 rounded-2xl space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-amber-900 flex items-center gap-1">
+                        ⚠️ {language === 'hi' ? alert.diseaseHindi : alert.diseaseName}
+                      </span>
+                      <span className="text-[10px] font-extrabold bg-red-600 text-white px-2 py-0.5 rounded-full">
+                        {alert.severity}
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                      {language === 'hi' ? alert.descriptionHindi : alert.description}
+                    </p>
+                    <div className="text-[11px] font-bold text-slate-500 pt-1 flex items-center justify-between">
+                      <span>Crop: {alert.crop} • {alert.centerVillage}</span>
+                      <button onClick={onNavigateToAlerts} className="text-amber-800 underline font-black">View Alert</button>
                     </div>
                   </div>
-                </div>
+                ))}
+              </div>
+            </div>
 
+            {/* MANDI RATES CARD */}
+            <div id="mandi-section" className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
-                  <button className="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors">
-                    <Phone className="w-4 h-4" />
-                  </button>
-                  <button className="w-9 h-9 rounded-full bg-[#1b4332] text-white flex items-center justify-center transition-colors">
-                    <MessageSquare className="w-4 h-4" />
-                  </button>
+                  <TrendingUp className="w-5 h-5 text-emerald-700" />
+                  <h3 className="text-base font-extrabold text-[#1b4332] font-serif-title">
+                    {language === 'hi' ? "आज का मंडी भाव" : "Today's Mandi Rates"}
+                  </h3>
                 </div>
+                <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                  📍 {farmerDistrict} Mandi
+                </span>
               </div>
 
-              {/* Step Progress Line */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-800">
-                  <span>On the way</span>
-                  <span className="text-slate-500">Arriving in 15 min</span>
+              {loadingMandi ? (
+                <div className="py-4 text-center text-slate-400 text-xs font-bold flex items-center justify-center gap-2">
+                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-600" />
+                  <span>Loading Mandi Prices...</span>
                 </div>
-
-                <div className="relative py-4">
-                  <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200 transform -translate-y-1/2 z-0" />
-                  <div className="absolute top-1/2 left-0 w-3/4 h-1 bg-[#1b4332] transform -translate-y-1/2 z-0" />
-
-                  <div className="relative z-10 flex justify-between items-center text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-7 h-7 rounded-full bg-[#1b4332] text-white flex items-center justify-center text-xs font-bold shadow">
-                        ✓
+              ) : mandiRates.length === 0 ? (
+                <p className="text-xs font-semibold text-slate-500 text-center py-4">No mandi rates found for {farmerDistrict}.</p>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {mandiRates.map((rate) => (
+                    <div key={rate.id} className="py-2.5 flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-800">{rate.name}</div>
+                        <div className="text-[11px] text-slate-500 font-medium">{rate.mandi}</div>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-700">Confirmed</span>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-7 h-7 rounded-full bg-[#1b4332] text-white flex items-center justify-center text-xs font-bold shadow">
-                        ✓
+                      <div className="text-right">
+                        <div className="text-sm font-black text-emerald-700">₹{rate.price.toLocaleString('en-IN')} / {rate.unit}</div>
+                        <div className="text-[10px] text-slate-400 font-semibold">{rate.arrivalDate || 'Today'}</div>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-700">Packed</span>
                     </div>
-
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-8 h-8 rounded-full bg-[#1b4332] text-white flex items-center justify-center text-xs font-bold shadow-lg ring-4 ring-emerald-100">
-                        🚚
-                      </div>
-                      <span className="text-[10px] font-bold text-[#1b4332]">On the way</span>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-xs font-bold">
-                        🏠
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-400">Delivered</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-
-              {/* Map Footer Box */}
-              <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-100 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-slate-700 font-medium">
-                  <MapPin className="w-4 h-4 text-[#1b4332]" />
-                  <span>123, Green Avenue, Your Street, City - 560001</span>
-                </div>
-              </div>
-
+              )}
             </div>
+
           </div>
 
         </div>
-      </section>
 
-      {/* 4. GREENBASKET DEEP GREEN FOOTER STATS BANNER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-16">
-        <div className="bg-[#0b3b24] text-white rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden text-center space-y-8">
-          
-          <div className="space-y-1">
-            <h3 className="font-serif-title font-bold text-xl sm:text-2xl text-emerald-100">
-              Trusted by Thousands of Happy Customers
-            </h3>
-            <p className="text-emerald-400 text-xs">♡</p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold text-white font-serif-title">10K+</div>
-              <div className="text-xs text-emerald-200 font-medium">Happy Customers</div>
+        {/* 5. FARMER PROFILE SUMMARY CARD */}
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#1b4332] text-emerald-300 font-black text-lg flex items-center justify-center shadow">
+              {farmerName.charAt(0).toUpperCase()}
             </div>
-
-            <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold text-white font-serif-title">500+</div>
-              <div className="text-xs text-emerald-200 font-medium">Organic Products</div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold text-white font-serif-title">50+</div>
-              <div className="text-xs text-emerald-200 font-medium">Local Farmers</div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold text-white font-serif-title">99%</div>
-              <div className="text-xs text-emerald-200 font-medium">Positive Feedback</div>
+            <div>
+              <h4 className="text-base font-extrabold text-[#1b4332]">{farmerName}</h4>
+              <p className="text-xs text-slate-500 font-semibold">
+                📍 {farmerVillage}, {farmerDistrict}, {farmerState} • Primary Crop: <span className="text-emerald-700 font-bold">{primaryCrop}</span>
+              </p>
             </div>
           </div>
 
+          <button
+            onClick={onNavigateToProfile}
+            className="w-full md:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            <User className="w-4 h-4 text-slate-600" />
+            <span>{language === 'hi' ? 'प्रोफाइल प्रबंधित करें' : 'View / Edit Profile'}</span>
+          </button>
         </div>
-      </section>
+
+      </div>
 
     </div>
   );

@@ -1,0 +1,129 @@
+[
+  {
+    "id": "scan_1788111957683_jl6r",
+    "farmerId": "usr_1788110063028_qnyhh",
+    "cropName": "Wheat",
+    "diseaseName": "Yellow Rust of Wheat",
+    "diseaseHindi": "गेहूं का पीला रतुआ (हल्दी रोग)",
+    "confidence": 91,
+    "imageUrl": "/images/crops/tomato.jpg",
+    "result": "Infected",
+    "recommendations": [
+      "Spray Propiconazole 25% EC (Tilt) @ 1 ml per Liter of water immediately",
+      "Repeat spray after 15 days if yellow stripes persist"
+    ],
+    "recommendationsHindi": [
+      "प्रोपिकोनाज़ोल 25% ईसी (टिल-ट) 1 मि.ली. प्रति लीटर पानी का तुरंत छिड़काव करें",
+      "यदि रोग बना रहे तो 15 दिन बाद दोबारा छिड़कें"
+    ],
+    "createdAt": "2026-08-30T17:45:57.683Z"
+  },
+  {
+    "id": "scan_1788111839945_zcyp",
+    "farmerId": "usr_1788110063028_qnyhh",
+    "cropName": "Tomato",
+    "diseaseName": "Tomato Early Blight",
+    "diseaseHindi": "टमाटर अगेती झुलसा रोग",
+    "confidence": 94,
+    "imageUrl": "https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc?auto=format&fit=crop&w=600&q=80",
+    "result": "Infected",
+    "recommendations": [
+      "Spray Mancozeb 75% WP @ 2g per Liter of water immediately",
+      "Follow up with Copper Oxychloride 50% WP @ 3g/L after 10 days"
+    ],
+    "recommendationsHindi": [
+      "मैनकोज़ेब 75% डब्लूपी (2 ग्राम/लीटर पानी) का तुरंत छिड़काव करें",
+      "10 दिनों के बाद कॉपर ऑक्सीक्लोराइड 50% डब्लूपी (3 ग्राम/लीटर) छिड़कें"
+    ],
+    "createdAt": "2026-08-30T17:43:59.945Z"
+  },
+  {
+    "id": "scan_1788111791389_bnlj",
+    "farmerId": "usr_1788110063028_qnyhh",
+    "cropName": "Wheat",
+    "diseaseName": "Healthy Wheat Canopy",
+    "diseaseHindi": "स्वस्थ गेहूं की फसल",
+    "confidence": 98,
+    "imageUrl": "https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc?auto=format&fit=crop&w=600&q=80",
+    "result": "Healthy",
+    "recommendations": [
+      "No chemical pesticide needed at present stage"
+    ],
+    "recommendationsHindi": [
+      "वर्तमान में किसी रासायनिक छिड़काव की आवश्यकता नहीं है"
+    ],
+    "createdAt": "2026-08-30T17:43:11.389Z"
+  },
+  {
+    "id": "scan_1788111203345_kxvv",
+    "farmerId": "usr_1788110063028_qnyhh",
+    "cropName": "Wheat",
+    "diseaseName": "Yellow Rust of Wheat",
+    "diseaseHindi": "गेहूं का पीला रतुआ (हल्दी रोग)",
+    "confidence": 91,
+    "imageUrl": "https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc?auto=format&fit=crop&w=600&q=80",
+    "result": "Infected",
+    "recommendations": [
+      "Spray Propiconazole 25% EC (Tilt) @ 1 ml per Liter of water immediately",
+      "Repeat spray after 15 days if yellow stripes persist"
+    ],
+    "recommendationsHindi": [
+      "प्रोपिकोनाज़ोल 25% ईसी (टिल-ट) 1 मि.ली. प्रति लीटर पानी का तुरंत छिड़काव करें",
+      "यदि रोग बना रहे तो 15 दिन बाद दोबारा छिड़कें"
+    ],
+    "createdAt": "2026-08-30T17:33:23.345Z"
+  },
+  {
+    "id": "scan_1788110750234_wwid",
+    "farmerId": "usr_1788110750219_oh84a",
+    "cropName": "Tomato (टमाटर)",
+    "diseaseName": "Tomato Early Blight",
+    "diseaseHindi": "टमाटर अगेती झुलसा",
+    "confidence": 96,
+    "imageUrl": "",
+    "result": "Infected",
+    "recommendations": [
+      "Spray Mancozeb 75% WP"
+    ],
+    "recommendationsHindi": [
+      "मैनकोज़ेब 75% डब्लूपी का छिड़काव करें"
+    ],
+    "createdAt": "2026-08-30T17:25:50.234Z"
+  },
+  {
+    "id": "scan_101",
+    "farmerId": "usr_default",
+    "cropName": "Wheat (गेहूं)",
+    "diseaseName": "Healthy Crop",
+    "diseaseHindi": "स्वस्थ फसल (कोई बीमारी नहीं)",
+    "confidence": 98,
+    "result": "Healthy",
+    "recommendations": [
+      "Maintain regular watering",
+      "Apply balanced NPK fertilizer"
+    ],
+    "recommendationsHindi": [
+      "नियमित सिंचाई बनाए रखें",
+      "संतुलित एनपीके उर्वरक का प्रयोग करें"
+    ],
+    "createdAt": "2026-08-29T17:21:53.670Z"
+  },
+  {
+    "id": "scan_102",
+    "farmerId": "usr_default",
+    "cropName": "Tomato (टमाटर)",
+    "diseaseName": "Tomato Early Blight",
+    "diseaseHindi": "टमाटर अगेती झुलसा प्रकोप",
+    "confidence": 94,
+    "result": "Infected",
+    "recommendations": [
+      "Spray Mancozeb fungicide 2g/L",
+      "Remove infected lower leaves"
+    ],
+    "recommendationsHindi": [
+      "मैनकोज़ेब कवकनाशी 2g/L का छिड़काव करें",
+      "संक्रमित निचली पत्तियों को हटा दें"
+    ],
+    "createdAt": "2026-08-27T17:21:53.671Z"
+  }
+]

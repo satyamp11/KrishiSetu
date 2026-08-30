@@ -1,0 +1,38 @@
+[
+  {
+    "id": "usr_1788107881143_91foj",
+    "name": "Ramesh Kumar",
+    "emailOrPhone": "ramesh@krishi.com",
+    "passwordHash": "$2b$10$5LNBFTKuVdzV.BG0Mr091uZw3K4KIv2y5OPDS5QaHLZK9Dqen.Rxu",
+    "state": "Uttar Pradesh",
+    "district": "Gorakhpur",
+    "village": "Pipraich",
+    "primaryCrop": "Wheat",
+    "createdAt": "2026-08-30T16:38:01.142Z",
+    "updatedAt": "2026-08-30T16:38:01.142Z"
+  },
+  {
+    "id": "usr_1788110063028_qnyhh",
+    "name": "satyam",
+    "emailOrPhone": "inspiringworldz01z@gmail.com",
+    "passwordHash": "$2b$10$waPe13qE1PGTSeB2BHmvj.fWXy.PFbMhJq5fl4odFjBL43yiSohXu",
+    "state": "Uttar Pradesh",
+    "district": "Gorakhpur",
+    "village": "",
+    "primaryCrop": "",
+    "createdAt": "2026-08-30T17:14:23.028Z",
+    "updatedAt": "2026-08-30T17:14:23.028Z"
+  },
+  {
+    "id": "usr_1788110750219_oh84a",
+    "name": "Farmer Mohan Singh",
+    "emailOrPhone": "mohan@krishi.com",
+    "passwordHash": "$2b$10$WNgHyHAgAOxjDaYevXZgeupAmpy1Pzb9Hbn2VxFAQJS3bCnOGDuRG",
+    "state": "Uttar Pradesh",
+    "district": "Gorakhpur",
+    "village": "Sahjanwa",
+    "primaryCrop": "Tomato",
+    "createdAt": "2026-08-30T17:25:50.219Z",
+    "updatedAt": "2026-08-30T17:25:50.219Z"
+  }
+]

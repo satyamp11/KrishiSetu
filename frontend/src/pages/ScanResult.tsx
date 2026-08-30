@@ -71,7 +71,7 @@ export const ScanResult: React.FC<ScanResultProps> = ({
                 <img
                   src={scannedImage || disease.sampleImage}
                   alt={diseaseTitle}
-                  onError={(e) => { e.currentTarget.src = disease.sampleImage; }}
+                  onError={(e) => { e.currentTarget.src = "/images/crops/tomato.jpg"; }}
                   className="w-full h-full object-cover"
                 />
 

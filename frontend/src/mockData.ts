@@ -40,13 +40,13 @@ export const ALL_INDIAN_STATES = [
   'West Bengal'
 ];
 
-// High-quality SVG Data URIs for realistic crop sample photos
+// High-quality local crop sample photos
 export const CROP_IMAGES = {
-  tomatoBlight: "https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc?auto=format&fit=crop&w=600&q=80",
-  wheatRust: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=80",
-  healthyWheat: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80",
-  potatoBlight: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=600&q=80",
-  cottonBacterial: "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&w=600&q=80",
+  tomatoBlight: "/images/crops/tomato.jpg",
+  wheatRust: "/images/crops/wheat.jpg",
+  healthyWheat: "/images/crops/wheat.jpg",
+  potatoBlight: "/images/crops/potato.jpg",
+  cottonBacterial: "/images/crops/cotton.jpg",
 };
 
 export const INITIAL_FARMER: FarmerProfile = {
