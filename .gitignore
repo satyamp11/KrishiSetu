@@ -26,4 +26,8 @@ dist-ssr
 # Raw uncompressed PNG frames
 public/images/ezgif-frame-*.png
 
+
+# Environment variables
 .env
+.env.*
+!.env.example  
