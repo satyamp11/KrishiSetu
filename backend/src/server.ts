@@ -1,8 +1,11 @@
+import 'dotenv/config';
 import express from 'express';
 import { corsOptions } from './config/corsConfig.js';
 import { appConfig } from './config/appConfig.js';
+import { connectDB } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authRouter } from './routes/auth.routes.js';
+import { userRouter } from './routes/user.routes.js';
 import { scanRouter } from './routes/scan.routes.js';
 import { alertRouter } from './routes/alert.routes.js';
 import { mandiRouter } from './routes/mandi.routes.js';
@@ -26,6 +29,7 @@ app.get('/api/health', (_req, res) => {
 
 // API Routes
 app.use('/api/auth', authRouter);
+app.use('/api/users', userRouter);
 app.use('/api/scans', scanRouter);
 app.use('/api/alerts', alertRouter);
 app.use('/api/mandi', mandiRouter);
@@ -36,6 +40,8 @@ app.use('/api/disease-scan', diseaseRouter);
 // Centralized Error Handler
 app.use(errorHandler);
 
-app.listen(appConfig.port, () => {
+// Start HTTP Server & Connect MongoDB
+app.listen(appConfig.port, async () => {
   console.log(`🚀 ${appConfig.appName} running at http://localhost:${appConfig.port}`);
+  await connectDB();
 });

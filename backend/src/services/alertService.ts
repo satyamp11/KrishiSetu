@@ -1,3 +1,5 @@
+import { DiseaseAlert } from '../models/DiseaseAlert.js';
+
 export interface CommunityAlertItem {
   id: string;
   diseaseName: string;
@@ -67,22 +69,48 @@ const SAMPLE_ALERTS: CommunityAlertItem[] = [
 ];
 
 export const alertService = {
-  getRelevantAlerts(state?: string, district?: string, crop?: string): CommunityAlertItem[] {
-    let results = [...SAMPLE_ALERTS];
+  async getRelevantAlerts(state?: string, district?: string, crop?: string): Promise<CommunityAlertItem[]> {
+    try {
+      const query: any = {};
+      if (state && state !== 'All') query.state = new RegExp(`^${state}$`, 'i');
+      if (district && district !== 'All') query.district = new RegExp(`^${district}$`, 'i');
+      if (crop && crop !== 'All') query.cropName = new RegExp(crop, 'i');
 
+      const mongoAlerts = await DiseaseAlert.find(query).sort({ reportedAt: -1 }).limit(10);
+      if (mongoAlerts.length > 0) {
+        return mongoAlerts.map((a) => ({
+          id: a._id.toString(),
+          diseaseName: a.diseaseName,
+          diseaseHindi: a.diseaseHindi || a.diseaseName,
+          crop: a.cropName,
+          state: a.state,
+          district: a.district,
+          centerVillage: a.district,
+          severity: a.severity as any,
+          reportCount: 1,
+          description: `${a.diseaseName} reported in ${a.district}, ${a.state}.`,
+          descriptionHindi: `${a.district}, ${a.state} में ${a.diseaseHindi || a.diseaseName} की सूचना मिली है।`,
+          recommendations: ['Inspect your crop regularly', 'Consult agricultural extension officers'],
+          recommendationsHindi: ['अपनी फसल का नियमित निरीक्षण करें', 'कृषि अधिकारियों से सलाह लें'],
+          createdAt: a.reportedAt ? a.reportedAt.toISOString() : new Date().toISOString()
+        }));
+      }
+    } catch (err) {
+      console.error('Error fetching alerts from MongoDB:', err);
+    }
+
+    // Fallback to sample alerts
+    let results = [...SAMPLE_ALERTS];
     if (state && state !== 'All') {
       results = results.filter((a) => a.state.toLowerCase() === state.toLowerCase());
     }
-
     if (district && district !== 'All') {
       results = results.filter((a) => a.district.toLowerCase() === district.toLowerCase());
     }
-
     if (crop && crop !== 'All') {
       results = results.filter((a) => a.crop.toLowerCase().includes(crop.toLowerCase()));
     }
 
-    // Fallback if zero district matches exist
     if (results.length === 0) {
       return SAMPLE_ALERTS.slice(0, 2);
     }

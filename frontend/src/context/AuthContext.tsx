@@ -11,6 +11,16 @@ interface AuthContextType {
   authModalMode: AuthModalMode;
   openAuthModal: (mode: 'login' | 'register') => void;
   closeAuthModal: () => void;
+  sendOtp: (identifier: string) => Promise<{ success: boolean; message?: string }>;
+  verifyOtp: (payload: {
+    identifier: string;
+    otp: string;
+    name?: string;
+    state?: string;
+    district?: string;
+    village?: string;
+    primaryCrop?: string;
+  }) => Promise<{ success: boolean; message?: string }>;
   login: (credentials: { emailOrPhone: string; password: string }) => Promise<{ success: boolean; message?: string }>;
   register: (data: {
     name: string;
@@ -83,6 +93,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setOnAuthSuccessCb(() => cb);
   };
 
+  const sendOtp = async (identifier: string) => {
+    return await apiService.sendOtp(identifier);
+  };
+
+  const verifyOtp = async (payload: {
+    identifier: string;
+    otp: string;
+    name?: string;
+    state?: string;
+    district?: string;
+    village?: string;
+    primaryCrop?: string;
+  }) => {
+    const res = await apiService.verifyOtp(payload);
+    if (res.success && res.token && res.user) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, res.token);
+      setToken(res.token);
+      setUser(res.user);
+      closeAuthModal();
+      if (onAuthSuccessCb) {
+        onAuthSuccessCb();
+      }
+      return { success: true, message: res.message || 'Verified successfully' };
+    }
+    return { success: false, message: res.message || 'OTP verification failed.' };
+  };
+
   const login = async (credentials: { emailOrPhone: string; password: string }) => {
     const res = await apiService.loginUser(credentials);
     if (res.success && res.token && res.user) {
@@ -138,6 +175,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         authModalMode,
         openAuthModal,
         closeAuthModal,
+        sendOtp,
+        verifyOtp,
         login,
         register,
         logout,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, RefreshCw, TrendingUp, TrendingDown, MapPin, Filter, AlertCircle, ArrowRight, Sprout, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { Search, RefreshCw, TrendingUp, TrendingDown, MapPin, Filter, AlertCircle, ArrowRight, Sprout, ChevronLeft, ChevronRight, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Language, MarketRate } from '../../types';
 import { apiService, MandiPricesApiResponse } from '../../services/apiService';
 
@@ -74,6 +74,16 @@ export const MarketRatesSection: React.FC<MarketRatesProps> = ({ language }) => 
 
   // Track images that fail to load to show fallback icon
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
+  // Show More / Show Less Expanded State (default false: show only first 4 cards)
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+
+  // Reset expansion state whenever state or any filter changes
+  useEffect(() => {
+    setIsExpanded(false);
+  }, [selectedState, selectedDistrict, selectedCommodity, selectedCategory, searchQuery, page]);
+
+  const visibleCards = isExpanded ? rates : rates.slice(0, 4);
 
   // Main Mandi Data Fetcher from backend API with complete dynamic parameters
   const loadMandiPrices = useCallback(async () => {
@@ -327,15 +337,15 @@ export const MarketRatesSection: React.FC<MarketRatesProps> = ({ language }) => 
         ) : (
           /* MARKET RATES GRID */
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {rates.map((rate) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-300">
+              {visibleCards.map((rate) => {
                 const isPositive = rate.priceChange >= 0;
                 const hasFailedImage = failedImages[rate.id];
 
                 return (
                   <div
                     key={rate.id}
-                    className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
+                    className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group animate-fadeIn"
                   >
                     <div className="space-y-4">
                       
@@ -420,6 +430,38 @@ export const MarketRatesSection: React.FC<MarketRatesProps> = ({ language }) => 
                 );
               })}
             </div>
+
+            {/* SHOW MORE / SHOW LESS BUTTON */}
+            {rates.length > 4 && (
+              <div className="mt-8 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isExpanded) {
+                      setIsExpanded(false);
+                      const el = document.getElementById('market-rates');
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    } else {
+                      setIsExpanded(true);
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 px-7 py-3 bg-[#1b4332] hover:bg-[#2d6a4f] text-white rounded-full font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all duration-300 transform active:scale-95 cursor-pointer border border-[#1b4332]"
+                >
+                  <span>
+                    {isExpanded
+                      ? (language === 'hi' ? 'कम देखें (Show Less)' : 'Show Less')
+                      : (language === 'hi' ? 'और देखें (Show More)' : 'Show More')}
+                  </span>
+                  {isExpanded ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            )}
 
             {/* PAGINATION CONTROLS */}
             <div className="mt-10 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">

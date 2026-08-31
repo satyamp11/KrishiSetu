@@ -14,7 +14,7 @@ export const scanController = {
         return res.status(400).json({ success: false, message: 'Crop name and disease name are required' });
       }
 
-      const scan = scanService.createScan(req.user.id, {
+      const scan = await scanService.createScan(req.user.id, {
         cropName,
         diseaseName,
         diseaseHindi: diseaseHindi || diseaseName,
@@ -41,7 +41,7 @@ export const scanController = {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
 
-      const { total, scans } = scanService.getFarmerScans(req.user.id, page, limit);
+      const { total, scans } = await scanService.getFarmerScans(req.user.id, page, limit);
 
       return res.status(200).json({
         success: true,

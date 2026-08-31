@@ -15,13 +15,14 @@ export interface AuthResult {
 
 export const authService = {
   async register(dto: RegisterDTO): Promise<AuthResult> {
-    // 1. Validation
+    // 1. Input Validation
     if (!dto.name || dto.name.trim().length < 2) {
       return { success: false, message: 'Full name must be at least 2 characters.' };
     }
 
-    if (!dto.emailOrPhone || dto.emailOrPhone.trim().length < 5) {
-      return { success: false, message: 'Valid email address or 10-digit mobile number is required.' };
+    const contact = dto.email || dto.emailOrPhone;
+    if (!contact || contact.trim().length < 5) {
+      return { success: false, message: 'Valid email address or mobile number is required.' };
     }
 
     if (!dto.password || dto.password.length < 6) {
@@ -36,21 +37,21 @@ export const authService = {
       return { success: false, message: 'Please select a valid District.' };
     }
 
-    // 2. Check for duplicate account
-    const existing = userService.findUserByEmailOrPhone(dto.emailOrPhone);
-    if (existing) {
+    // 2. Check for duplicate user
+    const existingUser = await userService.findUserByEmailOrPhone(contact);
+    if (existingUser) {
       return { success: false, message: 'An account with this email/mobile number already exists.' };
     }
 
     // 3. Hash password using bcryptjs
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    // 4. Create User
-    const newUser = userService.createUser(dto, passwordHash);
+    // 4. Create User in MongoDB
+    const newUser = await userService.createUser(dto, passwordHash);
 
-    // 5. Generate JWT token
+    // 5. Generate JWT Token (payload: userId)
     const token = jwt.sign(
-      { id: newUser.id, emailOrPhone: newUser.emailOrPhone },
+      { userId: newUser._id.toString(), id: newUser._id.toString(), email: newUser.email },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN as any }
     );
@@ -63,22 +64,23 @@ export const authService = {
   },
 
   async login(dto: LoginDTO): Promise<AuthResult> {
-    if (!dto.emailOrPhone || !dto.password) {
+    const contact = dto.email || dto.emailOrPhone;
+    if (!contact || !dto.password) {
       return { success: false, message: 'Email/mobile and password are required.' };
     }
 
-    const user = userService.findUserByEmailOrPhone(dto.emailOrPhone);
+    const user = await userService.findUserByEmailOrPhone(contact);
     if (!user) {
       return { success: false, message: 'Invalid credentials. User account not found.' };
     }
 
-    const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
+    const isMatch = await bcrypt.compare(dto.password, user.passwordHash || '');
     if (!isMatch) {
       return { success: false, message: 'Invalid credentials. Password incorrect.' };
     }
 
     const token = jwt.sign(
-      { id: user.id, emailOrPhone: user.emailOrPhone },
+      { userId: user._id.toString(), id: user._id.toString(), email: user.email },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN as any }
     );
@@ -90,17 +92,19 @@ export const authService = {
     };
   },
 
-  verifyToken(token: string): { id: string; emailOrPhone: string } | null {
+  verifyToken(token: string): { userId: string; id: string; email?: string } | null {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: string; emailOrPhone: string };
-      return decoded;
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      const userId = decoded.userId || decoded.id;
+      if (!userId) return null;
+      return { userId, id: userId, email: decoded.email };
     } catch (err) {
       return null;
     }
   },
 
-  getUserProfile(id: string): UserResponse | null {
-    const user = userService.findUserById(id);
+  async getUserProfile(id: string): Promise<UserResponse | null> {
+    const user = await userService.findUserById(id);
     if (!user) return null;
     return userService.toUserResponse(user);
   }

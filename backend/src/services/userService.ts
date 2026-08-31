@@ -1,81 +1,88 @@
-import fs from 'fs';
-import path from 'path';
-import { User, UserResponse, RegisterDTO } from '../models/User.js';
-
-const DATA_DIR = path.resolve(process.cwd(), 'src/data');
-const USERS_FILE = path.join(DATA_DIR, 'usersStore.json');
-
-// Helper to ensure data directory and file exist
-function ensureUsersStoreFile(): User[] {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(USERS_FILE)) {
-      fs.writeFileSync(USERS_FILE, JSON.stringify([], null, 2), 'utf-8');
-      return [];
-    }
-    const content = fs.readFileSync(USERS_FILE, 'utf-8');
-    return JSON.parse(content || '[]');
-  } catch (err) {
-    console.error('Error reading users store file:', err);
-    return [];
-  }
-}
-
-function saveUsersStore(users: User[]): void {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error saving users store file:', err);
-  }
-}
-
-let usersStore: User[] = ensureUsersStoreFile();
+import mongoose from 'mongoose';
+import { User, IUser, UserResponse, RegisterDTO } from '../models/User.js';
 
 export const userService = {
-  findUserByEmailOrPhone(emailOrPhone: string): User | undefined {
-    const query = emailOrPhone.trim().toLowerCase();
-    return usersStore.find((u) => u.emailOrPhone.toLowerCase() === query);
+  async findUserByEmailOrPhone(queryInput: string): Promise<IUser | null> {
+    if (!queryInput) return null;
+    const q = queryInput.trim().toLowerCase();
+    try {
+      return await User.findOne({
+        $or: [
+          { email: q },
+          { emailOrPhone: q },
+          { phone: q }
+        ]
+      }).select('+passwordHash');
+    } catch (err) {
+      console.error('Error finding user by email or phone:', err);
+      return null;
+    }
   },
 
-  findUserById(id: string): User | undefined {
-    return usersStore.find((u) => u.id === id);
+  async findUserById(id: string): Promise<IUser | null> {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return null;
+    }
+    try {
+      return await User.findById(id);
+    } catch (err) {
+      console.error('Error finding user by ID:', err);
+      return null;
+    }
   },
 
-  createUser(dto: RegisterDTO, passwordHash: string): User {
-    const now = new Date().toISOString();
-    const newUser: User = {
-      id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+  async createUser(dto: RegisterDTO, passwordHash: string): Promise<IUser> {
+    const rawContact = (dto.email || dto.emailOrPhone || '').trim().toLowerCase();
+    const phoneVal = dto.phone || (/^\d{10}$/.test(rawContact) ? rawContact : '');
+    const emailVal = dto.email || (!/^\d{10}$/.test(rawContact) ? rawContact : `${rawContact}@krishishield.farmer`);
+
+    const newUser = new User({
       name: dto.name.trim(),
-      emailOrPhone: dto.emailOrPhone.trim().toLowerCase(),
+      email: emailVal,
+      phone: phoneVal,
+      emailOrPhone: rawContact,
       passwordHash: passwordHash,
       state: dto.state.trim(),
       district: dto.district.trim(),
       village: dto.village?.trim() || '',
       primaryCrop: dto.primaryCrop?.trim() || '',
-      createdAt: now,
-      updatedAt: now
-    };
+      profileImage: dto.profileImage || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80'
+    });
 
-    usersStore.push(newUser);
-    saveUsersStore(usersStore);
-    return newUser;
+    return await newUser.save();
   },
 
-  toUserResponse(user: User): UserResponse {
+  async updateUserProfile(id: string, updates: Partial<RegisterDTO>): Promise<IUser | null> {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return null;
+    }
+    try {
+      return await User.findByIdAndUpdate(
+        id,
+        { $set: updates },
+        { returnDocument: 'after', runValidators: true }
+      );
+    } catch (err) {
+      console.error('Error updating user profile:', err);
+      return null;
+    }
+  },
+
+  toUserResponse(user: IUser): UserResponse {
     return {
-      id: user.id,
+      id: user._id ? user._id.toString() : '',
       name: user.name,
-      emailOrPhone: user.emailOrPhone,
+      email: user.email || user.emailOrPhone,
+      phone: user.phone || '',
+      emailOrPhone: user.emailOrPhone || user.email,
+      phoneVerified: !!user.phoneVerified,
+      emailVerified: !!user.emailVerified,
       state: user.state,
       district: user.district,
-      village: user.village,
-      primaryCrop: user.primaryCrop,
-      createdAt: user.createdAt
+      village: user.village || '',
+      primaryCrop: user.primaryCrop || '',
+      profileImage: user.profileImage || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+      createdAt: user.createdAt ? new Date(user.createdAt).toISOString() : new Date().toISOString()
     };
   }
 };

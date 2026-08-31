@@ -78,6 +78,41 @@ export interface CommunityAlertRecord {
 }
 
 export const apiService = {
+  // OTP Authentication API Methods
+  async sendOtp(identifier: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier })
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Network error sending OTP. Please try again.' };
+    }
+  },
+
+  async verifyOtp(payload: {
+    identifier: string;
+    otp: string;
+    name?: string;
+    state?: string;
+    district?: string;
+    village?: string;
+    primaryCrop?: string;
+  }): Promise<AuthApiResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Network error verifying OTP. Please try again.' };
+    }
+  },
+
   // Authentication API Methods
   async registerUser(data: {
     name: string;
@@ -139,6 +174,40 @@ export const apiService = {
       return await response.json();
     } catch {
       return { success: true };
+    }
+  },
+
+  // Farmer Profile API Methods
+  async getUserProfile(token: string): Promise<AuthApiResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to fetch farmer profile.' };
+    }
+  },
+
+  async updateUserProfile(
+    token: string,
+    updates: { name?: string; phone?: string; state?: string; district?: string; village?: string; primaryCrop?: string; profileImage?: string }
+  ): Promise<AuthApiResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updates)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to update farmer profile.' };
     }
   },
 

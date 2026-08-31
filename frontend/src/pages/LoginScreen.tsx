@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Smartphone, Lock, CheckCircle2, User, Sprout, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Smartphone, Lock, CheckCircle2, User, Sprout, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
 import type { Language, FarmerProfile } from '../types';
 import { translations } from '../translations';
+import { useAuth } from '../context/AuthContext';
 
 interface LoginScreenProps {
   language: Language;
@@ -15,6 +16,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   sunlightMode
 }) => {
   const t = translations[language];
+  const { sendOtp, verifyOtp } = useAuth();
   
   const [step, setStep] = useState<'phone' | 'otp' | 'profile'>('phone');
   const [phone, setPhone] = useState('9876543210');
@@ -24,6 +26,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [district, setDistrict] = useState('Rohtak');
   const [selectedCrops, setSelectedCrops] = useState<string[]>(['Tomato', 'Wheat']);
   const [gpsPermission, setGpsPermission] = useState(true);
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // 45s Cooldown timer
+  const [resendTimer, setResendTimer] = useState<number>(45);
+  const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    let interval: any = null;
+    if (isTimerActive && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setIsTimerActive(false);
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerActive, resendTimer]);
 
   const availableCrops = ['Tomato', 'Wheat', 'Potato', 'Cotton', 'Rice', 'Mustard'];
 
@@ -35,14 +58,90 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   };
 
-  const handleSendOtp = (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep('otp');
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!phone || phone.trim().length < 5) {
+      setErrorMessage(language === 'hi' ? 'कृपया 10 अंकों का मोबाइल नंबर दर्ज करें' : 'Please enter a valid mobile number.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await sendOtp(phone.trim());
+      if (res.success) {
+        setStep('otp');
+        setSuccessMessage(res.message || 'OTP sent successfully.');
+        setResendTimer(45);
+        setIsTimerActive(true);
+      } else {
+        setErrorMessage(res.message || 'Failed to send OTP.');
+      }
+    } catch (err) {
+      setErrorMessage('Network error sending OTP.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep('profile');
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!otp || otp.trim().length !== 6) {
+      setErrorMessage(language === 'hi' ? 'कृपया 6 अंकों का OTP दर्ज करें' : 'Please enter the 6-digit OTP code.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await verifyOtp({
+        identifier: phone.trim(),
+        otp: otp.trim(),
+        name,
+        district,
+        village,
+        primaryCrop: selectedCrops.join(', ')
+      });
+
+      if (res.success) {
+        setSuccessMessage('Verified successfully!');
+        setTimeout(() => {
+          setStep('profile');
+        }, 500);
+      } else {
+        setErrorMessage(res.message || 'Invalid OTP code.');
+      }
+    } catch (err) {
+      setErrorMessage('Error verifying OTP.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (isTimerActive) return;
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setLoading(true);
+
+    try {
+      const res = await sendOtp(phone.trim());
+      if (res.success) {
+        setSuccessMessage('New OTP sent successfully.');
+        setResendTimer(45);
+        setIsTimerActive(true);
+      } else {
+        setErrorMessage(res.message || 'Failed to resend OTP.');
+      }
+    } catch (err) {
+      setErrorMessage('Error resending OTP.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCompleteSetup = (e: React.FormEvent) => {
@@ -81,6 +180,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </p>
         </div>
 
+        {/* Error Banner */}
+        {errorMessage && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-xs font-bold flex items-center gap-2 animate-shake">
+            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {/* Success Banner */}
+        {successMessage && (
+          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{successMessage}</span>
+          </div>
+        )}
+
         {/* STEP 1: Enter Phone Number */}
         {step === 'phone' && (
           <form onSubmit={handleSendOtp} className="space-y-4">
@@ -103,35 +218,45 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
             <button
               type="submit"
-              className="w-full py-4 bg-[#1b4332] hover:bg-[#143326] text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all transform active:scale-98"
+              disabled={loading}
+              className="w-full py-4 bg-[#1b4332] hover:bg-[#143326] text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all transform active:scale-98 disabled:opacity-50"
             >
-              <span>{t.getOtp}</span>
-              <ArrowRight className="w-4 h-4" />
+              {loading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
+                  <span>Sending OTP...</span>
+                </>
+              ) : (
+                <>
+                  <span>{t.getOtp}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
         )}
 
-        {/* STEP 2: Enter OTP */}
+        {/* STEP 2: Enter 6-digit OTP */}
         {step === 'otp' && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <label className="block text-xs font-bold text-[#1b4332] uppercase tracking-wider">
-                  {t.enterOtp}
+                  Enter 6-Digit OTP Code
                 </label>
-                <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                  {t.otpHint}
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  +91 {phone}
                 </span>
               </div>
               <div className="relative">
                 <Lock className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 transform -translate-y-1/2" />
                 <input
                   type="text"
-                  maxLength={4}
+                  maxLength={6}
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="1234"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-2xl py-3.5 pl-12 pr-4 font-black text-slate-900 text-center tracking-widest text-lg focus:outline-none focus:ring-2 focus:ring-[#1b4332]"
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  placeholder="123456"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-2xl py-3.5 pl-12 pr-4 font-black text-slate-900 text-center tracking-[0.4em] text-lg focus:outline-none focus:ring-2 focus:ring-[#1b4332]"
                   required
                 />
               </div>
@@ -139,19 +264,42 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
             <button
               type="submit"
-              className="w-full py-4 bg-[#1b4332] hover:bg-[#143326] text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all transform active:scale-98"
+              disabled={loading}
+              className="w-full py-4 bg-[#1b4332] hover:bg-[#143326] text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all transform active:scale-98 disabled:opacity-50"
             >
-              <span>{t.verifyLogin}</span>
-              <ArrowRight className="w-4 h-4" />
+              {loading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
+                  <span>Verifying OTP...</span>
+                </>
+              ) : (
+                <>
+                  <span>{t.verifyLogin}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
 
-            <button
-              type="button"
-              onClick={() => setStep('phone')}
-              className="w-full text-xs text-slate-500 hover:text-slate-800 font-bold text-center pt-2"
-            >
-              Change Phone Number
-            </button>
+            <div className="flex items-center justify-between pt-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setStep('phone')}
+                className="text-xs text-slate-500 hover:text-slate-800 font-bold"
+              >
+                Change Phone Number
+              </button>
+
+              <button
+                type="button"
+                disabled={isTimerActive || loading}
+                onClick={handleResendOtp}
+                className={`font-black ${
+                  isTimerActive ? 'text-slate-400 cursor-not-allowed' : 'text-emerald-700 hover:underline'
+                }`}
+              >
+                {isTimerActive ? `Resend OTP in ${resendTimer}s` : 'Resend OTP'}
+              </button>
+            </div>
           </form>
         )}
 
