@@ -1,128 +1,97 @@
 import React from 'react';
-import { Globe, Heart } from 'lucide-react';
+import { Sprout, Phone, Mail, MapPin, Globe, ShieldCheck } from 'lucide-react';
 import type { Language } from '../../types';
 
-
 interface FooterProps {
-  language: Language;
-  onLanguageChange: (lang: Language) => void;
-  onNavigateSection: (sectionId: string) => void;
+  language?: Language;
+  onLanguageChange?: (lang: Language) => void;
+  onNavigateSection?: (sectionId: string) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
-  language,
-  onLanguageChange,
-  onNavigateSection,
+  onNavigateSection = () => {},
 }) => {
-  const quickLinks = [
-    { id: 'hero', labelEn: 'Home', labelHi: 'मुख्य पृष्ठ' },
-    { id: 'problem', labelEn: 'About', labelHi: 'हमारे बारे में' },
-    { id: 'how-it-works', labelEn: 'How It Works', labelHi: 'यह कैसे काम करता है' },
-    { id: 'detection', labelEn: 'Disease Detection', labelHi: 'रोग पहचान' },
-    { id: 'market-rates', labelEn: 'Market Rates', labelHi: 'मंडी भाव' },
-    { id: 'community', labelEn: 'Community Alerts', labelHi: 'सामुदायिक अलर्ट' },
-    { id: 'contact', labelEn: 'Contact', labelHi: 'संपर्क' },
-  ];
-
   return (
-    <footer id="contact" className="bg-[#1b4332] text-white pt-16 pb-12 border-t border-emerald-900 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-[#0f281e] text-slate-300 font-sans border-t border-emerald-950 pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-emerald-800/80">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           
           {/* Brand Column */}
-          <div className="md:col-span-5 space-y-4">
+          <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <img 
-                src="/logo.png" 
-                alt="Krishi Shield AI Logo" 
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                className="h-12 w-auto object-contain bg-white/10 p-1.5 rounded-xl border border-emerald-500/30"
-              />
-              <span className="text-2xl font-black font-serif-title tracking-tight text-white">
-                कृषि शील्ड <span className="text-emerald-400 font-sans-body text-lg">AI</span>
+              <div className="w-10 h-10 rounded-2xl bg-emerald-800 flex items-center justify-center text-white border border-emerald-700">
+                <Sprout className="w-6 h-6 text-emerald-300" />
+              </div>
+              <span className="text-2xl font-black font-serif tracking-tight text-white">
+                Krishi<span className="text-emerald-400 font-sans">Setu</span>
               </span>
             </div>
 
-
-            {/* Tagline */}
-            <p className="text-sm font-bold text-amber-300 tracking-wide">
-              {language === 'hi'
-                ? 'शुरुआती पहचान | पास में सतर्कता | फसल सुरक्षा'
-                : 'Detect Early | Alert Nearby | Protect Harvest'}
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+              Connecting farms directly to the people who need them. Eliminating middleman markups through transparent trade, smart logistics, and AI insights.
             </p>
 
-            <p className="text-xs text-emerald-200/80 font-medium leading-relaxed max-w-sm">
-              Krishi Shield AI is an intelligent agricultural early-warning system empowering rural farmers with crop disease detection, spatial neighborhood alert signals, and live mandi market prices.
-            </p>
+            <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+              <ShieldCheck className="w-4 h-4" />
+              <span>SIH 26033 Problem Statement Platform Solution</span>
+            </div>
           </div>
 
-          {/* Quick Links Column */}
-          <div className="md:col-span-4 space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400">
-              {language === 'hi' ? 'त्वरित लिंक' : 'Quick Navigation'}
-            </h4>
-            <ul className="grid grid-cols-2 gap-2 text-xs font-semibold text-emerald-100">
-              {quickLinks.map((link) => (
-                <li key={link.id}>
-                  <button
-                    onClick={() => onNavigateSection(link.id)}
-                    className="hover:text-amber-300 transition-colors py-1 text-left"
-                  >
-                    {language === 'hi' ? link.labelHi : link.labelEn}
-                  </button>
-                </li>
-              ))}
+          {/* Quick Links */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-white">Quick Links</h4>
+            <ul className="space-y-2 text-xs font-medium">
+              <li><button onClick={() => onNavigateSection('hero')} className="hover:text-emerald-400">Home</button></li>
+              <li><button onClick={() => onNavigateSection('marketplace-preview')} className="hover:text-emerald-400">Marketplace</button></li>
+              <li><button onClick={() => onNavigateSection('how-it-works')} className="hover:text-emerald-400">How It Works</button></li>
+              <li><button onClick={() => onNavigateSection('farmers')} className="hover:text-emerald-400">Farmers & FPOs</button></li>
+              <li><button onClick={() => onNavigateSection('bulk-buyers')} className="hover:text-emerald-400">Bulk Buyers</button></li>
             </ul>
           </div>
 
-          {/* Language & Contact Column */}
-          <div className="md:col-span-3 space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400">
-              {language === 'hi' ? 'भाषा एवं सहायता' : 'Language & Support'}
-            </h4>
-            
-            <div className="flex items-center gap-2 text-xs font-bold bg-emerald-900/80 p-1.5 rounded-xl border border-emerald-700/60 inline-flex">
-              <Globe className="w-4 h-4 text-emerald-300 ml-1" />
-              <button
-                onClick={() => onLanguageChange('hi')}
-                className={`px-3 py-1 rounded-lg transition-all ${
-                  language === 'hi' ? 'bg-emerald-500 text-[#1b4332]' : 'text-emerald-200 hover:text-white'
-                }`}
-              >
-                हिंदी
-              </button>
-              <button
-                onClick={() => onLanguageChange('en')}
-                className={`px-3 py-1 rounded-lg transition-all ${
-                  language === 'en' ? 'bg-emerald-500 text-[#1b4332]' : 'text-emerald-200 hover:text-white'
-                }`}
-              >
-                English
-              </button>
-            </div>
+          {/* Platform Capabilities */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-white">Platform</h4>
+            <ul className="space-y-2 text-xs font-medium">
+              <li><button onClick={() => onNavigateSection('ai-insights')} className="hover:text-emerald-400">AI Insights</button></li>
+              <li><button onClick={() => onNavigateSection('live-prices')} className="hover:text-emerald-400">Market Prices</button></li>
+              <li><button onClick={() => onNavigateSection('logistics-section')} className="hover:text-emerald-400">Logistics VRP</button></li>
+              <li><button onClick={() => onNavigateSection('orders')} className="hover:text-emerald-400">Orders & Escrow</button></li>
+              <li><button onClick={() => onNavigateSection('pricing-breakdown')} className="hover:text-emerald-400">Fair Pricing</button></li>
+            </ul>
+          </div>
 
-            <p className="text-[11px] text-emerald-300/80">
-              Helpline: 1800-180-1551 (Kisan Call Center)<br />
-              Email: support@krishishield.ai
-            </p>
+          {/* Support */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-white">Support & Contact</h4>
+            <ul className="space-y-2 text-xs font-medium text-slate-400">
+              <li className="flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                <span>+91 1800 266 7388 (Toll Free)</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-emerald-400" />
+                <span>support@krishisetu.gov.in</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Krishi Bhawan, New Delhi</span>
+              </li>
+            </ul>
           </div>
 
         </div>
 
-        {/* Bottom Legal & Copyright */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs font-medium text-emerald-300/70 gap-4">
-          <p className="flex items-center gap-1">
-            <span>© 2026 कृषि शील्ड AI (Krishi Shield AI).</span>
-            <span className="hidden sm:inline">• Built with</span>
-            <Heart className="w-3.5 h-3.5 text-red-400 fill-current inline" />
-            <span className="hidden sm:inline">for Farmers.</span>
-          </p>
-
-          <div className="flex items-center gap-6 text-[11px]">
-            <a href="#privacy" className="hover:text-amber-300 transition-colors">Privacy Policy</a>
-            <a href="#terms" className="hover:text-amber-300 transition-colors">Terms of Service</a>
-            <a href="#agmarknet" className="hover:text-amber-300 transition-colors">Agmarknet Data</a>
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-emerald-950 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-400">
+          <p>© 2026 KrishiSetu Direct Agriculture Platform. All Rights Reserved.</p>
+          <div className="flex items-center gap-4">
+            <a href="#" className="hover:text-emerald-400">Privacy Policy</a>
+            <span>•</span>
+            <a href="#" className="hover:text-emerald-400">Terms of Service</a>
+            <span>•</span>
+            <a href="#" className="hover:text-emerald-400">Escrow Guidelines</a>
           </div>
         </div>
 

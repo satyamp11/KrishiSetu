@@ -3,14 +3,14 @@ import type { Language } from '../../types';
 
 import { Navbar } from './Navbar';
 import { HeroSection } from './HeroSection';
-import { ProblemSolutionSection } from './ProblemSolutionSection';
-import { HowItWorksSection } from './HowItWorksSection';
-import { DiseaseDetectionSection } from './DiseaseDetectionSection';
-import { CommunityNetworkSection } from './CommunityNetworkSection';
+import { TrustBenefitStrip } from './TrustBenefitStrip';
+import { MarketplacePreviewSection } from './MarketplacePreviewSection';
 import { MarketRatesSection } from './MarketRatesSection';
-import { MarketTrendsSection } from './MarketTrendsSection';
-import { FarmerBenefitsSection } from './FarmerBenefitsSection';
+import { AIInsightsSection } from './AIInsightsSection';
+import { HowItWorksSection } from './HowItWorksSection';
+import { TransparentPricingSection } from './TransparentPricingSection';
 import { FarmerImpactSection } from './FarmerImpactSection';
+import { LogisticsSection } from './LogisticsSection';
 import { CTASection } from './CTASection';
 import { Footer } from './Footer';
 
@@ -31,11 +31,13 @@ export const KrishiLandingPage: React.FC<KrishiLandingPageProps> = ({
     const el = document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      onLaunchApp();
     }
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans-body selection:bg-emerald-700 selection:text-white">
+    <div className="min-h-screen bg-[#faf8f5] text-slate-900 font-sans selection:bg-emerald-200 selection:text-emerald-950">
       
       {/* 1. STICKY NAVBAR */}
       <Navbar
@@ -48,45 +50,49 @@ export const KrishiLandingPage: React.FC<KrishiLandingPageProps> = ({
       {/* 2. HERO SECTION */}
       <HeroSection
         language={language}
-        onCheckCrop={onLaunchScanner}
+        onExploreMarketplace={onLaunchApp}
+        onJoinAsFarmer={onLaunchApp}
         onLearnMore={() => scrollToSection('how-it-works')}
       />
 
-      {/* 3. PROBLEM / SOLUTION SECTION */}
-      <ProblemSolutionSection language={language} />
+      {/* 3. TRUST / BENEFIT STRIP */}
+      <TrustBenefitStrip />
 
-      {/* 4. HOW KRISHI SHIELD AI WORKS */}
-      <HowItWorksSection language={language} />
-
-      {/* 5. AI DISEASE DETECTION SECTION */}
-      <DiseaseDetectionSection
-        language={language}
-        onTryScan={onLaunchScanner}
+      {/* 4. MARKETPLACE PREVIEW ("Fresh From the Farm") */}
+      <MarketplacePreviewSection
+        onExploreMarketplace={onLaunchApp}
+        onAddToCart={() => onLaunchApp()}
       />
 
-      {/* 6. COMMUNITY EARLY WARNING NETWORK */}
-      <CommunityNetworkSection language={language} />
-
-      {/* 7. LIVE MARKET RATES SECTION */}
+      {/* 5. LIVE MARKET PRICES ("Know the Market. Sell Smarter.") */}
       <MarketRatesSection language={language} />
 
-      {/* 8. MARKET TREND VISUALIZATION */}
-      <MarketTrendsSection language={language} />
+      {/* 6. AI INSIGHTS SECTION ("AI That Helps Farmers Decide Better.") */}
+      <AIInsightsSection onExploreAI={onLaunchApp} />
 
-      {/* 9. FARMER BENEFITS SECTION */}
-      <FarmerBenefitsSection language={language} />
+      {/* 7. HOW IT WORKS */}
+      <HowItWorksSection language={language} />
 
-      {/* 10. FARMER STORY & IMPACT */}
-      <FarmerImpactSection language={language} />
+      {/* 8. TRANSPARENT PRICING ("Where Your Money Goes") */}
+      <TransparentPricingSection />
+
+      {/* 9. FARMER STORY & IMPACT ("Better Markets. Better Earnings.") */}
+      <FarmerImpactSection
+        language={language}
+        onStartSelling={onLaunchApp}
+      />
+
+      {/* 10. LOGISTICS ("From Farm to Doorstep.") */}
+      <LogisticsSection onTrackDelivery={onLaunchApp} />
 
       {/* 11. CALL TO ACTION SECTION */}
       <CTASection
         language={language}
-        onCheckCrop={onLaunchScanner}
-        onExploreRates={() => scrollToSection('market-rates')}
+        onExploreMarketplace={onLaunchApp}
+        onJoinKrishiSetu={onLaunchApp}
       />
 
-      {/* 12. FOOTER */}
+      {/* 12. DARK FOREST-GREEN FOOTER */}
       <Footer
         language={language}
         onLanguageChange={onLanguageChange}

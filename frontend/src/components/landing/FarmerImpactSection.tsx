@@ -1,119 +1,100 @@
 import React from 'react';
-import { ShieldCheck, Heart, Radio, Cpu, Clock } from 'lucide-react';
+import { Sprout, CheckCircle2, ArrowRight, ShieldCheck, TrendingUp, Users } from 'lucide-react';
 import type { Language } from '../../types';
-import { FARMER_IMAGES } from '../../mockData';
 
 interface FarmerImpactProps {
   language: Language;
+  onStartSelling?: () => void;
 }
 
-export const FarmerImpactSection: React.FC<FarmerImpactProps> = ({ language }) => {
+export const FarmerImpactSection: React.FC<FarmerImpactProps> = ({
+  language,
+  onStartSelling = () => {},
+}) => {
   return (
-    <section className="py-20 bg-gradient-to-b from-[#f4f9f4] to-white relative overflow-hidden">
+    <section id="farmers" className="py-16 bg-white border-b border-stone-200 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
-          {/* LEFT: EMOTIONAL CONTENT & STATS */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-900 text-xs font-black">
-              <Heart className="w-4 h-4 text-emerald-700 fill-current" />
-              <span>{language === 'hi' ? 'किसान सुरक्षा और विश्वास' : 'Empowering Farmer Futures'}</span>
+          {/* LEFT: AGRICULTURAL IMAGE */}
+          <div className="lg:col-span-6 relative">
+            <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-stone-100">
+              <img
+                src="https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&w=800&q=80"
+                alt="Indian Farmer in Green Fields"
+                className="w-full h-[460px] object-cover hover:scale-105 transition-transform duration-500"
+              />
             </div>
-
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1b4332] tracking-tight font-serif-title leading-tight">
-              {language === 'hi' ? 'तकनीक, जो किसान के काम आए' : 'Technology That Works for the Farmer'}
-            </h2>
-
-            {/* Short Emotional Message */}
-            <p className="text-lg sm:text-xl font-semibold text-slate-800 leading-relaxed italic border-l-4 border-emerald-600 pl-4 py-1 bg-white/60 rounded-r-2xl">
-              {language === 'hi'
-                ? '"सही समय पर सही जानकारी मिलने से किसान अपनी फसल बचा सकते हैं, नुकसान कम कर सकते हैं और सुरक्षित भविष्य का निर्माण कर सकते हैं।"'
-                : '"Better information at the right time can help farmers protect their crops, reduce losses, and build a more secure future."'}
-            </p>
-
-            <p className="text-base text-slate-600 font-medium leading-relaxed">
-              {language === 'hi'
-                ? 'कृषि शील्ड AI किसी जटिल प्रणाली की तरह नहीं, बल्कि किसान के हर दिन के साथी की तरह काम करता है — आसान भाषा और त्वरित सूचनाओं के साथ।'
-                : 'Designed with maximum clarity for rural farmers, combining instant camera scans with automatic neighborhood alert broadcasts.'}
-            </p>
-
-            {/* STATISTICS CARDS (Prompt specified exact specs: 5 km, AI, Early) */}
-            <div className="pt-4 grid grid-cols-3 gap-4">
-              
-              <div className="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm text-center">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto mb-2">
-                  <Radio className="w-4 h-4 text-emerald-700" />
-                </div>
-                <p className="text-2xl sm:text-3xl font-black text-[#1b4332] font-serif-title">5 km</p>
-                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mt-0.5">
-                  {language === 'hi' ? 'सामुदायिक अलर्ट दायरा' : 'Community Alert Radius'}
-                </p>
+            
+            {/* Overlay Badge */}
+            <div className="absolute -bottom-6 -right-4 bg-emerald-950 text-white p-5 rounded-3xl shadow-xl border border-emerald-800 hidden sm:block max-w-xs">
+              <div className="flex items-center gap-2 mb-1">
+                <Sprout className="w-5 h-5 text-emerald-400" />
+                <span className="font-black text-sm text-emerald-300">KrishiSetu Impact</span>
               </div>
-
-              <div className="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm text-center">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto mb-2">
-                  <Cpu className="w-4 h-4 text-emerald-700" />
-                </div>
-                <p className="text-2xl sm:text-3xl font-black text-[#1b4332] font-serif-title">AI</p>
-                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mt-0.5">
-                  {language === 'hi' ? 'फसल विश्लेषण' : 'Crop Analysis'}
-                </p>
-              </div>
-
-              <div className="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm text-center">
-                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-2">
-                  <Clock className="w-4 h-4 text-amber-700" />
-                </div>
-                <p className="text-2xl sm:text-3xl font-black text-[#1b4332] font-serif-title">Early</p>
-                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mt-0.5">
-                  {language === 'hi' ? 'रोग चेतावनी' : 'Disease Warning'}
-                </p>
-              </div>
-
+              <p className="text-xs text-slate-300">
+                140+ Verified FPOs connected across UP, Maharashtra, and MP.
+              </p>
             </div>
-
           </div>
 
-          {/* RIGHT: FARMER COLLAGE / GRID */}
-          <div className="lg:col-span-6 relative">
-            <div className="grid grid-cols-2 gap-4">
-              
-              {/* Farmer Image 1 */}
-              <div className="space-y-4">
-                <div className="rounded-3xl overflow-hidden shadow-lg border-2 border-white bg-slate-200 h-52">
-                  <img
-                    src={FARMER_IMAGES.farmerInspect}
-                    alt="Indian Farmer inspecting crop"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-                  <ShieldCheck className="w-8 h-8 text-emerald-600 shrink-0" />
-                  <div>
-                    <p className="text-xs font-black text-slate-900">Prevent Outbreaks</p>
-                    <p className="text-[10px] text-slate-500 font-medium">Protect village crops early</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Farmer Image 2 */}
-              <div className="space-y-4 pt-6">
-                <div className="rounded-3xl overflow-hidden shadow-lg border-2 border-white bg-slate-200 h-64">
-                  <img
-                    src={FARMER_IMAGES.farmerGroup}
-                    alt="Group of Indian farmers"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-              </div>
-
+          {/* RIGHT: TEXT & VALUE PROPOSITION */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
+              <ShieldCheck className="w-4 h-4 text-emerald-700" />
+              <span>EMPOWERING PRODUCERS</span>
             </div>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#143022] font-serif tracking-tight leading-tight">
+              Better Markets.<br />
+              <span className="text-emerald-700 italic">Better Earnings.</span>
+            </h2>
+
+            <p className="text-base text-slate-600 leading-relaxed">
+              KrishiSetu equips farmers and agricultural producer organizations (FPOs) with direct buyer connections, fair mandi price benchmarks, and smart logistics to maximize revenue.
+            </p>
+
+            {/* Benefit Bullets */}
+            <div className="space-y-3 pt-2 text-xs font-extrabold text-slate-800">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-black text-sm text-slate-900 block">Reach More Direct Buyers</span>
+                  <span className="text-slate-500 font-medium">Sell directly to retail consumers, restaurants, processors, and bulk buyers.</span>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-black text-sm text-slate-900 block">Discover Real Mandi Prices</span>
+                  <span className="text-slate-500 font-medium">Access live mandi benchmark prices before pricing your harvest.</span>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-black text-sm text-slate-900 block">Eliminate Intermediary Dependency</span>
+                  <span className="text-slate-500 font-medium">No village agent deductions or undisclosed commission cuts.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Green CTA Button */}
+            <div className="pt-4">
+              <button
+                onClick={onStartSelling}
+                className="bg-[#1b4332] hover:bg-[#143022] text-white px-8 py-4 rounded-2xl font-black text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-3 group border border-emerald-900"
+              >
+                <span>Start Selling</span>
+                <ArrowRight className="w-5 h-5 text-emerald-300 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
           </div>
 
         </div>
-
       </div>
     </section>
   );
