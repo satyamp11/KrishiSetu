@@ -5,6 +5,7 @@ import { MOCK_MARKET_RATES, ALL_INDIAN_STATES } from '../mockData';
 const API_BASE_URL = '/api';
 
 export type UserRole = 'farmer' | 'consumer' | 'bulk_buyer' | 'delivery_partner' | 'admin';
+export type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
 
 export type ProductCategory =
   | 'Vegetables'
@@ -51,6 +52,20 @@ export type BulkRequestStatus =
   | 'ACCEPTED'
   | 'FULFILLED'
   | 'CANCELLED';
+
+export interface AdminMetricsDTO {
+  totalFarmers: number;
+  verifiedFarmers: number;
+  pendingFarmers: number;
+  totalConsumers: number;
+  totalBulkBuyers: number;
+  totalDeliveryPartners: number;
+  totalOrders: number;
+  totalGMV: number;
+  activeDeliveries: number;
+  platformRevenue: number;
+  disputesCount: number;
+}
 
 export interface BulkRequestDTO {
   id: string;
@@ -421,6 +436,9 @@ export interface AuthUser {
   name: string;
   emailOrPhone: string;
   role: UserRole;
+  phoneVerified?: boolean;
+  emailVerified?: boolean;
+  verificationStatus?: VerificationStatus;
   state: string;
   district: string;
   village?: string;
@@ -491,6 +509,51 @@ export interface CommunityAlertRecord {
 }
 
 export const apiService = {
+  // Admin Dashboard API Methods (Phase 12)
+  async getAdminMetrics(token: string): Promise<{ success: boolean; metrics?: AdminMetricsDTO; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/metrics`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to fetch admin metrics.' };
+    }
+  },
+
+  async getAdminFarmers(token: string): Promise<{ success: boolean; total: number; farmers: AuthUser[]; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/farmers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, total: 0, farmers: [], message: 'Failed to fetch farmers list.' };
+    }
+  },
+
+  async verifyFarmer(token: string, farmerId: string, status: VerificationStatus): Promise<{ success: boolean; farmer?: AuthUser; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/farmers/${farmerId}/verify`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to update farmer verification status.' };
+    }
+  },
+
   // Bulk Buyer RFQ Marketplace API Methods (Phase 11)
   async createBulkRequest(
     token: string,

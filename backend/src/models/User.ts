@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export type UserRole = 'farmer' | 'consumer' | 'bulk_buyer' | 'delivery_partner' | 'admin';
+export type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
 
 export interface FarmInfo {
   fpoName?: string;
@@ -33,6 +34,33 @@ export interface VehicleInfo {
   maxCapacityKg?: number;
 }
 
+export interface RegisterDTO {
+  name: string;
+  emailOrPhone: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+  role: UserRole;
+  verificationStatus?: VerificationStatus;
+  state?: string;
+  district?: string;
+  village?: string;
+  primaryCrop?: string;
+  profileImage?: string;
+  adminSecretKey?: string;
+
+  farmInfo?: FarmInfo;
+  deliveryAddress?: DeliveryAddress;
+  businessInfo?: BusinessInfo;
+  vehicleInfo?: VehicleInfo;
+}
+
+export interface LoginDTO {
+  emailOrPhone: string;
+  email?: string;
+  password?: string;
+}
+
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
@@ -43,6 +71,7 @@ export interface IUser extends Document {
   role: UserRole;
   phoneVerified?: boolean;
   emailVerified?: boolean;
+  verificationStatus: VerificationStatus;
   state: string;
   district: string;
   village?: string;
@@ -62,12 +91,13 @@ export interface IUser extends Document {
 export interface UserResponse {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
   emailOrPhone: string;
   role: UserRole;
   phoneVerified?: boolean;
   emailVerified?: boolean;
+  verificationStatus: VerificationStatus;
   state: string;
   district: string;
   village?: string;
@@ -82,64 +112,32 @@ export interface UserResponse {
   createdAt: string;
 }
 
-export interface RegisterDTO {
-  name: string;
-  email?: string;
-  emailOrPhone?: string;
-  phone?: string;
-  password?: string;
-  role: UserRole;
-  state?: string;
-  district?: string;
-  village?: string;
-  primaryCrop?: string;
-  profileImage?: string;
-  adminSecretKey?: string; // Only required if trying to register as admin
-
-  // Role specific payload
-  farmInfo?: FarmInfo;
-  deliveryAddress?: DeliveryAddress;
-  businessInfo?: BusinessInfo;
-  vehicleInfo?: VehicleInfo;
-}
-
-export interface LoginDTO {
-  emailOrPhone?: string;
-  email?: string;
-  password?: string;
-}
-
 const UserSchema: Schema = new Schema(
   {
     name: {
       type: String,
-      required: [true, 'Full name is required'],
-      trim: true,
-      minlength: [2, 'Name must be at least 2 characters']
+      required: true,
+      trim: true
     },
     email: {
       type: String,
-      required: [true, 'Email or primary contact identifier is required'],
-      unique: true,
-      lowercase: true,
       trim: true,
-      index: true
+      lowercase: true
     },
     phone: {
       type: String,
-      trim: true,
-      default: ''
+      trim: true
     },
     emailOrPhone: {
       type: String,
+      required: true,
+      unique: true,
       trim: true,
       lowercase: true,
       index: true
     },
     passwordHash: {
-      type: String,
-      default: '',
-      select: false
+      type: String
     },
     role: {
       type: String,
@@ -156,32 +154,33 @@ const UserSchema: Schema = new Schema(
       type: Boolean,
       default: false
     },
+    verificationStatus: {
+      type: String,
+      enum: ['PENDING', 'VERIFIED', 'REJECTED'],
+      default: 'VERIFIED',
+      required: true,
+      index: true
+    },
     state: {
       type: String,
-      default: 'Uttar Pradesh',
-      trim: true
+      default: 'Uttar Pradesh'
     },
     district: {
       type: String,
-      default: 'Gorakhpur',
-      trim: true
+      default: 'Gorakhpur'
     },
     village: {
       type: String,
-      trim: true,
       default: ''
     },
     primaryCrop: {
       type: String,
-      trim: true,
       default: ''
     },
     profileImage: {
       type: String,
-      default: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80'
+      default: ''
     },
-    
-    // Role metadata embedded schema definitions
     farmInfo: {
       fpoName: { type: String, default: '' },
       fpoRegistrationNumber: { type: String, default: '' },
@@ -215,11 +214,28 @@ const UserSchema: Schema = new Schema(
   }
 );
 
-// Pre-save hook to ensure emailOrPhone is always populated
-UserSchema.pre('save', function (this: any) {
-  if (!this.emailOrPhone) {
-    this.emailOrPhone = this.email || this.phone || '';
-  }
-});
-
 export const User = mongoose.model<IUser>('User', UserSchema);
+
+export function toUserResponse(user: IUser): UserResponse {
+  return {
+    id: user._id.toString(),
+    name: user.name,
+    email: user.email || undefined,
+    phone: user.phone || undefined,
+    emailOrPhone: user.emailOrPhone,
+    role: user.role,
+    phoneVerified: !!user.phoneVerified,
+    emailVerified: !!user.emailVerified,
+    verificationStatus: user.verificationStatus || 'VERIFIED',
+    state: user.state,
+    district: user.district,
+    village: user.village || undefined,
+    primaryCrop: user.primaryCrop || undefined,
+    profileImage: user.profileImage || undefined,
+    farmInfo: user.farmInfo,
+    deliveryAddress: user.deliveryAddress,
+    businessInfo: user.businessInfo,
+    vehicleInfo: user.vehicleInfo,
+    createdAt: user.createdAt ? user.createdAt.toISOString() : new Date().toISOString()
+  };
+}
