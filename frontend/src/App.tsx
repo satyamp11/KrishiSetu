@@ -16,6 +16,8 @@ import { OutbreakSimulatorModal } from './components/OutbreakSimulatorModal';
 import { AuthModal } from './components/auth/AuthModal';
 import { useAuth } from './context/AuthContext';
 import { KrishiLandingPage } from './components/landing/KrishiLandingPage';
+import { UIFoundationShowcase } from './pages/UIFoundationShowcase';
+import { ToastProvider } from './components/ui/Toast';
 
 // Page Components
 import { SplashScreen } from './pages/SplashScreen';
@@ -33,20 +35,20 @@ import { apiService } from './services/apiService';
 
 const PROTECTED_TABS: TabType[] = ['home', 'scan', 'result', 'map', 'alerts', 'report', 'community', 'profile'];
 
-export function App() {
-  // App State - Default to 'landing' for Homepage
-  const [activeTab, setActiveTab] = useState<TabType>('landing');
+export function AppContent() {
+  // App State - Default to 'ui-showcase' to showcase Phase 1 Design System or 'landing' for Homepage
+  const [activeTab, setActiveTab] = useState<string>('ui-showcase');
   const [language, setLanguage] = useState<Language>('hi');
   const [sunlightMode, setSunlightMode] = useState<boolean>(false);
 
   const { user, token, isAuthenticated, isLoading, setOnAuthSuccessCallback, openAuthModal, logout } = useAuth();
 
   // Store intended destination tab for post-authentication redirect
-  const pendingTabRef = useRef<TabType | null>(null);
+  const pendingTabRef = useRef<string | null>(null);
 
   // Protected route guard logic
-  const handleNavigateWithAuth = (targetTab: TabType) => {
-    if (isAuthenticated) {
+  const handleNavigateWithAuth = (targetTab: string) => {
+    if (isAuthenticated || !PROTECTED_TABS.includes(targetTab as TabType)) {
       setActiveTab(targetTab);
     } else {
       pendingTabRef.current = targetTab;
@@ -58,14 +60,14 @@ export function App() {
   useEffect(() => {
     if (isLoading) return;
 
-    if (!isAuthenticated && PROTECTED_TABS.includes(activeTab)) {
+    if (!isAuthenticated && PROTECTED_TABS.includes(activeTab as TabType)) {
       pendingTabRef.current = activeTab;
       setActiveTab('landing');
       openAuthModal('login');
     }
   }, [activeTab, isAuthenticated, isLoading, openAuthModal]);
 
-  // Set post-login / post-registration redirect to intended destination (e.g. 'scan' or 'home')
+  // Set post-login / post-registration redirect to intended destination
   useEffect(() => {
     setOnAuthSuccessCallback(() => {
       const destination = pendingTabRef.current || 'scan';
@@ -179,7 +181,7 @@ export function App() {
     }, 8000);
   };
 
-  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing';
+  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase';
 
   // Prevent flickering while checking stored authentication token
   if (isLoading) {
@@ -196,7 +198,7 @@ export function App() {
   return (
     <MobileFrameWrapper sunlightMode={sunlightMode}>
       
-      {/* Top Header Bar (When in App Dashboard view) */}
+      {/* Top Header Bar (When in Mobile Dashboard view) */}
       {showHeaderAndNav && (
         <HeaderBar
           language={language}
@@ -205,7 +207,7 @@ export function App() {
           onToggleSunlightMode={() => setSunlightMode(!sunlightMode)}
           onTriggerDemo={() => setIsSimulatorOpen(true)}
           unreadAlertsCount={unreadAlertsCount}
-          activeTab={activeTab}
+          activeTab={activeTab as TabType}
           onTabChange={handleNavigateWithAuth}
         />
       )}
@@ -228,6 +230,10 @@ export function App() {
 
       {/* Screen Router */}
       <div className={sunlightMode ? 'sunlight-mode' : ''}>
+        {activeTab === 'ui-showcase' && (
+          <UIFoundationShowcase />
+        )}
+
         {activeTab === 'landing' && (
           <KrishiLandingPage
             language={language}
@@ -348,7 +354,7 @@ export function App() {
       {/* Bottom Navigation Bar */}
       {showHeaderAndNav && (
         <BottomNavigation
-          activeTab={activeTab}
+          activeTab={activeTab as TabType}
           onTabChange={handleNavigateWithAuth}
           language={language}
           unreadAlertsCount={unreadAlertsCount}
@@ -368,6 +374,14 @@ export function App() {
       <AuthModal language={language} />
 
     </MobileFrameWrapper>
+  );
+}
+
+export function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 }
 
