@@ -20,6 +20,8 @@ import { UIFoundationShowcase } from './pages/UIFoundationShowcase';
 import { MarketplacePage } from './pages/MarketplacePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { OrdersPage } from './pages/OrdersPage';
+import { OrderTrackingPage } from './pages/OrderTrackingPage';
+import { LogisticsPage } from './pages/LogisticsPage';
 import { ToastProvider, useToast } from './components/ui/Toast';
 import { Navbar, Footer, Button, Badge } from './components/ui';
 
@@ -47,9 +49,10 @@ import { apiService, UserRole } from './services/apiService';
 const PROTECTED_TABS: TabType[] = ['home', 'scan', 'result', 'map', 'alerts', 'report', 'community', 'profile'];
 
 export function AppContent() {
-  // App State - Default to 'marketplace' for Agricultural Marketplace & Escrow Orders
+  // App State - Default to 'marketplace' for Agricultural Marketplace, Escrow & Live GPS Tracking
   const [activeTab, setActiveTab] = useState<string>('marketplace');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [selectedTrackingOrderId, setSelectedTrackingOrderId] = useState<string>('ORD-2026-849201');
   const [language, setLanguage] = useState<Language>('hi');
   const [sunlightMode, setSunlightMode] = useState<boolean>(false);
 
@@ -199,6 +202,12 @@ export function AppContent() {
     setActiveTab('product-detail');
   };
 
+  // Navigate to Live GPS tracking page
+  const handleViewOrderTracking = (orderId: string) => {
+    setSelectedTrackingOrderId(orderId);
+    setActiveTab('tracking');
+  };
+
   // Test backend role authorization endpoint
   const handleTestRoleAuthorization = async (roleToTest: UserRole) => {
     if (!token) {
@@ -216,7 +225,7 @@ export function AppContent() {
     }
   };
 
-  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase' && activeTab !== 'role-dashboard' && activeTab !== 'marketplace' && activeTab !== 'product-detail' && activeTab !== 'orders';
+  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase' && activeTab !== 'role-dashboard' && activeTab !== 'marketplace' && activeTab !== 'product-detail' && activeTab !== 'orders' && activeTab !== 'logistics' && activeTab !== 'tracking';
 
   const activeUserRole: UserRole = user?.role || simulatedRole;
 
@@ -284,9 +293,26 @@ export function AppContent() {
           />
         )}
 
-        {/* PHASE 5: Orders History & Escrow Page */}
+        {/* PHASE 5 & 6: Orders History & Escrow Page */}
         {activeTab === 'orders' && (
           <OrdersPage
+            onNavigateTab={(tab) => setActiveTab(tab)}
+          />
+        )}
+
+        {/* PHASE 9: Logistics Dashboard */}
+        {activeTab === 'logistics' && (
+          <LogisticsPage
+            onNavigateTab={(tab) => setActiveTab(tab)}
+            onNavigateToTracking={(orderId) => handleViewOrderTracking(orderId)}
+          />
+        )}
+
+        {/* PHASE 9: Live GPS Order Tracking Page (/orders/:orderId/tracking) */}
+        {activeTab === 'tracking' && (
+          <OrderTrackingPage
+            orderId={selectedTrackingOrderId}
+            onBackToOrders={() => setActiveTab('orders')}
             onNavigateTab={(tab) => setActiveTab(tab)}
           />
         )}

@@ -17,6 +17,8 @@ import cartRouter from './routes/cart.routes.js';
 import orderRouter from './routes/order.routes.js';
 import paymentRouter from './routes/payment.routes.js';
 import aiRouter from './routes/ai.routes.js';
+import deliveryRouter from './routes/delivery.routes.js';
+import { deliveryController } from './controllers/deliveryController.js';
 
 const app = express();
 
@@ -32,6 +34,9 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+// GET /api/orders/:orderId/tracking alias
+app.get('/api/orders/:orderId/tracking', deliveryController.getOrderTracking);
+
 // API Routes
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
@@ -39,6 +44,7 @@ app.use('/api/products', productRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/payments', paymentRouter);
+app.use('/api/delivery', deliveryRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/scans', scanRouter);
 app.use('/api/alerts', alertRouter);

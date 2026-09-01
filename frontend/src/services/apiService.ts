@@ -38,6 +38,59 @@ export type ExtendedPaymentState =
   | 'REFUNDED'
   | 'FAILED';
 
+export type DeliveryStatus =
+  | 'ASSIGNED'
+  | 'PICKED_UP'
+  | 'IN_TRANSIT'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED';
+
+export interface DeliveryTrackingData {
+  id: string;
+  orderId: string;
+  orderNumber: string;
+  deliveryPartner: {
+    id: string;
+    name: string;
+    phone: string;
+    vehicleType: string;
+    vehicleNumber: string;
+  };
+  pickupLocation: {
+    address: string;
+    district: string;
+    state: string;
+    lat: number;
+    lng: number;
+  };
+  destination: {
+    address: string;
+    district: string;
+    state: string;
+    lat: number;
+    lng: number;
+  };
+  currentLocation: {
+    address: string;
+    lat: number;
+    lng: number;
+    speedKmH: number;
+    heading: number;
+    lastUpdated: string;
+  };
+  status: DeliveryStatus;
+  estimatedArrival: string;
+  distanceRemainingKm: number;
+  isDemoSimulator: boolean;
+  orderStatusTimeline: {
+    step: string;
+    label: string;
+    isCompleted: boolean;
+    timestamp?: string;
+  }[];
+  createdAt: string;
+}
+
 export interface CropForecastItem {
   crop: string;
   category: string;
@@ -345,6 +398,38 @@ export interface CommunityAlertRecord {
 }
 
 export const apiService = {
+  // Logistics & Delivery API Methods (Phase 9)
+  async getOrderTracking(orderId: string): Promise<{ success: boolean; tracking?: DeliveryTrackingData; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/${orderId}/tracking`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to load live GPS tracking data.' };
+    }
+  },
+
+  async updateDeliveryLocation(payload: {
+    orderId?: string;
+    deliveryId?: string;
+    lat: number;
+    lng: number;
+    speedKmH?: number;
+    address?: string;
+    status?: DeliveryStatus;
+  }): Promise<{ success: boolean; delivery?: DeliveryTrackingData; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/delivery/location`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to update delivery location.' };
+    }
+  },
+
   // AI Demand Forecasting API Method (Phase 8)
   async getAIDemandForecast(crop?: string, state?: string, district?: string): Promise<AIDemandForecastResponse> {
     try {
