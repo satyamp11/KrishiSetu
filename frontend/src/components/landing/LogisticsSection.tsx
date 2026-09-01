@@ -18,7 +18,7 @@ export const LogisticsSection: React.FC<LogisticsSectionProps> = ({
             <Truck className="w-3.5 h-3.5 text-emerald-700" />
             <span>COLD-CHAIN DISPATCH & ROUTING</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-[#143022] font-serif tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#143022] font-sans tracking-tight">
             From Farm to Doorstep.
           </h2>
           <p className="text-sm text-slate-600">

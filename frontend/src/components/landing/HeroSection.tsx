@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Sprout, ShieldCheck, MapPin, Truck, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Sprout, ShieldCheck, MapPin, Truck } from 'lucide-react';
 import type { Language } from '../../types';
 
 interface HeroSectionProps {
@@ -32,10 +32,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <span>SMART AGRICULTURE MARKETPLACE</span>
             </div>
 
-            {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#143022] font-brand tracking-tight leading-[1.1]">
+            {/* Simple Headline Font */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#143022] tracking-tight leading-[1.15] font-sans">
               From Farm to Market,<br />
-              <span className="text-emerald-700 font-brand italic">Without the Middlemen.</span>
+              <span className="text-emerald-700">Without the Middlemen.</span>
             </h1>
 
             {/* Paragraph */}
@@ -101,7 +101,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
           </div>
 
-          {/* RIGHT VISUAL HERO IMAGE & UI MOCKUP OVERLAY (Exact Reference Match) */}
+          {/* RIGHT VISUAL HERO IMAGE & UI MOCKUP OVERLAY */}
           <div className="lg:col-span-6 relative flex items-center justify-center min-h-[500px]">
             
             {/* Background Farmer Photo */}
@@ -113,7 +113,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               />
             </div>
 
-            {/* Overlaid Mobile Phone App Mockup (Exact Layout in Reference Image) */}
+            {/* Overlaid Mobile Phone App Mockup */}
             <div className="absolute right-4 sm:right-12 top-6 w-64 sm:w-72 bg-slate-950 p-3 rounded-[40px] shadow-2xl border-4 border-slate-800 text-slate-900 font-sans z-20 hover:scale-105 transition-transform">
               <div className="bg-[#0f281e] text-white p-3 rounded-t-[30px] flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
@@ -175,7 +175,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
             </div>
 
-            {/* Overlaid Delivery Truck Graphic on Right (Exact Reference Match) */}
+            {/* Overlaid Delivery Truck Graphic */}
             <div className="absolute -right-6 bottom-4 w-48 sm:w-56 bg-white p-2 rounded-2xl shadow-xl border border-stone-200 z-10 hidden sm:block">
               <div className="relative rounded-xl overflow-hidden">
                 <img
@@ -200,7 +200,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <span>To Your Doorstep</span>
             </div>
 
-            {/* Overlaid 100% Safe & Secure Escrow Badge (Bottom Left of Visual) */}
+            {/* Overlaid 100% Safe & Secure Escrow Badge */}
             <div className="absolute left-2 bottom-2 bg-white p-3 rounded-2xl shadow-xl border border-emerald-200 z-30 flex items-center gap-3 max-w-xs">
               <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-5 h-5" />

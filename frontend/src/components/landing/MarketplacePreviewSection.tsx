@@ -105,7 +105,7 @@ export const MarketplacePreviewSection: React.FC<MarketplacePreviewSectionProps>
               <Leaf className="w-4 h-4 text-emerald-600" />
               <span>DIRECT MARKETPLACE</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-[#143022] font-serif tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#143022] font-sans tracking-tight">
               Fresh From the Farm
             </h2>
             <p className="text-sm text-slate-600 mt-1">

@@ -45,9 +45,9 @@ export const FarmerImpactSection: React.FC<FarmerImpactProps> = ({
               <span>EMPOWERING PRODUCERS</span>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#143022] font-serif tracking-tight leading-tight">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#143022] font-sans tracking-tight leading-tight">
               Better Markets.<br />
-              <span className="text-emerald-700 italic">Better Earnings.</span>
+              <span className="text-emerald-700">Better Earnings.</span>
             </h2>
 
             <p className="text-base text-slate-600 leading-relaxed">

@@ -23,7 +23,7 @@ export const CTASection: React.FC<CTASectionProps> = ({
           <Sprout className="w-8 h-8" />
         </div>
 
-        <h2 className="text-4xl sm:text-5xl font-black font-serif tracking-tight text-white leading-tight">
+        <h2 className="text-4xl sm:text-5xl font-extrabold font-sans tracking-tight text-white leading-tight">
           Build a Fairer Food Supply Chain.
         </h2>
 

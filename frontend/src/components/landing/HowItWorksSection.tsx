@@ -55,7 +55,7 @@ export const HowItWorksSection: React.FC<HowItWorksProps> = ({ language }) => {
           <span className="text-xs font-black text-emerald-800 uppercase tracking-wider">
             TRANSPARENT DIRECT WORKFLOW
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-[#143022] font-serif tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#143022] font-sans tracking-tight">
             How KrishiSetu Works
           </h2>
           <p className="text-sm text-slate-600">
