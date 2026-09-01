@@ -38,6 +38,39 @@ export type ExtendedPaymentState =
   | 'REFUNDED'
   | 'FAILED';
 
+export interface CropForecastItem {
+  crop: string;
+  category: string;
+  currentDemand: string;
+  expectedDemandPercent: number;
+  timeframe: string;
+  confidenceScore: number;
+  trend: 'RISING' | 'STABLE' | 'PEAK' | 'DECLINING';
+  recommendedStockAction: string;
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  regionalDistrict: string;
+  historicalDemandSeries: { date: string; demandQty: number; avgPrice: number }[];
+  forecastedDemandSeries: { date: string; predictedQty: number; predictedPrice: number }[];
+  aiModelMetaData: {
+    modelName: string;
+    modelType: string;
+    lastTrained: string;
+    pythonEndpointConfigured: boolean;
+  };
+}
+
+export interface AIDemandForecastResponse {
+  success: boolean;
+  timestamp: string;
+  region: {
+    state: string;
+    district: string;
+  };
+  totalCropsAnalyzed: number;
+  modelStatus: string;
+  forecasts: CropForecastItem[];
+}
+
 export interface ProductItem {
   id: string;
   title: string;
@@ -312,6 +345,32 @@ export interface CommunityAlertRecord {
 }
 
 export const apiService = {
+  // AI Demand Forecasting API Method (Phase 8)
+  async getAIDemandForecast(crop?: string, state?: string, district?: string): Promise<AIDemandForecastResponse> {
+    try {
+      const query = new URLSearchParams();
+      if (crop) query.append('crop', crop);
+      if (state) query.append('state', state);
+      if (district) query.append('district', district);
+
+      const response = await fetch(`${API_BASE_URL}/ai/demand-forecast?${query.toString()}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+      return await response.json();
+    } catch (err) {
+      console.error('Error fetching AI Demand Forecast from backend:', err);
+      return {
+        success: false,
+        timestamp: new Date().toISOString(),
+        region: { state: state || 'Uttar Pradesh', district: district || 'Gorakhpur' },
+        totalCropsAnalyzed: 0,
+        modelStatus: 'FALLBACK_OFFLINE',
+        forecasts: []
+      };
+    }
+  },
+
   // Payment API Methods
   async createPayment(token: string, orderId: string): Promise<{
     success: boolean;
