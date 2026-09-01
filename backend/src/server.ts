@@ -18,6 +18,7 @@ import orderRouter from './routes/order.routes.js';
 import paymentRouter from './routes/payment.routes.js';
 import aiRouter from './routes/ai.routes.js';
 import deliveryRouter from './routes/delivery.routes.js';
+import bulkRequestRouter from './routes/bulkRequest.routes.js';
 import { deliveryController } from './controllers/deliveryController.js';
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/payments', paymentRouter);
 app.use('/api/delivery', deliveryRouter);
+app.use('/api/bulk-requests', bulkRequestRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/scans', scanRouter);
 app.use('/api/alerts', alertRouter);

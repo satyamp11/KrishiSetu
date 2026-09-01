@@ -45,6 +45,57 @@ export type DeliveryStatus =
   | 'OUT_FOR_DELIVERY'
   | 'DELIVERED';
 
+export type BulkRequestStatus =
+  | 'OPEN'
+  | 'QUOTES_RECEIVED'
+  | 'ACCEPTED'
+  | 'FULFILLED'
+  | 'CANCELLED';
+
+export interface BulkRequestDTO {
+  id: string;
+  requestNumber: string;
+  buyer: {
+    id: string;
+    name: string;
+    organizationName: string;
+    phone: string;
+  };
+  productTitle: string;
+  category: string;
+  targetQuantity: number;
+  unit: string;
+  deliveryCity: string;
+  deliveryState: string;
+  requiredByDate: string;
+  targetPricePerUnit?: number;
+  status: BulkRequestStatus;
+  matchingFarmers: {
+    farmerId: string;
+    farmerName: string;
+    fpoName: string;
+    district: string;
+    availableQty: number;
+  }[];
+  offers: {
+    id: string;
+    farmerId: string;
+    farmerName: string;
+    fpoName: string;
+    farmerDistrict: string;
+    farmerState: string;
+    offeredQuantity: number;
+    offeredPricePerUnit: number;
+    totalOfferAmount: number;
+    logisticsIncluded: boolean;
+    notes: string;
+    status: string;
+    createdAt: string;
+  }[];
+  acceptedOfferId?: string;
+  createdAt: string;
+}
+
 export interface LocationWaypoint {
   id?: string;
   name: string;
@@ -440,6 +491,93 @@ export interface CommunityAlertRecord {
 }
 
 export const apiService = {
+  // Bulk Buyer RFQ Marketplace API Methods (Phase 11)
+  async createBulkRequest(
+    token: string,
+    payload: {
+      productTitle: string;
+      category?: string;
+      targetQuantity: number;
+      unit?: string;
+      deliveryCity: string;
+      deliveryState: string;
+      requiredByDate: string;
+      targetPricePerUnit?: number;
+    }
+  ): Promise<{ success: boolean; bulkRequest?: BulkRequestDTO; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/bulk-requests`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to create bulk request.' };
+    }
+  },
+
+  async getBulkRequests(token: string): Promise<{ success: boolean; total: number; bulkRequests: BulkRequestDTO[]; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/bulk-requests`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, total: 0, bulkRequests: [], message: 'Failed to fetch bulk requests.' };
+    }
+  },
+
+  async createFarmerOffer(
+    token: string,
+    requestId: string,
+    payload: {
+      offeredQuantity: number;
+      offeredPricePerUnit: number;
+      logisticsIncluded?: boolean;
+      notes?: string;
+    }
+  ): Promise<{ success: boolean; bulkRequest?: BulkRequestDTO; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/bulk-requests/${requestId}/offers`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to submit quotation offer.' };
+    }
+  },
+
+  async acceptFarmerOffer(
+    token: string,
+    requestId: string,
+    offerId: string
+  ): Promise<{ success: boolean; bulkRequest?: BulkRequestDTO; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/bulk-requests/${requestId}/offers/${offerId}/accept`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to accept quotation offer.' };
+    }
+  },
+
   // AI Assisted Route Optimization Method (Phase 10)
   async optimizeRoute(payload?: {
     pickupLocations?: LocationWaypoint[];
