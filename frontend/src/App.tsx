@@ -22,6 +22,7 @@ import { ProductDetailPage } from './pages/ProductDetailPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { OrderTrackingPage } from './pages/OrderTrackingPage';
 import { LogisticsPage } from './pages/LogisticsPage';
+import { RouteOptimizationPage } from './pages/RouteOptimizationPage';
 import { ToastProvider, useToast } from './components/ui/Toast';
 import { Navbar, Footer, Button, Badge } from './components/ui';
 
@@ -49,7 +50,7 @@ import { apiService, UserRole } from './services/apiService';
 const PROTECTED_TABS: TabType[] = ['home', 'scan', 'result', 'map', 'alerts', 'report', 'community', 'profile'];
 
 export function AppContent() {
-  // App State - Default to 'marketplace' for Agricultural Marketplace, Escrow & Live GPS Tracking
+  // App State - Default to 'marketplace' for Agricultural Marketplace, Escrow & Route Optimization
   const [activeTab, setActiveTab] = useState<string>('marketplace');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [selectedTrackingOrderId, setSelectedTrackingOrderId] = useState<string>('ORD-2026-849201');
@@ -225,7 +226,7 @@ export function AppContent() {
     }
   };
 
-  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase' && activeTab !== 'role-dashboard' && activeTab !== 'marketplace' && activeTab !== 'product-detail' && activeTab !== 'orders' && activeTab !== 'logistics' && activeTab !== 'tracking';
+  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase' && activeTab !== 'role-dashboard' && activeTab !== 'marketplace' && activeTab !== 'product-detail' && activeTab !== 'orders' && activeTab !== 'logistics' && activeTab !== 'logistics-optimization' && activeTab !== 'tracking';
 
   const activeUserRole: UserRole = user?.role || simulatedRole;
 
@@ -305,6 +306,13 @@ export function AppContent() {
           <LogisticsPage
             onNavigateTab={(tab) => setActiveTab(tab)}
             onNavigateToTracking={(orderId) => handleViewOrderTracking(orderId)}
+          />
+        )}
+
+        {/* PHASE 10: AI Route Optimization Page (/logistics/optimization) */}
+        {activeTab === 'logistics-optimization' && (
+          <RouteOptimizationPage
+            onNavigateTab={(tab) => setActiveTab(tab)}
           />
         )}
 

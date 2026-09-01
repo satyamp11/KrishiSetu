@@ -45,6 +45,48 @@ export type DeliveryStatus =
   | 'OUT_FOR_DELIVERY'
   | 'DELIVERED';
 
+export interface LocationWaypoint {
+  id?: string;
+  name: string;
+  address?: string;
+  lat: number;
+  lng: number;
+  priority?: 'HIGH' | 'MEDIUM' | 'NORMAL' | 'URGENT';
+  demandKg?: number;
+}
+
+export interface OptimizedWaypoint extends LocationWaypoint {
+  sequenceOrder: number;
+  legDistanceKm: number;
+  legDurationMinutes: number;
+  estimatedArrival: string;
+}
+
+export interface RouteOptimizationResponse {
+  success: boolean;
+  timestamp: string;
+  metrics: {
+    originalDistanceKm: number;
+    optimizedDistanceKm: number;
+    distanceSavedKm: number;
+    savingsPercentage: number;
+    originalDurationMinutes: number;
+    optimizedDurationMinutes: number;
+    timeSavedMinutes: number;
+    originalFuelLiters: number;
+    optimizedFuelLiters: number;
+    fuelSavedLiters: number;
+    costSavedINR: number;
+  };
+  optimizedRoute: OptimizedWaypoint[];
+  aiEngineInfo: {
+    engineName: string;
+    algorithm: string;
+    isDemoEngine: boolean;
+    pythonEndpointConfigured: boolean;
+  };
+}
+
 export interface DeliveryTrackingData {
   id: string;
   orderId: string;
@@ -398,6 +440,49 @@ export interface CommunityAlertRecord {
 }
 
 export const apiService = {
+  // AI Assisted Route Optimization Method (Phase 10)
+  async optimizeRoute(payload?: {
+    pickupLocations?: LocationWaypoint[];
+    deliveryLocations?: LocationWaypoint[];
+    vehicleCapacity?: number;
+  }): Promise<RouteOptimizationResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai/optimize-route`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload || {})
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (err) {
+      console.error('Error in optimizeRoute API call:', err);
+      return {
+        success: false,
+        timestamp: new Date().toISOString(),
+        metrics: {
+          originalDistanceKm: 42,
+          optimizedDistanceKm: 31,
+          distanceSavedKm: 11,
+          savingsPercentage: 26,
+          originalDurationMinutes: 110,
+          optimizedDurationMinutes: 75,
+          timeSavedMinutes: 35,
+          originalFuelLiters: 11.2,
+          optimizedFuelLiters: 7.4,
+          fuelSavedLiters: 3.8,
+          costSavedINR: 420
+        },
+        optimizedRoute: [],
+        aiEngineInfo: {
+          engineName: 'KrishiSetu Genetic VRP Engine v2.1 (Fallback)',
+          algorithm: 'Multi-Objective Nearest Neighbor + Simulated Annealing',
+          isDemoEngine: true,
+          pythonEndpointConfigured: false
+        }
+      };
+    }
+  },
+
   // Logistics & Delivery API Methods (Phase 9)
   async getOrderTracking(orderId: string): Promise<{ success: boolean; tracking?: DeliveryTrackingData; message?: string }> {
     try {

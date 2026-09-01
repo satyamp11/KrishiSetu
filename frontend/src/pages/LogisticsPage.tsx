@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, MapPin, Sparkles, ShieldCheck, CheckCircle2, Navigation, ArrowRight } from 'lucide-react';
+import { Truck, MapPin, Sparkles, ShieldCheck, Navigation, ArrowRight, Cpu } from 'lucide-react';
 import { Navbar, Footer, Button, Badge, StatCard } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 
@@ -46,13 +46,13 @@ export const LogisticsPage: React.FC<LogisticsPageProps> = ({
       <Navbar activeTab="logistics" onNavigate={onNavigateTab} user={user} onOpenAuth={openAuthModal} />
 
       {/* Header Hero */}
-      <section className="bg-stone-950 text-white py-10 border-b border-stone-800">
+      <section className="bg-slate-950 text-white py-10 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Badge variant="earth" size="sm" icon={<Truck className="w-3.5 h-3.5 text-emerald-400" />}>
-                  Phase 9: AI Route & Logistics
+                  Phase 9 & 10: AI Route & Logistics
                 </Badge>
                 <Badge variant="primary" size="sm">
                   Sub-24h Dispatch Network
@@ -61,10 +61,19 @@ export const LogisticsPage: React.FC<LogisticsPageProps> = ({
               <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
                 AI Logistics & Fleet Route Optimization
               </h1>
-              <p className="text-xs text-stone-300 mt-1 max-w-2xl">
+              <p className="text-xs text-slate-300 mt-1 max-w-2xl">
                 Smart agricultural cold-chain routing algorithm minimizing transit fuel consumption and preventing crop spoilage.
               </p>
             </div>
+
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<Cpu className="w-4 h-4 fill-white" />}
+              onClick={() => onNavigateTab('logistics-optimization')}
+            >
+              Open AI Route Optimizer
+            </Button>
           </div>
         </div>
       </section>
@@ -113,6 +122,15 @@ export const LogisticsPage: React.FC<LogisticsPageProps> = ({
               <h3 className="text-lg font-black text-slate-900">Active Crop Shipments & Live Telemetry</h3>
               <p className="text-xs text-slate-500">Real-time GPS status of dispatches across regional hubs.</p>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Cpu className="w-3.5 h-3.5 text-emerald-700" />}
+              onClick={() => onNavigateTab('logistics-optimization')}
+            >
+              Run VRP Optimization
+            </Button>
           </div>
 
           <div className="space-y-3">
