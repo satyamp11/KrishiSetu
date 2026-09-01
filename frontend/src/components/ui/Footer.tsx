@@ -27,7 +27,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate = () => {} }) => {
 
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
               <ShieldCheck className="w-4 h-4" />
-              <span>SIH 26033 Problem Statement Platform Solution</span>
+              <span>Direct Farm-to-Buyer Ecosystem</span>
             </div>
           </div>
 

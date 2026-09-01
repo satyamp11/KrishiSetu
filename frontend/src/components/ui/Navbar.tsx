@@ -78,9 +78,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="bg-[#1b4332] text-emerald-100 py-1.5 px-4 text-[11px] font-bold text-center flex items-center justify-center gap-2 border-b border-emerald-900">
         <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
         <span>Direct Trade Agricultural Marketplace • 100% Escrow Protected • Zero Intermediary Margins</span>
-        <Badge variant="earth" size="sm" className="bg-emerald-900 text-emerald-300 border-emerald-700 hidden sm:inline-flex">
-          SIH 26033
-        </Badge>
       </div>
 
       {/* 2. Primary Navigation Bar */}

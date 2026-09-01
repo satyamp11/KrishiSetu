@@ -116,7 +116,7 @@ export const UIFoundationShowcase: React.FC = () => {
                   Phase 1: UI Foundation
                 </Badge>
                 <Badge variant="earth" size="md">
-                  SIH 26033 Design System
+                  KrishiSetu Design System
                 </Badge>
               </div>
               <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">

@@ -32,7 +32,7 @@ export const OutbreakSimulatorModal: React.FC<OutbreakSimulatorModalProps> = ({
             <Zap className="w-6 h-6 animate-pulse" />
           </div>
           <div>
-            <h3 className="font-extrabold text-lg text-white">Hackathon WOW Demo</h3>
+            <h3 className="font-extrabold text-lg text-white">Interactive Network Demo</h3>
             <p className="text-xs text-amber-400 font-semibold">Community Network Effect Simulator</p>
           </div>
         </div>

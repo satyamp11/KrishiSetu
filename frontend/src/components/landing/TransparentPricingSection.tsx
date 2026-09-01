@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, ShieldCheck, ArrowRight, TrendingUp, Percent } from 'lucide-react';
+import { DollarSign, ShieldCheck, ArrowRight, TrendingUp } from 'lucide-react';
 import { PriceBreakdown } from '../ui/PriceBreakdown';
 
 export const TransparentPricingSection: React.FC = () => {
@@ -11,7 +11,7 @@ export const TransparentPricingSection: React.FC = () => {
         <div className="text-center max-w-3xl mx-auto space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black border border-emerald-300">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-            <span>SIH 26033 PROBLEM STATEMENT SOLVED</span>
+            <span>DIRECT FARMER REVENUE MODEL</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-[#143022] font-serif tracking-tight">
             Where Your Money Goes

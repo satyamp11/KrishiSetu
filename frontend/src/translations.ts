@@ -44,7 +44,7 @@ export const translations: Record<Language, Record<string, string>> = {
     selectCropType: "Select Crop Being Scanned",
     cameraBtn: "Capture Photo",
     uploadBtn: "Upload Image",
-    demoPhotos: "Try Sample Crop Photos (Hackathon Demo)",
+    demoPhotos: "Try Sample Crop Photos",
     scanningAi: "AI Neural Network Scanning...",
     analyzingTexture: "Analyzing leaf tissue pattern...",
     detectingLesions: "Cross-referencing 50,000+ disease signatures...",
