@@ -1,5 +1,38 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export type UserRole = 'farmer' | 'consumer' | 'bulk_buyer' | 'delivery_partner' | 'admin';
+
+export interface FarmInfo {
+  fpoName?: string;
+  fpoRegistrationNumber?: string;
+  landSizeAcres?: number;
+  primaryCrop?: string;
+  organicCertified?: boolean;
+}
+
+export interface DeliveryAddress {
+  streetAddress?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  landmark?: string;
+}
+
+export interface BusinessInfo {
+  organizationName?: string;
+  gstin?: string;
+  businessType?: 'Wholesaler' | 'Retailer' | 'Processor' | 'Hotel/Restaurant' | 'Exporter' | 'Other';
+  annualVolumeEstimate?: string;
+}
+
+export interface VehicleInfo {
+  vehicleType?: 'TwoWheeler' | 'MiniTruck' | 'HeavyTruck' | 'RefrigeratedVan';
+  vehicleNumber?: string;
+  licenseNumber?: string;
+  operatingDistrict?: string;
+  maxCapacityKg?: number;
+}
+
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
@@ -7,6 +40,7 @@ export interface IUser extends Document {
   phone?: string;
   emailOrPhone: string;
   passwordHash?: string;
+  role: UserRole;
   phoneVerified?: boolean;
   emailVerified?: boolean;
   state: string;
@@ -14,6 +48,13 @@ export interface IUser extends Document {
   village?: string;
   primaryCrop?: string;
   profileImage?: string;
+  
+  // Role specific metadata
+  farmInfo?: FarmInfo;
+  deliveryAddress?: DeliveryAddress;
+  businessInfo?: BusinessInfo;
+  vehicleInfo?: VehicleInfo;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,6 +65,7 @@ export interface UserResponse {
   email: string;
   phone?: string;
   emailOrPhone: string;
+  role: UserRole;
   phoneVerified?: boolean;
   emailVerified?: boolean;
   state: string;
@@ -31,6 +73,12 @@ export interface UserResponse {
   village?: string;
   primaryCrop?: string;
   profileImage?: string;
+  
+  farmInfo?: FarmInfo;
+  deliveryAddress?: DeliveryAddress;
+  businessInfo?: BusinessInfo;
+  vehicleInfo?: VehicleInfo;
+
   createdAt: string;
 }
 
@@ -40,11 +88,19 @@ export interface RegisterDTO {
   emailOrPhone?: string;
   phone?: string;
   password?: string;
-  state: string;
-  district: string;
+  role: UserRole;
+  state?: string;
+  district?: string;
   village?: string;
   primaryCrop?: string;
   profileImage?: string;
+  adminSecretKey?: string; // Only required if trying to register as admin
+
+  // Role specific payload
+  farmInfo?: FarmInfo;
+  deliveryAddress?: DeliveryAddress;
+  businessInfo?: BusinessInfo;
+  vehicleInfo?: VehicleInfo;
 }
 
 export interface LoginDTO {
@@ -85,6 +141,13 @@ const UserSchema: Schema = new Schema(
       default: '',
       select: false
     },
+    role: {
+      type: String,
+      enum: ['farmer', 'consumer', 'bulk_buyer', 'delivery_partner', 'admin'],
+      default: 'farmer',
+      required: true,
+      index: true
+    },
     phoneVerified: {
       type: Boolean,
       default: false
@@ -116,6 +179,35 @@ const UserSchema: Schema = new Schema(
     profileImage: {
       type: String,
       default: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80'
+    },
+    
+    // Role metadata embedded schema definitions
+    farmInfo: {
+      fpoName: { type: String, default: '' },
+      fpoRegistrationNumber: { type: String, default: '' },
+      landSizeAcres: { type: Number, default: 0 },
+      primaryCrop: { type: String, default: '' },
+      organicCertified: { type: Boolean, default: false }
+    },
+    deliveryAddress: {
+      streetAddress: { type: String, default: '' },
+      city: { type: String, default: '' },
+      state: { type: String, default: '' },
+      pincode: { type: String, default: '' },
+      landmark: { type: String, default: '' }
+    },
+    businessInfo: {
+      organizationName: { type: String, default: '' },
+      gstin: { type: String, default: '' },
+      businessType: { type: String, default: 'Wholesaler' },
+      annualVolumeEstimate: { type: String, default: '' }
+    },
+    vehicleInfo: {
+      vehicleType: { type: String, default: 'MiniTruck' },
+      vehicleNumber: { type: String, default: '' },
+      licenseNumber: { type: String, default: '' },
+      operatingDistrict: { type: String, default: '' },
+      maxCapacityKg: { type: Number, default: 1000 }
     }
   },
   {

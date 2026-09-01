@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Mail, User, MapPin, Sprout, AlertCircle, RefreshCw, LogIn, UserPlus, ShieldCheck, CheckCircle2, KeyRound, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Mail, User, MapPin, Sprout, AlertCircle, RefreshCw, LogIn, UserPlus, ShieldCheck, CheckCircle2, KeyRound, ArrowRight, Lock, Building2, Truck, ShoppingBag, Home } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { apiService } from '../../services/apiService';
+import { apiService, UserRole, RegisterPayload } from '../../services/apiService';
 import type { Language } from '../../types';
 
 interface AuthModalProps {
@@ -9,88 +9,80 @@ interface AuthModalProps {
 }
 
 const ALL_INDIAN_STATES = [
-  'Andhra Pradesh',
-  'Arunachal Pradesh',
-  'Assam',
-  'Bihar',
-  'Chhattisgarh',
-  'Delhi',
-  'Goa',
-  'Gujarat',
-  'Haryana',
-  'Himachal Pradesh',
-  'Jammu and Kashmir',
-  'Jharkhand',
-  'Karnataka',
-  'Kerala',
-  'Madhya Pradesh',
-  'Maharashtra',
-  'Manipur',
-  'Meghalaya',
-  'Mizoram',
-  'Nagaland',
-  'Odisha',
-  'Punjab',
-  'Rajasthan',
-  'Sikkim',
-  'Tamil Nadu',
-  'Telangana',
-  'Tripura',
-  'Uttar Pradesh',
-  'Uttarakhand',
-  'West Bengal'
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir',
+  'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim',
+  'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
 ];
 
 export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
-  const { authModalMode, closeAuthModal, openAuthModal, sendOtp, verifyOtp } = useAuth();
+  const { authModalMode, closeAuthModal, openAuthModal, login, register, sendOtp, verifyOtp } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(authModalMode === 'register' ? 'register' : 'login');
-  const [step, setStep] = useState<'identifier' | 'otp'>('identifier');
+  const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('password');
+  const [step, setStep] = useState<'form' | 'otp'>('form');
+
+  // Role Selection (Default: 'farmer')
+  const [role, setRole] = useState<UserRole>('farmer');
 
   useEffect(() => {
     if (authModalMode) {
       setActiveTab(authModalMode);
-      setStep('identifier');
+      setStep('form');
       setErrorMessage(null);
       setSuccessMessage(null);
       setOtp('');
     }
   }, [authModalMode]);
 
-  // Lock background body scroll when AuthModal is open & restore on close/unmount
+  // Lock background body scroll when AuthModal is open
   useEffect(() => {
     if (!authModalMode) return;
 
     const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
     document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
 
     return () => {
       document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
     };
   }, [authModalMode]);
 
-  // Form Fields
+  // Common Form Fields
   const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [name, setName] = useState('');
   const [state, setState] = useState('Uttar Pradesh');
   const [district, setDistrict] = useState('Gorakhpur');
+
+  // Farmer specific
   const [village, setVillage] = useState('');
   const [primaryCrop, setPrimaryCrop] = useState('');
-  
+  const [fpoName, setFpoName] = useState('');
+  const [landSizeAcres, setLandSizeAcres] = useState('');
+
+  // Consumer specific
+  const [streetAddress, setStreetAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [pincode, setPincode] = useState('');
+
+  // Bulk Buyer specific
+  const [organizationName, setOrganizationName] = useState('');
+  const [gstin, setGstin] = useState('');
+  const [businessType, setBusinessType] = useState<'Wholesaler' | 'Retailer' | 'Processor' | 'Hotel/Restaurant' | 'Exporter' | 'Other'>('Wholesaler');
+
+  // Delivery Partner specific
+  const [vehicleType, setVehicleType] = useState<'TwoWheeler' | 'MiniTruck' | 'HeavyTruck' | 'RefrigeratedVan'>('MiniTruck');
+  const [vehicleNumber, setVehicleNumber] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+
   const [districtsList, setDistrictsList] = useState<string[]>(['Gorakhpur', 'Lucknow', 'Kanpur Nagar', 'Agra', 'Varanasi', 'Prayagraj']);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // 45-Second Resend Countdown Timer State
+  // Resend Countdown Timer State
   const [resendTimer, setResendTimer] = useState<number>(45);
   const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
 
@@ -107,7 +99,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
     return () => clearInterval(interval);
   }, [isTimerActive, resendTimer]);
 
-  // Fetch districts whenever state changes
   useEffect(() => {
     async function loadDistricts() {
       if (state) {
@@ -124,37 +115,157 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
 
   if (!authModalMode) return null;
 
-  // Step 1: Send OTP
-  const handleSendOtp = async (e: React.FormEvent) => {
+  // Handle Login Submit (Password or OTP trigger)
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
 
     if (!emailOrPhone.trim()) {
-      setErrorMessage(language === 'hi' ? 'कृपया ईमेल या 10 अंकों का मोबाइल नंबर दर्ज करें' : 'Please enter your email address or 10-digit mobile number.');
+      setErrorMessage('Please enter your registered email address or mobile number.');
       return;
     }
 
-    if (activeTab === 'register') {
-      if (!name.trim() || name.trim().length < 2) {
-        setErrorMessage(language === 'hi' ? 'कृपया अपना पूरा नाम दर्ज करें' : 'Full name must be at least 2 characters.');
+    if (authMethod === 'password') {
+      if (!password) {
+        setErrorMessage('Please enter your password.');
         return;
       }
+      setLoading(true);
+      try {
+        const res = await login({ emailOrPhone: emailOrPhone.trim(), password });
+        if (res.success) {
+          setSuccessMessage('Logged in successfully!');
+        } else {
+          setErrorMessage(res.message || 'Invalid credentials.');
+        }
+      } catch (err) {
+        setErrorMessage('Network error during login.');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // OTP Method
+      setLoading(true);
+      try {
+        const res = await sendOtp(emailOrPhone.trim());
+        if (res.success) {
+          setStep('otp');
+          setSuccessMessage(res.message || 'OTP sent successfully.');
+          setResendTimer(45);
+          setIsTimerActive(true);
+        } else {
+          setErrorMessage(res.message || 'Failed to send OTP.');
+        }
+      } catch (err) {
+        setErrorMessage('Network error sending OTP.');
+      } finally {
+        setLoading(false);
+      }
     }
+  };
+
+  // Handle Register Submit
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!name.trim() || name.trim().length < 2) {
+      setErrorMessage('Full name must be at least 2 characters.');
+      return;
+    }
+
+    if (!emailOrPhone.trim()) {
+      setErrorMessage('Valid email address or mobile number is required.');
+      return;
+    }
+
+    if (authMethod === 'password' && (!password || password.length < 6)) {
+      setErrorMessage('Password must be at least 6 characters.');
+      return;
+    }
+
+    // Role-specific client validation
+    if (role === 'bulk_buyer' && !organizationName.trim()) {
+      setErrorMessage('Organization / Company name is required for Bulk Buyer signup.');
+      return;
+    }
+
+    if (role === 'delivery_partner' && (!vehicleType || !vehicleNumber.trim())) {
+      setErrorMessage('Vehicle type and vehicle registration number are required.');
+      return;
+    }
+
+    if (role === 'consumer' && !streetAddress.trim() && !city.trim()) {
+      setErrorMessage('Street address or city is required for delivery setup.');
+      return;
+    }
+
+    if (authMethod === 'otp') {
+      setLoading(true);
+      try {
+        const res = await sendOtp(emailOrPhone.trim());
+        if (res.success) {
+          setStep('otp');
+          setSuccessMessage(res.message || 'OTP sent successfully.');
+          setResendTimer(45);
+          setIsTimerActive(true);
+        } else {
+          setErrorMessage(res.message || 'Failed to send OTP.');
+        }
+      } catch (err) {
+        setErrorMessage('Network error sending OTP.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Direct Register with Password
+    const payload: RegisterPayload = {
+      name: name.trim(),
+      emailOrPhone: emailOrPhone.trim(),
+      password,
+      role,
+      state,
+      district,
+      village,
+      primaryCrop,
+      farmInfo: {
+        fpoName,
+        landSizeAcres: landSizeAcres ? parseFloat(landSizeAcres) : undefined,
+        primaryCrop,
+      },
+      deliveryAddress: {
+        streetAddress,
+        city: city || district,
+        state,
+        pincode,
+      },
+      businessInfo: {
+        organizationName,
+        gstin,
+        businessType,
+      },
+      vehicleInfo: {
+        vehicleType,
+        vehicleNumber,
+        licenseNumber,
+        operatingDistrict: district,
+      },
+    };
 
     setLoading(true);
     try {
-      const res = await sendOtp(emailOrPhone.trim());
+      const res = await register(payload);
       if (res.success) {
-        setStep('otp');
-        setSuccessMessage(res.message || (language === 'hi' ? 'OTP सफलतापूर्वक भेजा गया।' : 'OTP sent successfully.'));
-        setResendTimer(45);
-        setIsTimerActive(true);
+        setSuccessMessage('Registration successful! Redirecting to role dashboard...');
       } else {
-        setErrorMessage(res.message || (language === 'hi' ? 'OTP भेजने में विफलता' : 'Failed to send OTP. Please try again.'));
+        setErrorMessage(res.message || 'Registration failed.');
       }
     } catch (err) {
-      setErrorMessage(language === 'hi' ? 'नेटवर्क त्रुटि। कृपया पुनः प्रयास करें।' : 'Network error. Please check your connection.');
+      setErrorMessage('Network error during registration.');
     } finally {
       setLoading(false);
     }
@@ -167,7 +278,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
     setSuccessMessage(null);
 
     if (!otp.trim() || otp.trim().length !== 6) {
-      setErrorMessage(language === 'hi' ? 'कृपया 6 अंकों का OTP दर्ज करें' : 'Please enter the 6-digit OTP code.');
+      setErrorMessage('Please enter the 6-digit OTP code.');
       return;
     }
 
@@ -177,51 +288,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
         identifier: emailOrPhone.trim(),
         otp: otp.trim(),
         name: activeTab === 'register' ? name.trim() : undefined,
+        role: activeTab === 'register' ? role : undefined,
         state: activeTab === 'register' ? state : undefined,
         district: activeTab === 'register' ? district : undefined,
         village: activeTab === 'register' ? village : undefined,
-        primaryCrop: activeTab === 'register' ? primaryCrop : undefined
+        primaryCrop: activeTab === 'register' ? primaryCrop : undefined,
+        farmInfo: { fpoName, primaryCrop },
+        deliveryAddress: { streetAddress, city, state, pincode },
+        businessInfo: { organizationName, gstin, businessType },
+        vehicleInfo: { vehicleType, vehicleNumber, licenseNumber },
       });
 
       if (res.success) {
-        setSuccessMessage(language === 'hi' ? 'सफलतापूर्वक सत्यापित (Verified successfully)' : 'Verified successfully. Redirecting to dashboard...');
+        setSuccessMessage('Verified successfully! Redirecting...');
       } else {
-        setErrorMessage(res.message || (language === 'hi' ? 'OTP सत्यापन विफल' : 'Invalid OTP. Please check and try again.'));
+        setErrorMessage(res.message || 'Invalid OTP code.');
       }
     } catch (err) {
-      setErrorMessage(language === 'hi' ? 'नेटवर्क त्रुटि। कृपया पुनः प्रयास करें।' : 'Network error verifying OTP.');
+      setErrorMessage('Network error verifying OTP.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Resend OTP Click Handler
-  const handleResendOtp = async () => {
-    if (isTimerActive) return;
-    setErrorMessage(null);
-    setSuccessMessage(null);
-    setLoading(true);
-
-    try {
-      const res = await sendOtp(emailOrPhone.trim());
-      if (res.success) {
-        setSuccessMessage(res.message || (language === 'hi' ? 'नया OTP भेजा गया।' : 'New OTP sent successfully.'));
-        setResendTimer(45);
-        setIsTimerActive(true);
-      } else {
-        setErrorMessage(res.message || 'Unable to resend OTP.');
-      }
-    } catch (err) {
-      setErrorMessage('Network error resending OTP.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const roleOptions: { id: UserRole; label: string; icon: React.ReactNode; desc: string }[] = [
+    { id: 'farmer', label: 'Farmer / FPO', icon: <Sprout className="w-4 h-4 text-emerald-600" />, desc: 'Sell produce directly & view AI forecasts' },
+    { id: 'consumer', label: 'Consumer', icon: <ShoppingBag className="w-4 h-4 text-emerald-600" />, desc: 'Buy fresh farm produce directly' },
+    { id: 'bulk_buyer', label: 'Bulk Buyer', icon: <Building2 className="w-4 h-4 text-emerald-600" />, desc: 'Procure bulk crops for B2B & institutions' },
+    { id: 'delivery_partner', label: 'Delivery Partner', icon: <Truck className="w-4 h-4 text-emerald-600" />, desc: 'Provide logistics & optimized delivery' },
+  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-md animate-fadeIn overscroll-contain">
-      <div className="bg-white w-full max-w-lg rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] overscroll-contain">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in">
+      <div className="bg-white w-full max-w-xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
         <div className="bg-[#1b4332] p-6 text-white relative shrink-0">
           <button
@@ -236,24 +335,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
               <ShieldCheck className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
-              <span className="text-xs font-bold text-emerald-300 uppercase tracking-widest block">Krishi Shield AI Auth</span>
-              <h3 className="text-xl sm:text-2xl font-black font-serif-title">
-                {activeTab === 'login' 
-                  ? (language === 'hi' ? 'किसान OTP लॉगिन' : 'Farmer OTP Login')
-                  : (language === 'hi' ? 'नया खाता (OTP Verification)' : 'Farmer Account OTP Setup')}
+              <span className="text-[10px] font-extrabold text-emerald-300 uppercase tracking-widest block">KrishiSetu Platform</span>
+              <h3 className="text-xl sm:text-2xl font-black">
+                {activeTab === 'login' ? 'Account Sign In' : 'Platform Registration'}
               </h3>
             </div>
           </div>
 
-          <p className="text-xs text-slate-300 font-medium">
-            {step === 'identifier'
-              ? (language === 'hi' ? 'सुरक्षित OTP सत्यापन के साथ कृषि शील्ड नेटवर्क तक पहुंचें।' : 'Secure 6-digit OTP verification for instant farm access.')
-              : (language === 'hi' ? 'आपके पंजीकृत मोबाइल/ईमेल पर 6-अंकों का कोड भेजा गया है।' : 'Enter the 6-digit OTP code sent to your contact.')}
-          </p>
-
-          {/* Tab Switcher Toolbar (Only on Step 1) */}
-          {step === 'identifier' && (
-            <div className="flex bg-[#122e22] p-1 rounded-2xl mt-5 border border-white/10">
+          {/* Tab Switcher Toolbar */}
+          {step === 'form' && (
+            <div className="flex bg-[#122e22] p-1 rounded-2xl mt-4 border border-white/10">
               <button
                 type="button"
                 onClick={() => {
@@ -263,13 +354,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
                   setSuccessMessage(null);
                 }}
                 className={`flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === 'login'
-                    ? 'bg-emerald-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-white'
+                  activeTab === 'login' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>{language === 'hi' ? 'लॉगिन' : 'Login'}</span>
+                <span>Sign In</span>
               </button>
 
               <button
@@ -281,24 +370,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
                   setSuccessMessage(null);
                 }}
                 className={`flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === 'register'
-                    ? 'bg-emerald-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-white'
+                  activeTab === 'register' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <UserPlus className="w-3.5 h-3.5" />
-                <span>{language === 'hi' ? 'पंजीकरण (Register)' : 'Register'}</span>
+                <span>Create Account</span>
               </button>
             </div>
           )}
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-6 overflow-y-auto overscroll-contain touch-pan-y space-y-4">
-          
+        <div className="p-6 overflow-y-auto space-y-4">
           {/* Error Banner */}
           {errorMessage && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-xs font-bold flex items-center gap-2 animate-shake">
+            <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-red-800 text-xs font-bold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -306,168 +392,300 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
 
           {/* Success Banner */}
           {successMessage && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-bold flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>{successMessage}</span>
             </div>
           )}
 
-          {/* STEP 1: Enter Identifier & Send OTP */}
-          {step === 'identifier' && (
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              
-              {/* REGISTER: Full Name */}
+          {/* STEP 1: Main Form */}
+          {step === 'form' && (
+            <form onSubmit={activeTab === 'login' ? handleLoginSubmit : handleRegisterSubmit} className="space-y-4">
+              {/* REGISTER ONLY: Select Role Grid */}
               {activeTab === 'register' && (
-                <div className="flex flex-col space-y-1">
-                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                    {language === 'hi' ? 'पूरा नाम / FULL NAME' : 'FULL NAME / पूरा नाम'} *
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block">
+                    Select Platform Role *
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {roleOptions.map((r) => {
+                      const isSelected = role === r.id;
+                      return (
+                        <div
+                          key={r.id}
+                          onClick={() => setRole(r.id)}
+                          className={`p-3 rounded-xl border cursor-pointer transition-all flex items-start gap-2.5 ${
+                            isSelected
+                              ? 'bg-emerald-50 border-emerald-600 ring-2 ring-emerald-500/20'
+                              : 'bg-white border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="mt-0.5">{r.icon}</div>
+                          <div>
+                            <span className="text-xs font-extrabold text-slate-900 block">{r.label}</span>
+                            <span className="text-[10px] text-slate-500 line-clamp-1 leading-tight">{r.desc}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Auth Method Selector Toggle */}
+              <div className="flex items-center justify-between bg-slate-100 p-1 rounded-xl text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod('password')}
+                  className={`flex-1 py-1.5 rounded-lg transition-all ${
+                    authMethod === 'password' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                  }`}
+                >
+                  Password Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod('otp')}
+                  className={`flex-1 py-1.5 rounded-lg transition-all ${
+                    authMethod === 'otp' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                  }`}
+                >
+                  SMS / Email OTP
+                </button>
+              </div>
+
+              {/* REGISTER ONLY: Full Name */}
+              {activeTab === 'register' && (
+                <div className="space-y-1">
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block">
+                    Full Name *
                   </label>
                   <div className="relative">
                     <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       required
-                      placeholder={language === 'hi' ? 'उदा. राम कुमार' : 'e.g. Ramesh Singh'}
+                      placeholder="e.g. Rameshwar Singh"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full h-11 pl-10 pr-4 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-semibold text-slate-800"
+                      className="w-full h-10 pl-10 pr-4 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-semibold"
                     />
                   </div>
                 </div>
               )}
 
-              {/* EMAIL OR MOBILE */}
-              <div className="flex flex-col space-y-1">
-                <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                  {language === 'hi' ? 'ईमेल या मोबाइल नंबर / EMAIL OR MOBILE' : 'EMAIL OR 10-DIGIT MOBILE NUMBER'} *
+              {/* Email / Mobile */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block">
+                  Email Address or 10-Digit Mobile *
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
-                    placeholder={language === 'hi' ? '9876543210 या farmer@gmail.com' : 'e.g. 9876543210 or farmer@gmail.com'}
+                    placeholder="e.g. 9876543210 or user@krishisetu.com"
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-semibold text-slate-800"
+                    className="w-full h-10 pl-10 pr-4 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-semibold"
                   />
                 </div>
               </div>
 
-              {/* REGISTER LOCATION & CROP FIELDS */}
+              {/* Password Field */}
+              {authMethod === 'password' && (
+                <div className="space-y-1">
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block">
+                    Password *
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      required
+                      placeholder="Minimum 6 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full h-10 pl-10 pr-4 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-semibold"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* REGISTER ONLY: Role-Specific Fields */}
               {activeTab === 'register' && (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    
-                    {/* State Select */}
-                    <div className="flex flex-col space-y-1">
-                      <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                        {language === 'hi' ? 'राज्य / STATE' : 'STATE'} *
-                      </label>
-                      <div className="relative">
-                        <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        <select
-                          value={state}
-                          onChange={(e) => setState(e.target.value)}
-                          className="w-full h-11 pl-10 pr-3 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-bold text-slate-800 cursor-pointer"
-                        >
-                          {ALL_INDIAN_STATES.map((st) => (
-                            <option key={st} value={st}>{st}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* District Select */}
-                    <div className="flex flex-col space-y-1">
-                      <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                        {language === 'hi' ? 'जिला / DISTRICT' : 'DISTRICT'} *
-                      </label>
-                      <div className="relative">
-                        <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        <select
-                          value={district}
-                          onChange={(e) => setDistrict(e.target.value)}
-                          className="w-full h-11 pl-10 pr-3 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-bold text-slate-800 cursor-pointer"
-                        >
-                          {districtsList.map((dist) => (
-                            <option key={dist} value={dist}>{dist}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    
-                    {/* Village (Optional) */}
-                    <div className="flex flex-col space-y-1">
-                      <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                        {language === 'hi' ? 'गांव / VILLAGE' : 'VILLAGE'}
-                      </label>
-                      <input
-                        type="text"
-                        placeholder={language === 'hi' ? 'उदा. रामपुर' : 'e.g. Rampur'}
-                        value={village}
-                        onChange={(e) => setVillage(e.target.value)}
-                        className="w-full h-11 px-3 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-semibold text-slate-800"
-                      />
-                    </div>
-
-                    {/* Primary Crop (Optional) */}
-                    <div className="flex flex-col space-y-1">
-                      <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                        {language === 'hi' ? 'मुख्य फसल / CROP' : 'PRIMARY CROP'}
-                      </label>
-                      <div className="relative">
-                        <Sprout className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  {/* Farmer Fields */}
+                  {role === 'farmer' && (
+                    <div className="p-3.5 bg-emerald-50/60 border border-emerald-100 rounded-xl space-y-3">
+                      <span className="text-xs font-bold text-emerald-900 block">🧑‍🌾 Farmer / FPO Details</span>
+                      <div className="grid grid-cols-2 gap-2">
                         <input
                           type="text"
-                          placeholder={language === 'hi' ? 'उदा. गेहूं / धान' : 'e.g. Wheat, Rice'}
+                          placeholder="State (e.g. Uttar Pradesh)"
+                          value={state}
+                          onChange={(e) => setState(e.target.value)}
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                        />
+                        <input
+                          type="text"
+                          placeholder="District (e.g. Gorakhpur)"
+                          value={district}
+                          onChange={(e) => setDistrict(e.target.value)}
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder="FPO Name (Optional)"
+                          value={fpoName}
+                          onChange={(e) => setFpoName(e.target.value)}
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Primary Crop (e.g. Wheat)"
                           value={primaryCrop}
                           onChange={(e) => setPrimaryCrop(e.target.value)}
-                          className="w-full h-11 pl-10 pr-3 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-semibold text-slate-800"
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
                         />
                       </div>
                     </div>
+                  )}
 
-                  </div>
+                  {/* Consumer Fields */}
+                  {role === 'consumer' && (
+                    <div className="p-3.5 bg-blue-50/60 border border-blue-100 rounded-xl space-y-3">
+                      <span className="text-xs font-bold text-blue-900 block">🛒 Consumer Delivery Address</span>
+                      <input
+                        type="text"
+                        placeholder="Street Address / House No."
+                        value={streetAddress}
+                        onChange={(e) => setStreetAddress(e.target.value)}
+                        className="w-full h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder="City"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Pincode"
+                          value={pincode}
+                          onChange={(e) => setPincode(e.target.value)}
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bulk Buyer Fields */}
+                  {role === 'bulk_buyer' && (
+                    <div className="p-3.5 bg-amber-50/60 border border-amber-100 rounded-xl space-y-3">
+                      <span className="text-xs font-bold text-amber-900 block">🏬 Organization / Business Info</span>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Company / Organization Name *"
+                        value={organizationName}
+                        onChange={(e) => setOrganizationName(e.target.value)}
+                        className="w-full h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder="GSTIN Number (Optional)"
+                          value={gstin}
+                          onChange={(e) => setGstin(e.target.value)}
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                        />
+                        <select
+                          value={businessType}
+                          onChange={(e) => setBusinessType(e.target.value as any)}
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                        >
+                          <option value="Wholesaler">Wholesaler</option>
+                          <option value="Retailer">Retailer</option>
+                          <option value="Processor">Food Processor</option>
+                          <option value="Hotel/Restaurant">Hotel / Restaurant</option>
+                          <option value="Exporter">Exporter</option>
+                          <option value="Other">Other B2B</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Delivery Partner Fields */}
+                  {role === 'delivery_partner' && (
+                    <div className="p-3.5 bg-stone-100 border border-stone-200 rounded-xl space-y-3">
+                      <span className="text-xs font-bold text-stone-900 block">🚚 Vehicle & Logistics Information</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          value={vehicleType}
+                          onChange={(e) => setVehicleType(e.target.value as any)}
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                        >
+                          <option value="MiniTruck">Mini Truck (Bolero / Pickup)</option>
+                          <option value="HeavyTruck">Heavy Commercial Truck</option>
+                          <option value="RefrigeratedVan">Refrigerated Van</option>
+                          <option value="TwoWheeler">Two Wheeler (Local Delivery)</option>
+                        </select>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Vehicle Reg No (e.g. UP53AB1234) *"
+                          value={vehicleNumber}
+                          onChange={(e) => setVehicleNumber(e.target.value)}
+                          className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Driver License Number"
+                        value={licenseNumber}
+                        onChange={(e) => setLicenseNumber(e.target.value)}
+                        className="w-full h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg"
+                      />
+                    </div>
+                  )}
                 </>
               )}
 
-              {/* Submit Action Button: Send OTP */}
+              {/* Submit Action Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 mt-2 bg-[#1b4332] hover:bg-[#2d6a4f] text-white font-black text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full h-11 mt-2 bg-[#1b4332] hover:bg-[#2d6a4f] text-white font-black text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
-                    <span>{language === 'hi' ? 'OTP भेजा जा रहा है...' : 'Sending OTP...'}</span>
+                    <span>Processing...</span>
                   </>
                 ) : (
                   <>
-                    <span>{language === 'hi' ? 'OTP प्राप्त करें (Send OTP)' : 'Send OTP'}</span>
+                    <span>{activeTab === 'login' ? 'Sign In to Account' : `Register as ${role.replace('_', ' ').toUpperCase()}`}</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
-
             </form>
           )}
 
-          {/* STEP 2: Enter 6-digit OTP & Verify */}
+          {/* STEP 2: Enter 6-digit OTP */}
           {step === 'otp' && (
-            <form onSubmit={handleVerifyOtp} className="space-y-5">
-              
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
               <div className="flex flex-col space-y-2">
                 <div className="flex justify-between items-center">
                   <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                    {language === 'hi' ? '6-अंकों का OTP कोड दर्ज करें' : 'ENTER 6-DIGIT OTP CODE'} *
+                    ENTER 6-DIGIT OTP CODE *
                   </label>
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                     Sent to: {emailOrPhone}
                   </span>
                 </div>
@@ -481,104 +699,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
                     placeholder="123456"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                    className="w-full h-13 pl-12 pr-4 text-center tracking-[0.4em] font-black text-xl bg-slate-50 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none text-slate-900"
+                    className="w-full h-12 pl-12 pr-4 text-center tracking-[0.4em] font-black text-xl bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none"
                   />
                 </div>
               </div>
 
-              {/* Submit Action Button: Verify OTP */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-[#1b4332] hover:bg-[#2d6a4f] text-white font-black text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full h-11 bg-[#1b4332] hover:bg-[#2d6a4f] text-white font-black text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
-                    <span>{language === 'hi' ? 'सत्यापित हो रहा है...' : 'Verifying OTP...'}</span>
+                    <span>Verifying OTP...</span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                    <span>{language === 'hi' ? 'OTP सत्यापित करें (Verify OTP)' : 'Verify OTP'}</span>
+                    <span>Verify OTP & Authenticate</span>
                   </>
                 )}
               </button>
 
-              {/* Resend OTP & Change Contact toolbar */}
               <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
                 <button
                   type="button"
                   onClick={() => {
-                    setStep('identifier');
+                    setStep('form');
                     setErrorMessage(null);
                     setSuccessMessage(null);
                   }}
                   className="font-bold text-slate-500 hover:text-slate-800"
                 >
-                  ← {language === 'hi' ? 'नंबर/ईमेल बदलें' : 'Change Number / Email'}
-                </button>
-
-                <button
-                  type="button"
-                  disabled={isTimerActive || loading}
-                  onClick={handleResendOtp}
-                  className={`font-black transition-colors ${
-                    isTimerActive
-                      ? 'text-slate-400 cursor-not-allowed'
-                      : 'text-emerald-700 hover:underline'
-                  }`}
-                >
-                  {isTimerActive
-                    ? (language === 'hi' ? `${resendTimer}s में पुन: भेजें` : `Resend OTP in ${resendTimer}s`)
-                    : (language === 'hi' ? 'OTP पुन: भेजें (Resend OTP)' : 'Resend OTP')}
+                  ← Change Contact Details
                 </button>
               </div>
-
             </form>
           )}
-
-          {/* Footer toggle note */}
-          <div className="pt-2 text-center text-xs font-semibold text-slate-500">
-            {activeTab === 'login' ? (
-              <p>
-                {language === 'hi' ? 'नया खाता चाहिए?' : "Don't have an account yet?"}{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab('register');
-                    openAuthModal('register');
-                    setStep('identifier');
-                    setErrorMessage(null);
-                    setSuccessMessage(null);
-                  }}
-                  className="text-emerald-700 font-extrabold hover:underline"
-                >
-                  {language === 'hi' ? 'यहाँ पंजीकरण करें' : 'Register now'}
-                </button>
-              </p>
-            ) : (
-              <p>
-                {language === 'hi' ? 'पहले से खाता है?' : 'Already registered?'}{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab('login');
-                    openAuthModal('login');
-                    setStep('identifier');
-                    setErrorMessage(null);
-                    setSuccessMessage(null);
-                  }}
-                  className="text-emerald-700 font-extrabold hover:underline"
-                >
-                  {language === 'hi' ? 'लॉगइन करें' : 'Sign in here'}
-                </button>
-              </p>
-            )}
-          </div>
-
         </div>
-
       </div>
     </div>
   );

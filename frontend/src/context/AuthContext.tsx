@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiService, AuthUser } from '../services/apiService';
+import { apiService, AuthUser, RegisterPayload, UserRole, FarmInfo, DeliveryAddress, BusinessInfo, VehicleInfo } from '../services/apiService';
 
 export type AuthModalMode = 'login' | 'register' | null;
 
@@ -16,21 +16,18 @@ interface AuthContextType {
     identifier: string;
     otp: string;
     name?: string;
+    role?: UserRole;
     state?: string;
     district?: string;
     village?: string;
     primaryCrop?: string;
+    farmInfo?: FarmInfo;
+    deliveryAddress?: DeliveryAddress;
+    businessInfo?: BusinessInfo;
+    vehicleInfo?: VehicleInfo;
   }) => Promise<{ success: boolean; message?: string }>;
   login: (credentials: { emailOrPhone: string; password: string }) => Promise<{ success: boolean; message?: string }>;
-  register: (data: {
-    name: string;
-    emailOrPhone: string;
-    password: string;
-    state: string;
-    district: string;
-    village?: string;
-    primaryCrop?: string;
-  }) => Promise<{ success: boolean; message?: string }>;
+  register: (data: RegisterPayload) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   setOnAuthSuccessCallback: (cb: () => void) => void;
 }
@@ -101,10 +98,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     identifier: string;
     otp: string;
     name?: string;
+    role?: UserRole;
     state?: string;
     district?: string;
     village?: string;
     primaryCrop?: string;
+    farmInfo?: FarmInfo;
+    deliveryAddress?: DeliveryAddress;
+    businessInfo?: BusinessInfo;
+    vehicleInfo?: VehicleInfo;
   }) => {
     const res = await apiService.verifyOtp(payload);
     if (res.success && res.token && res.user) {
@@ -135,15 +137,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { success: false, message: res.message || 'Login failed. Invalid credentials.' };
   };
 
-  const register = async (data: {
-    name: string;
-    emailOrPhone: string;
-    password: string;
-    state: string;
-    district: string;
-    village?: string;
-    primaryCrop?: string;
-  }) => {
+  const register = async (data: RegisterPayload) => {
     const res = await apiService.registerUser(data);
     if (res.success && res.token && res.user) {
       localStorage.setItem(TOKEN_STORAGE_KEY, res.token);

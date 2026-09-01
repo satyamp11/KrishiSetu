@@ -4,6 +4,8 @@ import { MOCK_MARKET_RATES, ALL_INDIAN_STATES } from '../mockData';
 
 const API_BASE_URL = '/api';
 
+export type UserRole = 'farmer' | 'consumer' | 'bulk_buyer' | 'delivery_partner' | 'admin';
+
 export interface MandiPricesFilterParams {
   state?: string;
   district?: string;
@@ -28,14 +30,53 @@ export interface MandiPricesApiResponse {
   rates: MarketRate[];
 }
 
+export interface FarmInfo {
+  fpoName?: string;
+  fpoRegistrationNumber?: string;
+  landSizeAcres?: number;
+  primaryCrop?: string;
+  organicCertified?: boolean;
+}
+
+export interface DeliveryAddress {
+  streetAddress?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  landmark?: string;
+}
+
+export interface BusinessInfo {
+  organizationName?: string;
+  gstin?: string;
+  businessType?: 'Wholesaler' | 'Retailer' | 'Processor' | 'Hotel/Restaurant' | 'Exporter' | 'Other';
+  annualVolumeEstimate?: string;
+}
+
+export interface VehicleInfo {
+  vehicleType?: 'TwoWheeler' | 'MiniTruck' | 'HeavyTruck' | 'RefrigeratedVan';
+  vehicleNumber?: string;
+  licenseNumber?: string;
+  operatingDistrict?: string;
+  maxCapacityKg?: number;
+}
+
 export interface AuthUser {
   id: string;
   name: string;
   emailOrPhone: string;
+  role: UserRole;
   state: string;
   district: string;
   village?: string;
   primaryCrop?: string;
+  profileImage?: string;
+  
+  farmInfo?: FarmInfo;
+  deliveryAddress?: DeliveryAddress;
+  businessInfo?: BusinessInfo;
+  vehicleInfo?: VehicleInfo;
+
   createdAt: string;
 }
 
@@ -44,6 +85,23 @@ export interface AuthApiResponse {
   message?: string;
   token?: string;
   user?: AuthUser;
+}
+
+export interface RegisterPayload {
+  name: string;
+  emailOrPhone: string;
+  password?: string;
+  role: UserRole;
+  state?: string;
+  district?: string;
+  village?: string;
+  primaryCrop?: string;
+  adminSecretKey?: string;
+
+  farmInfo?: FarmInfo;
+  deliveryAddress?: DeliveryAddress;
+  businessInfo?: BusinessInfo;
+  vehicleInfo?: VehicleInfo;
 }
 
 export interface CropScanRecord {
@@ -96,10 +154,15 @@ export const apiService = {
     identifier: string;
     otp: string;
     name?: string;
+    role?: UserRole;
     state?: string;
     district?: string;
     village?: string;
     primaryCrop?: string;
+    farmInfo?: FarmInfo;
+    deliveryAddress?: DeliveryAddress;
+    businessInfo?: BusinessInfo;
+    vehicleInfo?: VehicleInfo;
   }): Promise<AuthApiResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
@@ -114,15 +177,7 @@ export const apiService = {
   },
 
   // Authentication API Methods
-  async registerUser(data: {
-    name: string;
-    emailOrPhone: string;
-    password: string;
-    state: string;
-    district: string;
-    village?: string;
-    primaryCrop?: string;
-  }): Promise<AuthApiResponse> {
+  async registerUser(data: RegisterPayload): Promise<AuthApiResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
@@ -177,6 +232,22 @@ export const apiService = {
     }
   },
 
+  // Role Access Validation Test Methods
+  async testRoleAccess(token: string, role: UserRole): Promise<{ success: boolean; message: string; user?: AuthUser }> {
+    try {
+      const endpoint = `/auth/${role.replace('_', '')}-only`;
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Authorization test network error.' };
+    }
+  },
+
   // Farmer Profile API Methods
   async getUserProfile(token: string): Promise<AuthApiResponse> {
     try {
@@ -188,13 +259,13 @@ export const apiService = {
       });
       return await response.json();
     } catch (err) {
-      return { success: false, message: 'Failed to fetch farmer profile.' };
+      return { success: false, message: 'Failed to fetch user profile.' };
     }
   },
 
   async updateUserProfile(
     token: string,
-    updates: { name?: string; phone?: string; state?: string; district?: string; village?: string; primaryCrop?: string; profileImage?: string }
+    updates: Partial<RegisterPayload>
   ): Promise<AuthApiResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/users/profile`, {
@@ -207,7 +278,7 @@ export const apiService = {
       });
       return await response.json();
     } catch (err) {
-      return { success: false, message: 'Failed to update farmer profile.' };
+      return { success: false, message: 'Failed to update user profile.' };
     }
   },
 

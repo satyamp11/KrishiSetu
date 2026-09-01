@@ -17,7 +17,15 @@ import { AuthModal } from './components/auth/AuthModal';
 import { useAuth } from './context/AuthContext';
 import { KrishiLandingPage } from './components/landing/KrishiLandingPage';
 import { UIFoundationShowcase } from './pages/UIFoundationShowcase';
-import { ToastProvider } from './components/ui/Toast';
+import { ToastProvider, useToast } from './components/ui/Toast';
+import { Navbar, Footer, Button, Badge } from './components/ui';
+
+// Role Dashboards
+import { FarmerDashboardView } from './pages/dashboards/FarmerDashboardView';
+import { ConsumerDashboardView } from './pages/dashboards/ConsumerDashboardView';
+import { BulkBuyerDashboardView } from './pages/dashboards/BulkBuyerDashboardView';
+import { DeliveryPartnerDashboardView } from './pages/dashboards/DeliveryPartnerDashboardView';
+import { AdminDashboardView } from './pages/dashboards/AdminDashboardView';
 
 // Page Components
 import { SplashScreen } from './pages/SplashScreen';
@@ -31,20 +39,31 @@ import { ReportScreen } from './pages/ReportScreen';
 import { CommunityScreen } from './pages/CommunityScreen';
 import { ProfileScreen } from './pages/ProfileScreen';
 
-import { apiService } from './services/apiService';
+import { apiService, UserRole, AuthUser } from './services/apiService';
 
 const PROTECTED_TABS: TabType[] = ['home', 'scan', 'result', 'map', 'alerts', 'report', 'community', 'profile'];
 
 export function AppContent() {
-  // App State - Default to 'ui-showcase' to showcase Phase 1 Design System or 'landing' for Homepage
+  // App State - Default to 'ui-showcase' or active role dashboard
   const [activeTab, setActiveTab] = useState<string>('ui-showcase');
   const [language, setLanguage] = useState<Language>('hi');
   const [sunlightMode, setSunlightMode] = useState<boolean>(false);
 
   const { user, token, isAuthenticated, isLoading, setOnAuthSuccessCallback, openAuthModal, logout } = useAuth();
+  const toast = useToast();
+
+  // Test state for role previewing
+  const [simulatedRole, setSimulatedRole] = useState<UserRole>('farmer');
 
   // Store intended destination tab for post-authentication redirect
   const pendingTabRef = useRef<string | null>(null);
+
+  // Auto-redirect to role dashboard upon authentication
+  useEffect(() => {
+    if (user && user.role) {
+      setSimulatedRole(user.role);
+    }
+  }, [user]);
 
   // Protected route guard logic
   const handleNavigateWithAuth = (targetTab: string) => {
@@ -56,25 +75,15 @@ export function AppContent() {
     }
   };
 
-  // Route protection effect for direct tab access
-  useEffect(() => {
-    if (isLoading) return;
-
-    if (!isAuthenticated && PROTECTED_TABS.includes(activeTab as TabType)) {
-      pendingTabRef.current = activeTab;
-      setActiveTab('landing');
-      openAuthModal('login');
-    }
-  }, [activeTab, isAuthenticated, isLoading, openAuthModal]);
-
-  // Set post-login / post-registration redirect to intended destination
+  // Set post-login / post-registration redirect to intended destination or role dashboard
   useEffect(() => {
     setOnAuthSuccessCallback(() => {
-      const destination = pendingTabRef.current || 'scan';
+      const destination = pendingTabRef.current || 'role-dashboard';
       pendingTabRef.current = null;
       setActiveTab(destination);
+      toast.success('Authentication Successful', `Logged in as ${user?.role ? user.role.replace('_', ' ').toUpperCase() : 'User'}`);
     });
-  }, [setOnAuthSuccessCallback]);
+  }, [setOnAuthSuccessCallback, user, toast]);
 
   // Data State
   const [farmer, setFarmer] = useState<FarmerProfile>(INITIAL_FARMER);
@@ -92,6 +101,7 @@ export function AppContent() {
       }));
     }
   }, [user]);
+
   const [weather] = useState<WeatherData>(INITIAL_WEATHER);
   const [riskLevel, setRiskLevel] = useState<RiskLevel>('warning');
   const [clusters, setClusters] = useState<OutbreakCluster[]>(INITIAL_CLUSTERS);
@@ -118,7 +128,6 @@ export function AppContent() {
     setScannedImage(uploadedImage);
     setActiveTab('result');
 
-    // Automatically save scan record to backend for authenticated farmer
     if (token) {
       apiService.saveCropScan(token, {
         cropName: result.crop || 'Crop',
@@ -150,7 +159,6 @@ export function AppContent() {
     setActiveTab('map');
   };
 
-  // Hackathon WOW Demo Trigger Flow
   const handleExecuteOutbreakDemo = () => {
     setRiskLevel('outbreak');
     setUnreadAlertsCount(prev => prev + 1);
@@ -181,15 +189,33 @@ export function AppContent() {
     }, 8000);
   };
 
-  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase';
+  // Test backend role authorization endpoint
+  const handleTestRoleAuthorization = async (roleToTest: UserRole) => {
+    if (!token) {
+      toast.error('Authentication Required', 'Please sign in first to test backend role authorization middleware.');
+      openAuthModal('login');
+      return;
+    }
 
-  // Prevent flickering while checking stored authentication token
+    toast.info('Testing Backend Middleware', `Validating endpoint /api/auth/${roleToTest.replace('_', '')}-only...`);
+    const res = await apiService.testRoleAccess(token, roleToTest);
+    if (res.success) {
+      toast.success('Authorization Granted! (200 OK)', res.message);
+    } else {
+      toast.error('Authorization Denied! (403 Forbidden)', res.message);
+    }
+  };
+
+  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase' && activeTab !== 'role-dashboard';
+
+  const activeUserRole: UserRole = user?.role || simulatedRole;
+
   if (isLoading) {
     return (
       <div className="w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-3 text-white">
         <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
         <span className="text-xs font-bold text-emerald-200 tracking-wider">
-          Checking farmer authentication status...
+          Validating KrishiSetu session token...
         </span>
       </div>
     );
@@ -198,6 +224,22 @@ export function AppContent() {
   return (
     <MobileFrameWrapper sunlightMode={sunlightMode}>
       
+      {/* Navbar for Role Dashboard & Showcase Views */}
+      {(activeTab === 'role-dashboard' || activeTab === 'ui-showcase') && (
+        <Navbar
+          activeTab={activeTab}
+          onNavigate={(tab) => setActiveTab(tab)}
+          user={user}
+          onOpenAuth={(mode) => openAuthModal(mode)}
+          onLogout={() => {
+            logout();
+            toast.info('Logged Out', 'Session ended successfully.');
+          }}
+          language={language}
+          onLanguageChange={(lang) => setLanguage(lang)}
+        />
+      )}
+
       {/* Top Header Bar (When in Mobile Dashboard view) */}
       {showHeaderAndNav && (
         <HeaderBar
@@ -230,6 +272,129 @@ export function AppContent() {
 
       {/* Screen Router */}
       <div className={sunlightMode ? 'sunlight-mode' : ''}>
+        
+        {/* PHASE 3: Role Management & Auth Dashboard Router */}
+        {activeTab === 'role-dashboard' && (
+          <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+            
+            {/* Multi-Role Testing Toolbar */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase text-slate-500">Test Role Dashboard Views:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(['farmer', 'consumer', 'bulk_buyer', 'delivery_partner', 'admin'] as UserRole[]).map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => setSimulatedRole(r)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                        activeUserRole === r
+                          ? 'bg-emerald-700 text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {r.replace('_', ' ').toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Backend Role Authorization Tester */}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-slate-500">Backend Middleware Test:</span>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={() => handleTestRoleAuthorization(activeUserRole)}
+                >
+                  Test `{activeUserRole}` Route Authorization
+                </Button>
+              </div>
+            </div>
+
+            {/* Active Role Dashboard View Render */}
+            {activeUserRole === 'farmer' && (
+              <FarmerDashboardView
+                user={user || {
+                  id: 'mock-farmer',
+                  name: 'Rameshwar Singh',
+                  emailOrPhone: 'farmer@krishisetu.agri',
+                  role: 'farmer',
+                  state: 'Uttar Pradesh',
+                  district: 'Gorakhpur',
+                  village: 'Rampur',
+                  farmInfo: { fpoName: 'Gorakhpur Farmers Producer Co.' },
+                  createdAt: new Date().toISOString()
+                }}
+                onNavigate={(t) => setActiveTab(t)}
+              />
+            )}
+
+            {activeUserRole === 'consumer' && (
+              <ConsumerDashboardView
+                user={user || {
+                  id: 'mock-consumer',
+                  name: 'Anita Sharma',
+                  emailOrPhone: 'anita@gmail.com',
+                  role: 'consumer',
+                  state: 'Uttar Pradesh',
+                  district: 'Lucknow',
+                  deliveryAddress: { streetAddress: 'Sector 4, Gomti Nagar', city: 'Lucknow' },
+                  createdAt: new Date().toISOString()
+                }}
+                onNavigate={(t) => setActiveTab(t)}
+              />
+            )}
+
+            {activeUserRole === 'bulk_buyer' && (
+              <BulkBuyerDashboardView
+                user={user || {
+                  id: 'mock-bulk',
+                  name: 'Vikram Agrotech',
+                  emailOrPhone: 'procurement@vikramagri.com',
+                  role: 'bulk_buyer',
+                  state: 'Maharashtra',
+                  district: 'Mumbai',
+                  businessInfo: { organizationName: 'Vikram Agro Processing Ltd', gstin: '27AABCU9603R1ZN' },
+                  createdAt: new Date().toISOString()
+                }}
+                onNavigate={(t) => setActiveTab(t)}
+              />
+            )}
+
+            {activeUserRole === 'delivery_partner' && (
+              <DeliveryPartnerDashboardView
+                user={user || {
+                  id: 'mock-delivery',
+                  name: 'Suresh Kumar (Logistics)',
+                  emailOrPhone: 'suresh.logistics@gmail.com',
+                  role: 'delivery_partner',
+                  state: 'Uttar Pradesh',
+                  district: 'Gorakhpur',
+                  vehicleInfo: { vehicleType: 'MiniTruck', vehicleNumber: 'UP53BT9821' },
+                  createdAt: new Date().toISOString()
+                }}
+                onNavigate={(t) => setActiveTab(t)}
+              />
+            )}
+
+            {activeUserRole === 'admin' && (
+              <AdminDashboardView
+                user={user || {
+                  id: 'mock-admin',
+                  name: 'System Governance Administrator',
+                  emailOrPhone: 'admin@krishisetu.gov.in',
+                  role: 'admin',
+                  state: 'New Delhi',
+                  district: 'Central Delhi',
+                  createdAt: new Date().toISOString()
+                }}
+                onNavigate={(t) => setActiveTab(t)}
+              />
+            )}
+
+          </div>
+        )}
+
         {activeTab === 'ui-showcase' && (
           <UIFoundationShowcase />
         )}
@@ -238,7 +403,7 @@ export function AppContent() {
           <KrishiLandingPage
             language={language}
             onLanguageChange={setLanguage}
-            onLaunchApp={() => handleNavigateWithAuth('home')}
+            onLaunchApp={() => handleNavigateWithAuth('role-dashboard')}
             onLaunchScanner={() => handleNavigateWithAuth('scan')}
           />
         )}
@@ -350,6 +515,11 @@ export function AppContent() {
           />
         )}
       </div>
+
+      {/* Footer for Role Dashboard */}
+      {(activeTab === 'role-dashboard') && (
+        <Footer onNavigate={(t) => setActiveTab(t)} />
+      )}
 
       {/* Bottom Navigation Bar */}
       {showHeaderAndNav && (
