@@ -43,7 +43,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   cartItemCount = 0,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const navLinks = [
     { id: 'landing', label: 'Home' },
@@ -91,8 +90,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-2xl font-black font-serif tracking-tight text-[#1b4332]">
-                  Krishi<span className="text-emerald-600">Setu</span>
+                <span className="text-2xl font-black font-brand tracking-tight text-[#1b4332]">
+                  Krishi<span className="text-emerald-600 font-brand italic">Setu</span>
                 </span>
               </div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hidden sm:block">

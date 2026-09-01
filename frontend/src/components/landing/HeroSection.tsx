@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, CheckCircle2, ShieldCheck, Sprout, Sparkles, Truck, DollarSign, Users } from 'lucide-react';
+import { ArrowRight, Sprout, ShieldCheck, MapPin, Truck, CheckCircle2 } from 'lucide-react';
 import type { Language } from '../../types';
 
 interface HeroSectionProps {
@@ -18,110 +18,199 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   return (
     <section
       id="hero"
-      className="relative w-full min-h-[700px] flex flex-col justify-center pt-12 pb-20 bg-[#f4f6f0] overflow-hidden font-sans border-b border-stone-200"
+      className="relative w-full min-h-[720px] bg-[#f2f7f0] pt-8 pb-16 font-sans overflow-hidden border-b border-stone-200"
     >
-      {/* Background Subtle Organic Leaf Pattern Overlay */}
-      <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#2e7d32_0.75px,transparent_0.75px)] [background-size:24px_24px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
-          {/* LEFT CONTENT COLUMN */}
-          <div className="lg:col-span-7 space-y-6 text-left">
+          {/* LEFT COLUMN */}
+          <div className="lg:col-span-6 space-y-6 text-left">
             
-            {/* Small Label Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/90 border border-emerald-300 text-[#1b4332] text-xs font-black tracking-wide shadow-2xs">
+            {/* Small Green Pill */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/90 border border-emerald-300 text-emerald-900 text-xs font-black">
               <Sprout className="w-3.5 h-3.5 text-emerald-700" />
               <span>SMART AGRICULTURE MARKETPLACE</span>
             </div>
 
-            {/* Large Bold Serif Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#143022] tracking-tight leading-[1.12] font-serif">
+            {/* Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#143022] font-brand tracking-tight leading-[1.1]">
               From Farm to Market,<br />
-              <span className="text-emerald-700 font-serif italic">Without the Middlemen.</span>
+              <span className="text-emerald-700 font-brand italic">Without the Middlemen.</span>
             </h1>
 
-            {/* Supporting Paragraph */}
-            <p className="text-base sm:text-lg text-slate-700 max-w-2xl leading-relaxed font-medium">
+            {/* Paragraph */}
+            <p className="text-base sm:text-lg text-slate-700 max-w-xl leading-relaxed font-medium">
               Connect directly with farmers, FPOs, consumers and bulk buyers through a transparent digital marketplace powered by intelligent logistics and AI-driven insights.
             </p>
 
-            {/* CTA Action Buttons */}
+            {/* Buttons */}
             <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <button
                 onClick={onExploreMarketplace}
-                className="bg-[#1b4332] hover:bg-[#143022] text-white px-8 py-4 rounded-2xl font-black text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-3 group border border-emerald-900"
+                className="bg-[#1b4332] hover:bg-[#143022] text-white px-8 py-4 rounded-2xl font-black text-base shadow-md transition-all flex items-center justify-center gap-3 group border border-emerald-900"
               >
                 <span>Explore Marketplace</span>
-                <ArrowRight className="w-5 h-5 text-emerald-300 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
                 onClick={onJoinAsFarmer}
-                className="bg-white hover:bg-emerald-50 text-[#1b4332] border-2 border-[#1b4332] px-7 py-4 rounded-2xl font-extrabold text-base shadow-xs transition-all flex items-center justify-center gap-2"
+                className="bg-white hover:bg-emerald-50 text-[#1b4332] border-2 border-[#1b4332] px-7 py-4 rounded-2xl font-extrabold text-base shadow-2xs transition-all flex items-center justify-center gap-2"
               >
                 <span>Join as Farmer</span>
               </button>
             </div>
 
-            {/* Small Trust Indicators */}
-            <div className="pt-6 border-t border-emerald-900/10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-extrabold text-slate-700">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>Direct Farmer Connection</span>
+            {/* Bottom 5 Icon Pill Items */}
+            <div className="pt-8 grid grid-cols-5 gap-2 border-t border-emerald-900/10">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                  <Sprout className="w-4 h-4" />
+                </div>
+                <span className="text-[11px] font-black text-slate-800 leading-tight">Direct Farmer Connection</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>Transparent Pricing</span>
+
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 font-bold text-xs">
+                  ₹
+                </div>
+                <span className="text-[11px] font-black text-slate-800 leading-tight">Transparent Pricing</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>Smart Logistics</span>
+
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <span className="text-[11px] font-black text-slate-800 leading-tight">AI-Powered Insights</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>Secure Payments</span>
+
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                  <Truck className="w-4 h-4" />
+                </div>
+                <span className="text-[11px] font-black text-slate-800 leading-tight">Smart Logistics</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <span className="text-[11px] font-black text-slate-800 leading-tight">Secure Payments</span>
               </div>
             </div>
 
           </div>
 
-          {/* RIGHT VISUAL HERO IMAGE COLUMN */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-white">
+          {/* RIGHT VISUAL HERO IMAGE & UI MOCKUP OVERLAY (Exact Reference Match) */}
+          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[500px]">
+            
+            {/* Background Farmer Photo */}
+            <div className="relative w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
               <img
                 src="https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&w=800&q=80"
-                alt="Fresh Agricultural Harvest"
-                className="w-full h-[420px] object-cover hover:scale-105 transition-transform duration-500"
+                alt="Happy Indian Farmer with Fresh Produce Basket"
+                className="w-full h-[520px] object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-6 text-white">
-                <div className="bg-white/95 backdrop-blur-md p-4 rounded-2xl text-slate-900 shadow-lg border border-emerald-100 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-800 shrink-0">
-                    <Sprout className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-black text-sm text-[#1b4332]">Green Valley Producer FPO</span>
-                      <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        Verified
-                      </span>
+            </div>
+
+            {/* Overlaid Mobile Phone App Mockup (Exact Layout in Reference Image) */}
+            <div className="absolute right-4 sm:right-12 top-6 w-64 sm:w-72 bg-slate-950 p-3 rounded-[40px] shadow-2xl border-4 border-slate-800 text-slate-900 font-sans z-20 hover:scale-105 transition-transform">
+              <div className="bg-[#0f281e] text-white p-3 rounded-t-[30px] flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sprout className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-black tracking-tight">Krishi Setu</span>
+                </div>
+              </div>
+
+              <div className="bg-white p-3 space-y-2 text-xs rounded-b-[30px]">
+                <p className="text-[10px] font-bold text-slate-500">Welcome back, Farmer!</p>
+
+                {/* Today's Price Insights */}
+                <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-[9px] font-black text-slate-700 block">Today's Price Insights</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <div className="w-5 h-5 rounded-md bg-red-100 flex items-center justify-center text-[10px]">🍅</div>
+                      <div>
+                        <span className="font-extrabold text-[10px] block">Tomato</span>
+                        <span className="text-[9px] text-slate-500">₹32 / kg</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-600">Fresh Tomatoes • Nashik, MH • ₹32/kg</p>
+                    <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1 rounded">▲ 8.4%</span>
+                  </div>
+                  <span className="text-[8px] font-bold text-emerald-700 block">High Demand</span>
+                </div>
+
+                {/* Orders Card */}
+                <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-500 block">Orders</span>
+                    <span className="font-black text-sm">12 <span className="text-[9px] font-normal text-slate-400">This Week</span></span>
+                  </div>
+                  <span className="text-[9px] font-bold text-emerald-600">+8%</span>
+                </div>
+
+                {/* Earnings Card */}
+                <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-500 block">Earnings</span>
+                    <span className="font-black text-sm">₹18,450 <span className="text-[9px] font-normal text-slate-400">This Week</span></span>
+                  </div>
+                  <span className="text-[9px] font-bold text-emerald-600">+12%</span>
+                </div>
+
+                {/* AI Demand Forecast Mini Chart */}
+                <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-[9px] font-black text-slate-700 block">AI Demand Forecast</span>
+                  <div className="flex items-center justify-between text-[9px] text-slate-500">
+                    <span>Tomato (Next 7 Days)</span>
+                    <span className="font-black text-emerald-700">+22%</span>
+                  </div>
+                  <div className="h-6 w-full bg-emerald-100/50 rounded flex items-end p-0.5">
+                    <svg className="w-full h-full text-emerald-600" viewBox="0 0 100 30" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M0 25 L25 20 L50 15 L75 8 L100 2" />
+                    </svg>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Floating Organic Quality Badge */}
-            <div className="absolute -top-4 -right-4 bg-white p-3 rounded-2xl shadow-xl border border-stone-200 hidden sm:flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs">
-                100%
-              </div>
-              <div className="text-left">
-                <p className="text-[11px] font-black text-slate-900 leading-tight">Direct Produce</p>
-                <p className="text-[10px] text-slate-500">Zero Middleman Markup</p>
+            {/* Overlaid Delivery Truck Graphic on Right (Exact Reference Match) */}
+            <div className="absolute -right-6 bottom-4 w-48 sm:w-56 bg-white p-2 rounded-2xl shadow-xl border border-stone-200 z-10 hidden sm:block">
+              <div className="relative rounded-xl overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=400&q=80"
+                  alt="KrishiSetu Delivery Truck"
+                  className="w-full h-24 object-cover"
+                />
+                <div className="absolute top-1 right-1 bg-[#1b4332] text-white text-[9px] font-black px-1.5 py-0.5 rounded">
+                  Smart Logistics
+                </div>
               </div>
             </div>
+
+            {/* Overlaid Floating Location Pins */}
+            <div className="absolute right-36 top-2 bg-white px-2.5 py-1 rounded-xl shadow-md border border-stone-200 flex items-center gap-1.5 text-[10px] font-black text-slate-800 z-20">
+              <MapPin className="w-3.5 h-3.5 text-emerald-700" />
+              <span>From Farm</span>
+            </div>
+
+            <div className="absolute right-4 bottom-2 bg-white px-2.5 py-1 rounded-xl shadow-md border border-stone-200 flex items-center gap-1.5 text-[10px] font-black text-slate-800 z-20">
+              <MapPin className="w-3.5 h-3.5 text-emerald-700" />
+              <span>To Your Doorstep</span>
+            </div>
+
+            {/* Overlaid 100% Safe & Secure Escrow Badge (Bottom Left of Visual) */}
+            <div className="absolute left-2 bottom-2 bg-white p-3 rounded-2xl shadow-xl border border-emerald-200 z-30 flex items-center gap-3 max-w-xs">
+              <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="font-black text-xs text-slate-900 block">100% Safe & Secure</span>
+                <span className="text-[10px] text-slate-500 block leading-tight">Escrow Protected Payments. No Middlemen. Fair Prices.</span>
+              </div>
+            </div>
+
           </div>
 
         </div>

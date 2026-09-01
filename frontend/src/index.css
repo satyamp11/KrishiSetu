@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+.font-brand {
+  font-family: 'DM Serif Display', 'Playfair Display', Georgia, serif;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', 'Lora', Georgia, serif;
+}
+
+.font-sans {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
 @layer utilities {
   /* Outdoor High-Contrast Sunlight Mode Utility */
   .sunlight-mode {
@@ -14,7 +26,6 @@
   }
 }
 
-/* Custom Keyframe Animations for Hackathon Visual WOW */
 @keyframes laserScan {
   0% {
     top: 0%;
@@ -58,30 +69,9 @@
 }
 
 .animate-radar {
-  animation: pulseRadar 3s ease-in-out infinite;
+  animation: pulseRadar 2s ease-in-out infinite;
 }
 
 .animate-beacon {
-  animation: beaconGlow 1.5s infinite;
+  animation: beaconGlow 1.5s ease-in-out infinite;
 }
-
-.font-serif-title {
-  font-family: 'Manrope', 'Noto Sans Devanagari', 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-}
-
-.font-script {
-  font-family: 'Caveat', cursive;
-}
-
-.font-sans-body {
-  font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
-}
-
-/* Smooth Scrolling */
-html {
-  scroll-behavior: smooth;
-  font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
-}
-
