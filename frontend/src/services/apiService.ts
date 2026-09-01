@@ -28,7 +28,15 @@ export type OrderStatus =
   | 'DELIVERED'
   | 'CANCELLED';
 
-export type PaymentStatus = 'PENDING' | 'PAID' | 'ESCROW_HELD' | 'REFUNDED';
+export type ExtendedPaymentState =
+  | 'PENDING'
+  | 'PAID'
+  | 'HELD_FOR_ORDER'
+  | 'RELEASE_PENDING'
+  | 'RELEASED'
+  | 'REFUND_PENDING'
+  | 'REFUNDED'
+  | 'FAILED';
 
 export interface ProductItem {
   id: string;
@@ -92,6 +100,14 @@ export interface OrderItemDTO {
   subtotal: number;
 }
 
+export interface PriceBreakdownData {
+  consumerTotal: number;
+  farmerEarnings: number;
+  logisticsCost: number;
+  platformFee: number;
+  intermediarySavings: number;
+}
+
 export interface OrderItem {
   id: string;
   orderNumber: string;
@@ -112,6 +128,7 @@ export interface OrderItem {
   subtotalAmount: number;
   logisticsFee: number;
   totalAmount: number;
+  priceBreakdown: PriceBreakdownData;
   deliveryAddress: {
     streetAddress: string;
     city: string;
@@ -119,12 +136,18 @@ export interface OrderItem {
     pincode: string;
     landmark?: string;
   };
-  paymentStatus: PaymentStatus;
+  paymentStatus: ExtendedPaymentState;
   paymentMethod: string;
   orderStatus: OrderStatus;
   statusHistory: {
     status: OrderStatus;
     updatedAt: string;
+    note?: string;
+  }[];
+  paymentHistory: {
+    state: ExtendedPaymentState;
+    transactionId?: string;
+    timestamp: string;
     note?: string;
   }[];
   deliveryPartner?: {
@@ -289,6 +312,80 @@ export interface CommunityAlertRecord {
 }
 
 export const apiService = {
+  // Payment API Methods
+  async createPayment(token: string, orderId: string): Promise<{
+    success: boolean;
+    transactionId?: string;
+    orderId?: string;
+    amount?: number;
+    currency?: string;
+    keyId?: string;
+    priceBreakdown?: PriceBreakdownData;
+    message?: string;
+  }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/payments/create`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ orderId })
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to initiate payment.' };
+    }
+  },
+
+  async verifyPayment(
+    token: string,
+    payload: { transactionId: string; orderId: string; paymentSignature?: string }
+  ): Promise<{ success: boolean; paymentState?: ExtendedPaymentState; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/payments/verify`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to verify payment.' };
+    }
+  },
+
+  async getPaymentByOrder(token: string, orderId: string): Promise<{ success: boolean; payment?: any; orderBreakdown?: PriceBreakdownData; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/payments/${orderId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to fetch payment details.' };
+    }
+  },
+
+  async releaseEscrow(token: string, orderId: string): Promise<{ success: boolean; paymentState?: ExtendedPaymentState; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/payments/${orderId}/release`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to release escrow funds.' };
+    }
+  },
+
   // Cart API Methods
   async getCart(token: string): Promise<CartResponse> {
     try {

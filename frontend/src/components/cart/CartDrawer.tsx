@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Truck } from 'lucide-react';
 import { Button, Badge, useToast } from '../ui';
+import { PriceBreakdown } from '../ui/PriceBreakdown';
 import { apiService, CartResponse, CartPopulatedItem } from '../../services/apiService';
 import { useAuth } from '../../context/AuthContext';
 
@@ -114,8 +115,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
   if (!isOpen) return null;
 
-  const logisticsFee = (cart?.subtotalAmount || 0) > 5000 ? 0 : 150;
-  const grandTotal = (cart?.subtotalAmount || 0) + (cart?.items.length ? logisticsFee : 0);
+  const subtotal = cart?.subtotalAmount || 0;
+  const logisticsFee = subtotal > 5000 ? 0 : 150;
+  const grandTotal = subtotal + (cart?.items.length ? logisticsFee : 0);
+
+  // Calculate Dynamic Price Breakdown for Cart
+  const farmerEarnings = Math.round(subtotal * 0.82);
+  const logisticsCost = logisticsFee + Math.round(subtotal * 0.11);
+  const platformFee = Math.round(subtotal * 0.07);
+  const intermediarySavings = Math.round(subtotal * 0.35);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden animate-in fade-in">
@@ -164,54 +172,65 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             )}
 
             {user && !loading && cart && cart.items.length > 0 && (
-              <div className="space-y-3">
-                {cart.items.map((item) => (
-                  <div key={item.productId} className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex gap-3">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      className="w-16 h-16 rounded-xl object-cover shrink-0 bg-slate-200"
-                    />
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-start justify-between">
-                        <h4 className="text-xs font-black text-slate-900 line-clamp-1">{item.title}</h4>
-                        <button
-                          onClick={() => handleRemoveItem(item.productId)}
-                          className="text-slate-400 hover:text-red-600 ml-1"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      <p className="text-[10px] text-slate-500 font-semibold">{item.fpoName || item.farmerName}</p>
-
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-xs font-black text-emerald-800">
-                          ₹{item.price} / {item.unit}
-                        </span>
-
-                        <div className="flex items-center border border-slate-300 rounded-lg bg-white">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  {cart.items.map((item) => (
+                    <div key={item.productId} className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex gap-3">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="w-16 h-16 rounded-xl object-cover shrink-0 bg-slate-200"
+                      />
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-start justify-between">
+                          <h4 className="text-xs font-black text-slate-900 line-clamp-1">{item.title}</h4>
                           <button
-                            onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1)}
-                            className="px-2 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                            onClick={() => handleRemoveItem(item.productId)}
+                            className="text-slate-400 hover:text-red-600 ml-1"
                           >
-                            -
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
-                          <span className="px-2 text-xs font-black">{item.quantity}</span>
-                          <button
-                            onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
-                            className="px-2 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
-                          >
-                            +
-                          </button>
+                        </div>
+
+                        <p className="text-[10px] text-slate-500 font-semibold">{item.fpoName || item.farmerName}</p>
+
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-xs font-black text-emerald-800">
+                            ₹{item.price} / {item.unit}
+                          </span>
+
+                          <div className="flex items-center border border-slate-300 rounded-lg bg-white">
+                            <button
+                              onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1)}
+                              className="px-2 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                            >
+                              -
+                            </button>
+                            <span className="px-2 text-xs font-black">{item.quantity}</span>
+                            <button
+                              onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
+                              className="px-2 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+
+                {/* Dynamic Transparent Price Breakdown */}
+                <PriceBreakdown
+                  consumerTotal={grandTotal}
+                  farmerEarnings={farmerEarnings}
+                  logisticsCost={logisticsCost}
+                  platformFee={platformFee}
+                  intermediarySavings={intermediarySavings}
+                />
 
                 {/* Delivery Address Form */}
-                <div className="p-4 bg-slate-100/70 rounded-2xl border border-slate-200 space-y-2 mt-4">
+                <div className="p-4 bg-slate-100/70 rounded-2xl border border-slate-200 space-y-2">
                   <h4 className="text-xs font-black text-slate-800 flex items-center gap-1">
                     <Truck className="w-3.5 h-3.5 text-emerald-700" />
                     <span>Delivery Address</span>

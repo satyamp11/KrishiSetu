@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
-import { Order, IOrder, OrderStatus, PaymentStatus } from '../models/Order.js';
+import { Order, IOrder, OrderStatus } from '../models/Order.js';
+import { ExtendedPaymentState } from '../models/Payment.js';
 import { Product } from '../models/Product.js';
 import { UserResponse } from '../models/User.js';
 import { cartService } from './cartService.js';
+import { paymentService } from './paymentService.js';
 
 export interface CreateOrderPayload {
   items?: { productId: string; quantity: number }[];
@@ -46,6 +48,13 @@ export interface OrderResponseDTO {
   subtotalAmount: number;
   logisticsFee: number;
   totalAmount: number;
+  priceBreakdown: {
+    consumerTotal: number;
+    farmerEarnings: number;
+    logisticsCost: number;
+    platformFee: number;
+    intermediarySavings: number;
+  };
   deliveryAddress: {
     streetAddress: string;
     city: string;
@@ -53,12 +62,18 @@ export interface OrderResponseDTO {
     pincode: string;
     landmark?: string;
   };
-  paymentStatus: PaymentStatus;
+  paymentStatus: ExtendedPaymentState;
   paymentMethod: string;
   orderStatus: OrderStatus;
   statusHistory: {
     status: OrderStatus;
     updatedAt: string;
+    note?: string;
+  }[];
+  paymentHistory: {
+    state: ExtendedPaymentState;
+    transactionId?: string;
+    timestamp: string;
     note?: string;
   }[];
   deliveryPartner?: {
@@ -72,6 +87,8 @@ export interface OrderResponseDTO {
 export const orderService = {
   // Convert Order Mongoose Document to Response DTO
   toOrderDTO(doc: IOrder): OrderResponseDTO {
+    const breakdown = doc.priceBreakdown || paymentService.calculateDynamicBreakdown(doc.subtotalAmount, doc.logisticsFee);
+
     return {
       id: doc._id.toString(),
       orderNumber: doc.orderNumber,
@@ -101,6 +118,7 @@ export const orderService = {
       subtotalAmount: doc.subtotalAmount,
       logisticsFee: doc.logisticsFee || 0,
       totalAmount: doc.totalAmount,
+      priceBreakdown: breakdown,
       deliveryAddress: doc.deliveryAddress,
       paymentStatus: doc.paymentStatus,
       paymentMethod: doc.paymentMethod || 'ESCROW',
@@ -109,6 +127,12 @@ export const orderService = {
         status: h.status,
         updatedAt: h.updatedAt ? new Date(h.updatedAt).toISOString() : new Date().toISOString(),
         note: h.note || ''
+      })),
+      paymentHistory: (doc.paymentHistory || []).map((p) => ({
+        state: p.state,
+        transactionId: p.transactionId || '',
+        timestamp: p.timestamp ? new Date(p.timestamp).toISOString() : new Date().toISOString(),
+        note: p.note || ''
       })),
       deliveryPartner: {
         id: doc.deliveryPartnerId ? doc.deliveryPartnerId.toString() : undefined,
@@ -119,7 +143,7 @@ export const orderService = {
     };
   },
 
-  // 1. Create Order (Stock Validated & Totals Computed strictly on Backend)
+  // 1. Create Order (Stock Validated & Dynamic Price Breakdown Computed strictly on Backend)
   async createOrder(buyer: UserResponse, payload: CreateOrderPayload): Promise<{ success: boolean; orders?: OrderResponseDTO[]; message?: string }> {
     if (!payload.deliveryAddress || !payload.deliveryAddress.streetAddress || !payload.deliveryAddress.city) {
       return { success: false, message: 'Valid delivery address is required.' };
@@ -130,7 +154,6 @@ export const orderService = {
     if (payload.isDirectCheckout && payload.items && payload.items.length > 0) {
       itemsToProcess = payload.items;
     } else {
-      // Fetch from User Cart
       const cart = await cartService.getCart(buyer.id);
       if (!cart.items || cart.items.length === 0) {
         return { success: false, message: 'Your shopping cart is empty.' };
@@ -138,7 +161,6 @@ export const orderService = {
       itemsToProcess = cart.items.map((i) => ({ productId: i.productId, quantity: i.quantity }));
     }
 
-    // Group items by Seller/Farmer ID
     const itemsBySeller: Record<string, { product: any; requestedQty: number }[]> = {};
 
     for (const itemRequest of itemsToProcess) {
@@ -151,7 +173,6 @@ export const orderService = {
         return { success: false, message: `Produce item "${product?.title || 'Unknown'}" is no longer available.` };
       }
 
-      // Backend Stock Validation Guard
       if (product.availableQuantity < itemRequest.quantity) {
         return {
           success: false,
@@ -168,14 +189,13 @@ export const orderService = {
 
     const createdOrders: OrderResponseDTO[] = [];
 
-    // Create an Order per Seller
     for (const [sellerIdStr, sellerItems] of Object.entries(itemsBySeller)) {
       const firstProduct = sellerItems[0].product;
       const orderItems = [];
       let subtotalAmount = 0;
 
       for (const { product, requestedQty } of sellerItems) {
-        const itemPrice = product.price; // ALWAYS use price from backend database
+        const itemPrice = product.price;
         const itemSubtotal = itemPrice * requestedQty;
         subtotalAmount += itemSubtotal;
 
@@ -190,7 +210,6 @@ export const orderService = {
           subtotal: itemSubtotal
         });
 
-        // Deduct Stock in Database
         product.availableQuantity = product.availableQuantity - requestedQty;
         if (product.availableQuantity === 0) {
           product.status = 'sold_out';
@@ -198,9 +217,12 @@ export const orderService = {
         await product.save();
       }
 
-      const logisticsFee = subtotalAmount > 5000 ? 0 : 150; // Free delivery for orders > ₹5000
+      const logisticsFee = subtotalAmount > 5000 ? 0 : 150;
       const totalAmount = subtotalAmount + logisticsFee;
       const orderNumber = `ORD-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+
+      // Calculate Dynamic Price Breakdown on Backend
+      const priceBreakdown = paymentService.calculateDynamicBreakdown(subtotalAmount, logisticsFee);
 
       const newOrder = new Order({
         orderNumber,
@@ -219,9 +241,10 @@ export const orderService = {
         subtotalAmount,
         logisticsFee,
         totalAmount,
+        priceBreakdown,
 
         deliveryAddress: payload.deliveryAddress,
-        paymentStatus: 'ESCROW_HELD',
+        paymentStatus: 'HELD_FOR_ORDER',
         paymentMethod: payload.paymentMethod || 'ESCROW',
         orderStatus: 'PENDING',
         statusHistory: [
@@ -230,6 +253,14 @@ export const orderService = {
             updatedAt: new Date(),
             note: 'Order placed directly with farmer. Payment held in platform escrow.'
           }
+        ],
+        paymentHistory: [
+          {
+            state: 'HELD_FOR_ORDER',
+            transactionId: `PAY_TXN_${Date.now()}`,
+            timestamp: new Date(),
+            note: 'Payment authorized and held in platform escrow.'
+          }
         ]
       });
 
@@ -237,7 +268,6 @@ export const orderService = {
       createdOrders.push(this.toOrderDTO(savedOrder));
     }
 
-    // Empties cart if order came from Cart
     if (!payload.isDirectCheckout) {
       await cartService.clearCart(buyer.id);
     }
@@ -253,13 +283,10 @@ export const orderService = {
     let query: any = {};
 
     if (user.role === 'farmer') {
-      // Farmer sees orders where they are the seller
       query = { sellerId: new mongoose.Types.ObjectId(user.id) };
     } else if (user.role === 'consumer' || user.role === 'bulk_buyer') {
-      // Buyer sees orders where they are the buyer
       query = { buyerId: new mongoose.Types.ObjectId(user.id) };
     } else if (user.role === 'delivery_partner') {
-      // Delivery partner sees assigned orders or pickable orders
       query = {
         $or: [
           { deliveryPartnerId: new mongoose.Types.ObjectId(user.id) },
@@ -267,7 +294,7 @@ export const orderService = {
         ]
       };
     } else if (user.role === 'admin') {
-      query = {}; // Admin sees all
+      query = {};
     } else {
       query = { buyerId: new mongoose.Types.ObjectId(user.id) };
     }
@@ -287,7 +314,6 @@ export const orderService = {
       return { success: false, message: 'Order not found' };
     }
 
-    // Ownership Authorization Guard: User must be buyer, seller, delivery partner, or admin
     const isBuyer = doc.buyerId.toString() === user.id;
     const isSeller = doc.sellerId.toString() === user.id;
     const isDeliveryPartner = doc.deliveryPartnerId?.toString() === user.id || user.role === 'delivery_partner';
@@ -321,7 +347,6 @@ export const orderService = {
     const isDeliveryPartner = user.role === 'delivery_partner';
     const isAdmin = user.role === 'admin';
 
-    // Role-based Status Update Authorization
     if (newStatus === 'CANCELLED') {
       if (!isBuyer && !isSeller && !isAdmin) {
         return { success: false, message: 'Forbidden: You cannot cancel this order.' };
@@ -330,7 +355,6 @@ export const orderService = {
         return { success: false, message: 'Delivered orders cannot be cancelled.' };
       }
 
-      // Restore Stock in Product Collection
       for (const item of doc.items) {
         await Product.findByIdAndUpdate(item.productId, {
           $inc: { availableQuantity: item.quantity },
@@ -339,6 +363,11 @@ export const orderService = {
       }
 
       doc.paymentStatus = 'REFUNDED';
+      doc.paymentHistory.push({
+        state: 'REFUNDED',
+        timestamp: new Date(),
+        note: 'Order cancelled. Refund initiated to buyer account.'
+      });
     } else {
       if (user.role === 'farmer' && !isSeller && !isAdmin) {
         return { success: false, message: 'Forbidden: You are not the seller of this order.' };

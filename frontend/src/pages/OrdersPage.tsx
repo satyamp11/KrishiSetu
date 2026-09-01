@@ -11,6 +11,8 @@ import {
   ArrowRight,
   AlertCircle,
   RefreshCw,
+  Zap,
+  Sparkles,
 } from 'lucide-react';
 import {
   Navbar,
@@ -23,7 +25,8 @@ import {
   ErrorState,
   useToast,
 } from '../components/ui';
-import { apiService, OrderItem, OrderStatus } from '../services/apiService';
+import { PriceBreakdown } from '../components/ui/PriceBreakdown';
+import { apiService, OrderItem, OrderStatus, ExtendedPaymentState } from '../services/apiService';
 import { useAuth } from '../context/AuthContext';
 
 export interface OrdersPageProps {
@@ -93,6 +96,24 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
     }
   };
 
+  const handleReleaseEscrow = async (orderId: string) => {
+    if (!token) return;
+    setUpdatingId(orderId);
+    try {
+      const res = await apiService.releaseEscrow(token, orderId);
+      if (res.success) {
+        toast.success('Escrow Released!', res.message || 'Funds released directly to Farmer bank account.');
+        fetchOrders();
+      } else {
+        toast.error('Escrow Release Failed', res.message || 'Unable to release escrow.');
+      }
+    } catch (err) {
+      toast.error('Error', 'Network error releasing escrow.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const handleCancelOrder = async (orderId: string) => {
     if (!token) return;
     if (!window.confirm('Are you sure you want to cancel this order? Stock will be returned to the farmer.')) return;
@@ -145,17 +166,17 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Badge variant="primary" size="sm">
-                  Phase 5: Orders & Escrow
+                  Phase 6: Transparent Pricing & Escrow Architecture
                 </Badge>
                 <Badge variant="earth" size="sm" icon={<ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />}>
-                  Escrow Payment Protected
+                  Dynamic Price Allocation
                 </Badge>
               </div>
               <h1 className="text-3xl font-black tracking-tight text-white">
                 {isFarmer ? 'Received Producer Orders' : 'Your Produce Direct Orders'}
               </h1>
               <p className="text-xs text-slate-300 mt-1">
-                Track direct agricultural shipments, status timeline, and escrow release status.
+                Track direct agricultural shipments, transparent price breakdown, and escrow release status.
               </p>
             </div>
 
@@ -197,13 +218,20 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
             {orders.map((ord) => {
               const currentStepIndex = ORDER_STATUS_STEPS.findIndex((s) => s.status === ord.orderStatus);
               const isCancelled = ord.orderStatus === 'CANCELLED';
+              const breakdown = ord.priceBreakdown || {
+                consumerTotal: ord.totalAmount,
+                farmerEarnings: Math.round(ord.subtotalAmount * 0.82),
+                logisticsCost: ord.logisticsFee + Math.round(ord.subtotalAmount * 0.11),
+                platformFee: Math.round(ord.subtotalAmount * 0.07),
+                intermediarySavings: Math.round(ord.subtotalAmount * 0.35),
+              };
 
               return (
                 <div key={ord.id} className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
                   {/* Order Header Bar */}
                   <div className="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-black text-slate-900 text-sm tracking-tight">{ord.orderNumber}</span>
                         <Badge
                           variant={
@@ -218,8 +246,20 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
                           {ord.orderStatus.replace('_', ' ')}
                         </Badge>
 
-                        <Badge variant="earth" size="sm">
-                          Payment: {ord.paymentStatus}
+                        <Badge
+                          variant={
+                            ord.paymentStatus === 'RELEASED'
+                              ? 'success'
+                              : ord.paymentStatus === 'HELD_FOR_ORDER'
+                              ? 'warning'
+                              : ord.paymentStatus === 'REFUNDED'
+                              ? 'danger'
+                              : 'earth'
+                          }
+                          size="sm"
+                          icon={<ShieldCheck className="w-3.5 h-3.5" />}
+                        >
+                          Escrow: {ord.paymentStatus}
                         </Badge>
                       </div>
 
@@ -228,7 +268,20 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Confirm Delivery & Release Escrow Action */}
+                      {ord.orderStatus === 'DELIVERED' && ord.paymentStatus !== 'RELEASED' && (
+                        <Button
+                          variant="primary"
+                          size="xs"
+                          leftIcon={<Zap className="w-3.5 h-3.5 fill-white" />}
+                          isLoading={updatingId === ord.id}
+                          onClick={() => handleReleaseEscrow(ord.id)}
+                        >
+                          Confirm Delivery & Release Escrow to Farmer
+                        </Button>
+                      )}
+
                       {/* Farmer / Admin Status Control */}
                       {(user.role === 'farmer' || user.role === 'admin' || user.role === 'delivery_partner') && !isCancelled && ord.orderStatus !== 'DELIVERED' && (
                         <div className="flex items-center gap-1.5">
@@ -315,12 +368,12 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
                     </div>
                   )}
 
-                  {/* Order Details Body */}
+                  {/* Order Details & Price Breakdown Body */}
                   <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    {/* Items List */}
-                    <div className="lg:col-span-8 space-y-3">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-500">Order Items</h4>
+                    {/* Left Column: Items List & Parties */}
+                    <div className="lg:col-span-7 space-y-4">
                       <div className="space-y-2">
+                        <h4 className="text-xs font-black uppercase tracking-wider text-slate-500">Order Items</h4>
                         {ord.items.map((item) => (
                           <div key={item.productId} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
                             <div className="flex items-center gap-3">
@@ -340,33 +393,31 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
                           </div>
                         ))}
                       </div>
+
+                      {/* Buyer & Seller Info Summary */}
+                      <div className="grid grid-cols-2 gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+                        <div>
+                          <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Buyer Details</span>
+                          <p className="font-bold text-slate-900">{ord.buyer.name}</p>
+                          <p className="text-slate-500 truncate">{ord.buyer.emailOrPhone}</p>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Farmer / FPO</span>
+                          <p className="font-bold text-slate-900">{ord.seller.fpoName || ord.seller.name}</p>
+                          <p className="text-slate-500">{ord.seller.district}, {ord.seller.state}</p>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Parties & Address Summary */}
-                    <div className="lg:col-span-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 text-xs">
-                      <div>
-                        <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Buyer Info</span>
-                        <p className="font-bold text-slate-900">{ord.buyer.name}</p>
-                        <p className="text-slate-500">{ord.buyer.emailOrPhone}</p>
-                      </div>
-
-                      <div className="border-t border-slate-200 pt-2">
-                        <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Farmer / Supplier</span>
-                        <p className="font-bold text-slate-900">{ord.seller.fpoName || ord.seller.name}</p>
-                        <p className="text-slate-500">{ord.seller.district}, {ord.seller.state}</p>
-                      </div>
-
-                      <div className="border-t border-slate-200 pt-2">
-                        <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Delivery Address</span>
-                        <p className="font-semibold text-slate-800">
-                          {ord.deliveryAddress.streetAddress}, {ord.deliveryAddress.city}, {ord.deliveryAddress.state} - {ord.deliveryAddress.pincode}
-                        </p>
-                      </div>
-
-                      <div className="border-t border-slate-200 pt-2 flex justify-between font-black text-sm text-slate-900">
-                        <span>Total Paid:</span>
-                        <span className="text-emerald-800">₹{ord.totalAmount.toLocaleString()}</span>
-                      </div>
+                    {/* Right Column: Dynamic Price Breakdown Component */}
+                    <div className="lg:col-span-5">
+                      <PriceBreakdown
+                        consumerTotal={breakdown.consumerTotal}
+                        farmerEarnings={breakdown.farmerEarnings}
+                        logisticsCost={breakdown.logisticsCost}
+                        platformFee={breakdown.platformFee}
+                        intermediarySavings={breakdown.intermediarySavings}
+                      />
                     </div>
                   </div>
                 </div>

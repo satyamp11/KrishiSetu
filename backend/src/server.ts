@@ -15,6 +15,7 @@ import diseaseRouter from './routes/disease.routes.js';
 import productRouter from './routes/product.routes.js';
 import cartRouter from './routes/cart.routes.js';
 import orderRouter from './routes/order.routes.js';
+import paymentRouter from './routes/payment.routes.js';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/users', userRouter);
 app.use('/api/products', productRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);
+app.use('/api/payments', paymentRouter);
 app.use('/api/scans', scanRouter);
 app.use('/api/alerts', alertRouter);
 app.use('/api/mandi', mandiRouter);

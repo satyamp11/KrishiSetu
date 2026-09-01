@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { ExtendedPaymentState } from './Payment.js';
 
 export type OrderStatus =
   | 'PENDING'
@@ -10,8 +11,6 @@ export type OrderStatus =
   | 'DELIVERED'
   | 'CANCELLED';
 
-export type PaymentStatus = 'PENDING' | 'PAID' | 'ESCROW_HELD' | 'REFUNDED';
-
 export interface IOrderItem {
   productId: mongoose.Types.ObjectId;
   title: string;
@@ -21,6 +20,14 @@ export interface IOrderItem {
   pricePerUnit: number;
   quantity: number;
   subtotal: number;
+}
+
+export interface IPriceBreakdown {
+  consumerTotal: number;
+  farmerEarnings: number;
+  logisticsCost: number;
+  platformFee: number;
+  intermediarySavings: number; // APMC middleman commission saved
 }
 
 export interface IOrder extends Document {
@@ -46,6 +53,9 @@ export interface IOrder extends Document {
   logisticsFee: number;
   totalAmount: number;
 
+  // Dynamic Price Breakdown Architecture
+  priceBreakdown: IPriceBreakdown;
+
   // Delivery & Payment Details
   deliveryAddress: {
     streetAddress: string;
@@ -54,13 +64,20 @@ export interface IOrder extends Document {
     pincode: string;
     landmark?: string;
   };
-  paymentStatus: PaymentStatus;
+  paymentStatus: ExtendedPaymentState;
   paymentMethod: 'ESCROW' | 'UPI' | 'COD' | 'BANK_TRANSFER';
   
   orderStatus: OrderStatus;
   statusHistory: {
     status: OrderStatus;
     updatedAt: Date;
+    note?: string;
+  }[];
+
+  paymentHistory: {
+    state: ExtendedPaymentState;
+    transactionId?: string;
+    timestamp: Date;
     note?: string;
   }[];
 
@@ -81,6 +98,14 @@ const OrderItemSchema = new Schema({
   pricePerUnit: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
   subtotal: { type: Number, required: true }
+});
+
+const PriceBreakdownSchema = new Schema({
+  consumerTotal: { type: Number, required: true },
+  farmerEarnings: { type: Number, required: true },
+  logisticsCost: { type: Number, required: true },
+  platformFee: { type: Number, required: true },
+  intermediarySavings: { type: Number, required: true }
 });
 
 const OrderSchema: Schema = new Schema(
@@ -117,6 +142,11 @@ const OrderSchema: Schema = new Schema(
     logisticsFee: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
 
+    priceBreakdown: {
+      type: PriceBreakdownSchema,
+      required: true
+    },
+
     deliveryAddress: {
       streetAddress: { type: String, required: true },
       city: { type: String, required: true },
@@ -127,8 +157,17 @@ const OrderSchema: Schema = new Schema(
 
     paymentStatus: {
       type: String,
-      enum: ['PENDING', 'PAID', 'ESCROW_HELD', 'REFUNDED'],
-      default: 'ESCROW_HELD',
+      enum: [
+        'PENDING',
+        'PAID',
+        'HELD_FOR_ORDER',
+        'RELEASE_PENDING',
+        'RELEASED',
+        'REFUND_PENDING',
+        'REFUNDED',
+        'FAILED'
+      ],
+      default: 'HELD_FOR_ORDER',
       index: true
     },
     paymentMethod: {
@@ -157,6 +196,15 @@ const OrderSchema: Schema = new Schema(
       {
         status: { type: String, required: true },
         updatedAt: { type: Date, default: Date.now },
+        note: { type: String, default: '' }
+      }
+    ],
+
+    paymentHistory: [
+      {
+        state: { type: String, required: true },
+        transactionId: { type: String, default: '' },
+        timestamp: { type: Date, default: Date.now },
         note: { type: String, default: '' }
       }
     ],
