@@ -17,6 +17,8 @@ import { AuthModal } from './components/auth/AuthModal';
 import { useAuth } from './context/AuthContext';
 import { KrishiLandingPage } from './components/landing/KrishiLandingPage';
 import { UIFoundationShowcase } from './pages/UIFoundationShowcase';
+import { MarketplacePage } from './pages/MarketplacePage';
+import { ProductDetailPage } from './pages/ProductDetailPage';
 import { ToastProvider, useToast } from './components/ui/Toast';
 import { Navbar, Footer, Button, Badge } from './components/ui';
 
@@ -39,13 +41,14 @@ import { ReportScreen } from './pages/ReportScreen';
 import { CommunityScreen } from './pages/CommunityScreen';
 import { ProfileScreen } from './pages/ProfileScreen';
 
-import { apiService, UserRole, AuthUser } from './services/apiService';
+import { apiService, UserRole } from './services/apiService';
 
 const PROTECTED_TABS: TabType[] = ['home', 'scan', 'result', 'map', 'alerts', 'report', 'community', 'profile'];
 
 export function AppContent() {
-  // App State - Default to 'ui-showcase' or active role dashboard
-  const [activeTab, setActiveTab] = useState<string>('ui-showcase');
+  // App State - Default to 'marketplace' for Phase 4 Agricultural Marketplace
+  const [activeTab, setActiveTab] = useState<string>('marketplace');
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [language, setLanguage] = useState<Language>('hi');
   const [sunlightMode, setSunlightMode] = useState<boolean>(false);
 
@@ -58,7 +61,7 @@ export function AppContent() {
   // Store intended destination tab for post-authentication redirect
   const pendingTabRef = useRef<string | null>(null);
 
-  // Auto-redirect to role dashboard upon authentication
+  // Auto-redirect to role dashboard upon authentication if desired
   useEffect(() => {
     if (user && user.role) {
       setSimulatedRole(user.role);
@@ -75,13 +78,13 @@ export function AppContent() {
     }
   };
 
-  // Set post-login / post-registration redirect to intended destination or role dashboard
+  // Set post-login / post-registration redirect to intended destination or marketplace
   useEffect(() => {
     setOnAuthSuccessCallback(() => {
-      const destination = pendingTabRef.current || 'role-dashboard';
+      const destination = pendingTabRef.current || 'marketplace';
       pendingTabRef.current = null;
       setActiveTab(destination);
-      toast.success('Authentication Successful', `Logged in as ${user?.role ? user.role.replace('_', ' ').toUpperCase() : 'User'}`);
+      toast.success('Authentication Successful', `Welcome ${user?.name || 'User'} (${user?.role ? user.role.replace('_', ' ').toUpperCase() : 'Member'})`);
     });
   }, [setOnAuthSuccessCallback, user, toast]);
 
@@ -189,6 +192,12 @@ export function AppContent() {
     }, 8000);
   };
 
+  // Navigate to product detail page
+  const handleViewProductDetail = (productId: string) => {
+    setSelectedProductId(productId);
+    setActiveTab('product-detail');
+  };
+
   // Test backend role authorization endpoint
   const handleTestRoleAuthorization = async (roleToTest: UserRole) => {
     if (!token) {
@@ -206,7 +215,7 @@ export function AppContent() {
     }
   };
 
-  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase' && activeTab !== 'role-dashboard';
+  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase' && activeTab !== 'role-dashboard' && activeTab !== 'marketplace' && activeTab !== 'product-detail';
 
   const activeUserRole: UserRole = user?.role || simulatedRole;
 
@@ -224,22 +233,6 @@ export function AppContent() {
   return (
     <MobileFrameWrapper sunlightMode={sunlightMode}>
       
-      {/* Navbar for Role Dashboard & Showcase Views */}
-      {(activeTab === 'role-dashboard' || activeTab === 'ui-showcase') && (
-        <Navbar
-          activeTab={activeTab}
-          onNavigate={(tab) => setActiveTab(tab)}
-          user={user}
-          onOpenAuth={(mode) => openAuthModal(mode)}
-          onLogout={() => {
-            logout();
-            toast.info('Logged Out', 'Session ended successfully.');
-          }}
-          language={language}
-          onLanguageChange={(lang) => setLanguage(lang)}
-        />
-      )}
-
       {/* Top Header Bar (When in Mobile Dashboard view) */}
       {showHeaderAndNav && (
         <HeaderBar
@@ -273,6 +266,23 @@ export function AppContent() {
       {/* Screen Router */}
       <div className={sunlightMode ? 'sunlight-mode' : ''}>
         
+        {/* PHASE 4: Agricultural Marketplace Page */}
+        {activeTab === 'marketplace' && (
+          <MarketplacePage
+            onNavigateToProductDetail={(id) => handleViewProductDetail(id)}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+          />
+        )}
+
+        {/* PHASE 4: Product Detail View (/product/:id) */}
+        {activeTab === 'product-detail' && (
+          <ProductDetailPage
+            productId={selectedProductId || '1'}
+            onBackToMarketplace={() => setActiveTab('marketplace')}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+          />
+        )}
+
         {/* PHASE 3: Role Management & Auth Dashboard Router */}
         {activeTab === 'role-dashboard' && (
           <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
@@ -403,7 +413,7 @@ export function AppContent() {
           <KrishiLandingPage
             language={language}
             onLanguageChange={setLanguage}
-            onLaunchApp={() => handleNavigateWithAuth('role-dashboard')}
+            onLaunchApp={() => handleNavigateWithAuth('marketplace')}
             onLaunchScanner={() => handleNavigateWithAuth('scan')}
           />
         )}

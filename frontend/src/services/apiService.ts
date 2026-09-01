@@ -6,6 +6,70 @@ const API_BASE_URL = '/api';
 
 export type UserRole = 'farmer' | 'consumer' | 'bulk_buyer' | 'delivery_partner' | 'admin';
 
+export type ProductCategory =
+  | 'Vegetables'
+  | 'Fruits'
+  | 'Grains'
+  | 'Pulses'
+  | 'Spices'
+  | 'Dairy'
+  | 'Organic Products'
+  | 'Seeds'
+  | 'Fertilizers'
+  | 'Farm Equipment';
+
+export interface ProductItem {
+  id: string;
+  title: string;
+  category: ProductCategory;
+  price: number;
+  unit: string;
+  mandiBenchmarkPrice?: number;
+  availableQuantity: number;
+  minOrderQuantity: number;
+  description?: string;
+  imageUrl: string;
+  farmerId: string;
+  farmerName: string;
+  fpoName?: string;
+  isVerifiedFPO: boolean;
+  isOrganicCertified: boolean;
+  location: {
+    village?: string;
+    district: string;
+    state: string;
+  };
+  rating: number;
+  reviewCount: number;
+  harvestDate?: string;
+  status: 'available' | 'sold_out' | 'unlisted';
+  createdAt: string;
+}
+
+export interface ProductsFilterParams {
+  category?: string;
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  state?: string;
+  district?: string;
+  organicOnly?: boolean;
+  verifiedOnly?: boolean;
+  sort?: 'price_asc' | 'price_desc' | 'rating' | 'newest' | 'stock';
+  page?: number;
+  limit?: number;
+}
+
+export interface ProductsApiResponse {
+  success: boolean;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  products: ProductItem[];
+  message?: string;
+}
+
 export interface MandiPricesFilterParams {
   state?: string;
   district?: string;
@@ -136,6 +200,134 @@ export interface CommunityAlertRecord {
 }
 
 export const apiService = {
+  // Marketplace Product API Methods
+  async getProducts(params?: ProductsFilterParams): Promise<ProductsApiResponse> {
+    try {
+      const query = new URLSearchParams();
+      if (params?.category && params.category !== 'All') query.append('category', params.category);
+      if (params?.search) query.append('search', params.search);
+      if (params?.minPrice !== undefined) query.append('minPrice', String(params.minPrice));
+      if (params?.maxPrice !== undefined) query.append('maxPrice', String(params.maxPrice));
+      if (params?.state && params.state !== 'All') query.append('state', params.state);
+      if (params?.district && params.district !== 'All') query.append('district', params.district);
+      if (params?.organicOnly) query.append('organicOnly', 'true');
+      if (params?.verifiedOnly) query.append('verifiedOnly', 'true');
+      if (params?.sort) query.append('sort', params.sort);
+      if (params?.page) query.append('page', String(params.page));
+      if (params?.limit) query.append('limit', String(params.limit));
+
+      const response = await fetch(`${API_BASE_URL}/products?${query.toString()}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+      return await response.json();
+    } catch (err) {
+      console.error('Error fetching products from backend:', err);
+      return {
+        success: false,
+        total: 0,
+        page: 1,
+        limit: 12,
+        totalPages: 1,
+        products: [],
+        message: 'Unable to connect to Marketplace database.'
+      };
+    }
+  },
+
+  async getProductById(id: string): Promise<{ success: boolean; product?: ProductItem; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/${id}`);
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to load product details.' };
+    }
+  },
+
+  async getMyProducts(token: string): Promise<{ success: boolean; total: number; products: ProductItem[] }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/my-products`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, total: 0, products: [] };
+    }
+  },
+
+  async createProduct(
+    token: string,
+    payload: {
+      title: string;
+      category: ProductCategory;
+      price: number;
+      unit: string;
+      availableQuantity: number;
+      minOrderQuantity?: number;
+      mandiBenchmarkPrice?: number;
+      description?: string;
+      imageUrl?: string;
+      fpoName?: string;
+      isVerifiedFPO?: boolean;
+      isOrganicCertified?: boolean;
+      village?: string;
+      district?: string;
+      state?: string;
+    }
+  ): Promise<{ success: boolean; product?: ProductItem; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/products`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to create product listing.' };
+    }
+  },
+
+  async updateProduct(
+    token: string,
+    id: string,
+    payload: Partial<ProductItem>
+  ): Promise<{ success: boolean; product?: ProductItem; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to update product listing.' };
+    }
+  },
+
+  async deleteProduct(token: string, id: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to delete product listing.' };
+    }
+  },
+
   // OTP Authentication API Methods
   async sendOtp(identifier: string): Promise<{ success: boolean; message?: string }> {
     try {

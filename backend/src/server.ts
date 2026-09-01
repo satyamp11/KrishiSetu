@@ -12,6 +12,7 @@ import { mandiRouter } from './routes/mandi.routes.js';
 import marketRatesRouter from './routes/marketRates.routes.js';
 import weatherRouter from './routes/weather.routes.js';
 import diseaseRouter from './routes/disease.routes.js';
+import productRouter from './routes/product.routes.js';
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.get('/api/health', (_req, res) => {
 // API Routes
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
+app.use('/api/products', productRouter);
 app.use('/api/scans', scanRouter);
 app.use('/api/alerts', alertRouter);
 app.use('/api/mandi', mandiRouter);
