@@ -11,7 +11,8 @@ import {
   Sparkles,
   ShieldCheck,
   Globe,
-  ChevronDown,
+  ShoppingCart,
+  Package,
 } from 'lucide-react';
 import { Button } from './Button';
 import { Badge } from './Badge';
@@ -20,6 +21,7 @@ export interface NavbarProps {
   activeTab?: string;
   onNavigate?: (tab: string) => void;
   onOpenAuth?: (mode: 'login' | 'register') => void;
+  onOpenCart?: () => void;
   user?: { name: string; role?: string } | null;
   onLogout?: () => void;
   language?: string;
@@ -30,21 +32,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab = 'landing',
   onNavigate = () => {},
   onOpenAuth = () => {},
+  onOpenCart = () => {},
   user = null,
   onLogout = () => {},
   language = 'en',
   onLanguageChange = () => {},
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const navLinks = [
     { id: 'landing', label: 'Home', icon: <Sprout className="w-4 h-4" /> },
     { id: 'marketplace', label: 'Produce Marketplace', icon: <ShoppingBag className="w-4 h-4" /> },
+    { id: 'orders', label: 'My Orders & Escrow', icon: <Package className="w-4 h-4" /> },
     { id: 'mandi', label: 'Mandi Live Rates', icon: <TrendingUp className="w-4 h-4" /> },
-    { id: 'ai-forecast', label: 'AI Demand Forecast', icon: <Sparkles className="w-4 h-4 text-emerald-600" /> },
-    { id: 'logistics', label: 'Logistics Support', icon: <Truck className="w-4 h-4" /> },
+    { id: 'role-dashboard', label: 'Role Dashboard', icon: <ShieldCheck className="w-4 h-4 text-emerald-600" /> },
   ];
 
   const handleNavClick = (tabId: string) => {
@@ -97,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Desktop Search & Auth Controls */}
+          {/* Desktop Search, Cart & Auth Controls */}
           <div className="hidden md:flex items-center space-x-3">
             {/* Quick Search trigger */}
             <div className="relative">
@@ -108,10 +110,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                   placeholder="Search wheat, rice, pulses..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none w-36 lg:w-48"
+                  className="bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none w-36 lg:w-44"
                 />
               </div>
             </div>
+
+            {/* Cart Button */}
+            <button
+              onClick={onOpenCart}
+              className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 relative"
+            >
+              <ShoppingCart className="w-4 h-4 text-emerald-700" />
+              <span>Cart</span>
+            </button>
 
             {/* Language Selector */}
             <div className="flex items-center gap-1 border border-slate-200 rounded-lg px-2 py-1 bg-white text-xs font-semibold text-slate-700">
@@ -149,12 +160,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Mobile Hamburger Toggle Button */}
           <div className="flex items-center space-x-2 md:hidden">
-            {/* Mobile Language Toggle */}
             <button
-              onClick={() => onLanguageChange(language === 'en' ? 'hi' : 'en')}
-              className="text-xs font-bold text-slate-700 border border-slate-200 rounded-md px-2 py-1 bg-slate-50"
+              onClick={onOpenCart}
+              className="p-2 rounded-lg text-slate-700 border border-slate-200 bg-slate-50"
             >
-              {language === 'en' ? 'HI' : 'EN'}
+              <ShoppingCart className="w-5 h-5 text-emerald-700" />
             </button>
 
             <button
@@ -171,18 +181,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Dropdown Menu Drawer */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 animate-in fade-in slide-in-from-top-2">
-          {/* Mobile Search Input */}
-          <div className="flex items-center border border-slate-200 rounded-lg px-3 py-2 bg-slate-50">
-            <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search crops, wheat, FPOs..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none w-full"
-            />
-          </div>
-
           {/* Mobile Navigation Links */}
           <div className="space-y-1 py-2">
             {navLinks.map((link) => {

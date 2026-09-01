@@ -18,6 +18,18 @@ export type ProductCategory =
   | 'Fertilizers'
   | 'Farm Equipment';
 
+export type OrderStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'PACKED'
+  | 'PICKED_UP'
+  | 'IN_TRANSIT'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED'
+  | 'CANCELLED';
+
+export type PaymentStatus = 'PENDING' | 'PAID' | 'ESCROW_HELD' | 'REFUNDED';
+
 export interface ProductItem {
   id: string;
   title: string;
@@ -44,6 +56,83 @@ export interface ProductItem {
   harvestDate?: string;
   status: 'available' | 'sold_out' | 'unlisted';
   createdAt: string;
+}
+
+export interface CartPopulatedItem {
+  productId: string;
+  title: string;
+  category: string;
+  price: number;
+  unit: string;
+  availableQuantity: number;
+  imageUrl: string;
+  farmerId: string;
+  farmerName: string;
+  fpoName?: string;
+  quantity: number;
+  subtotal: number;
+}
+
+export interface CartResponse {
+  success: boolean;
+  totalItems: number;
+  subtotalAmount: number;
+  items: CartPopulatedItem[];
+  message?: string;
+}
+
+export interface OrderItemDTO {
+  productId: string;
+  title: string;
+  category: string;
+  imageUrl: string;
+  unit: string;
+  pricePerUnit: number;
+  quantity: number;
+  subtotal: number;
+}
+
+export interface OrderItem {
+  id: string;
+  orderNumber: string;
+  buyer: {
+    id: string;
+    name: string;
+    emailOrPhone: string;
+    role: string;
+  };
+  seller: {
+    id: string;
+    name: string;
+    fpoName?: string;
+    district: string;
+    state: string;
+  };
+  items: OrderItemDTO[];
+  subtotalAmount: number;
+  logisticsFee: number;
+  totalAmount: number;
+  deliveryAddress: {
+    streetAddress: string;
+    city: string;
+    state: string;
+    pincode: string;
+    landmark?: string;
+  };
+  paymentStatus: PaymentStatus;
+  paymentMethod: string;
+  orderStatus: OrderStatus;
+  statusHistory: {
+    status: OrderStatus;
+    updatedAt: string;
+    note?: string;
+  }[];
+  deliveryPartner?: {
+    id?: string;
+    name?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProductsFilterParams {
@@ -200,6 +289,148 @@ export interface CommunityAlertRecord {
 }
 
 export const apiService = {
+  // Cart API Methods
+  async getCart(token: string): Promise<CartResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, totalItems: 0, subtotalAmount: 0, items: [], message: 'Cart network error.' };
+    }
+  },
+
+  async addToCart(token: string, productId: string, quantity: number = 1): Promise<CartResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ productId, quantity })
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, totalItems: 0, subtotalAmount: 0, items: [], message: 'Failed to add item.' };
+    }
+  },
+
+  async updateCartQuantity(token: string, productId: string, quantity: number): Promise<CartResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ productId, quantity })
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, totalItems: 0, subtotalAmount: 0, items: [], message: 'Failed to update quantity.' };
+    }
+  },
+
+  async removeCartItem(token: string, productId: string): Promise<CartResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, totalItems: 0, subtotalAmount: 0, items: [], message: 'Failed to remove item.' };
+    }
+  },
+
+  // Order API Methods
+  async createOrder(
+    token: string,
+    payload: {
+      items?: { productId: string; quantity: number }[];
+      deliveryAddress: {
+        streetAddress: string;
+        city: string;
+        state: string;
+        pincode: string;
+        landmark?: string;
+      };
+      paymentMethod?: 'ESCROW' | 'UPI' | 'COD' | 'BANK_TRANSFER';
+      isDirectCheckout?: boolean;
+    }
+  ): Promise<{ success: boolean; orders?: OrderItem[]; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to place order.' };
+    }
+  },
+
+  async getUserOrders(token: string): Promise<{ success: boolean; total: number; orders: OrderItem[]; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, total: 0, orders: [], message: 'Failed to fetch orders.' };
+    }
+  },
+
+  async getOrderById(token: string, id: string): Promise<{ success: boolean; order?: OrderItem; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to fetch order details.' };
+    }
+  },
+
+  async updateOrderStatus(
+    token: string,
+    id: string,
+    status: OrderStatus,
+    note?: string
+  ): Promise<{ success: boolean; order?: OrderItem; message?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/${id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status, note })
+      });
+      return await response.json();
+    } catch (err) {
+      return { success: false, message: 'Failed to update order status.' };
+    }
+  },
+
   // Marketplace Product API Methods
   async getProducts(params?: ProductsFilterParams): Promise<ProductsApiResponse> {
     try {

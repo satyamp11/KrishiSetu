@@ -34,6 +34,7 @@ import {
 } from '../components/ui';
 import { apiService, ProductItem, ProductCategory, ProductsFilterParams } from '../services/apiService';
 import { useAuth } from '../context/AuthContext';
+import { CartDrawer } from '../components/cart/CartDrawer';
 
 export interface MarketplacePageProps {
   onNavigateToProductDetail?: (productId: string) => void;
@@ -69,6 +70,9 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   const [organicOnly, setOrganicOnly] = useState<boolean>(false);
   const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
   const [sortOption, setSortOption] = useState<'newest' | 'price_asc' | 'price_desc' | 'rating' | 'stock'>('newest');
+
+  // Cart Drawer State
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
 
   // Pagination State
   const [page, setPage] = useState<number>(1);
@@ -138,6 +142,23 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     fetchProducts();
   }, [selectedCategory, searchQuery, minPrice, maxPrice, organicOnly, verifiedOnly, sortOption, page]);
 
+  // Handle Add To Cart
+  const handleAddToCart = async (productId: string) => {
+    if (!user || !token) {
+      toast.info('Authentication Required', 'Please sign in to add items to cart.');
+      openAuthModal('login');
+      return;
+    }
+
+    const res = await apiService.addToCart(token, productId, 1);
+    if (res.success) {
+      toast.success('Added to Cart', 'Item added to cart.');
+      setIsCartOpen(true);
+    } else {
+      toast.error('Add to Cart Failed', res.message || 'Unable to add item to cart.');
+    }
+  };
+
   // Open Product Modal for Add or Edit
   const handleOpenProductModal = (productToEdit?: ProductItem) => {
     if (!user) {
@@ -199,7 +220,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     setFormLoading(true);
     try {
       if (editingProduct) {
-        // Edit existing product
         const res = await apiService.updateProduct(token, editingProduct.id, {
           title: formData.title.trim(),
           category: formData.category,
@@ -222,7 +242,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           toast.error('Update Failed', res.message || 'Unable to update listing.');
         }
       } else {
-        // Create new product
         const res = await apiService.createProduct(token, {
           title: formData.title.trim(),
           category: formData.category,
@@ -283,6 +302,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
         onNavigate={(tab) => onNavigateTab(tab)}
         user={user}
         onOpenAuth={(mode) => openAuthModal(mode)}
+        onOpenCart={() => setIsCartOpen(true)}
       />
 
       {/* Marketplace Header Hero */}
@@ -292,7 +312,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="primary" size="sm">
-                  Phase 4: Agri Marketplace
+                  Phase 4 & 5: Marketplace & Escrow Orders
                 </Badge>
                 <Badge variant="earth" size="sm" icon={<ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />}>
                   Direct Intermediary Elimination
@@ -353,7 +373,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
         {/* Search, Filter Toolbar & Sorting */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Search Input */}
           <div className="relative flex-1 w-full flex items-center">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 shrink-0" />
             <input
@@ -373,7 +392,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             )}
           </div>
 
-          {/* Sort & Filter Controls */}
           <div className="flex items-center gap-3 w-full md:w-auto shrink-0 justify-between md:justify-end">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -383,7 +401,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
               <span>Filters</span>
             </button>
 
-            {/* Sort Dropdown */}
             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
               <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
               <select
@@ -524,7 +541,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                       isOrganicCertified={prod.isOrganicCertified}
                       imageUrl={prod.imageUrl}
                       mandiBenchmarkPrice={prod.mandiBenchmarkPrice}
-                      onAddToCart={() => toast.success('Added to Cart', `${prod.title} added.`)}
+                      onAddToCart={() => handleAddToCart(prod.id)}
                       onBuyNow={() => onNavigateToProductDetail(prod.id)}
                       onViewDetails={() => onNavigateToProductDetail(prod.id)}
                     />
@@ -582,6 +599,13 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           </div>
         )}
       </main>
+
+      {/* Slide-over Cart Drawer */}
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        onOrderPlacedSuccess={() => onNavigateTab('orders')}
+      />
 
       {/* Farmer Produce Creation / Edit Modal */}
       <Modal

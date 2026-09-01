@@ -26,6 +26,7 @@ import {
 } from '../components/ui';
 import { apiService, ProductItem } from '../services/apiService';
 import { useAuth } from '../context/AuthContext';
+import { CartDrawer } from '../components/cart/CartDrawer';
 
 export interface ProductDetailPageProps {
   productId: string;
@@ -38,13 +39,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onBackToMarketplace = () => {},
   onNavigateTab = () => {},
 }) => {
-  const { user, openAuthModal } = useAuth();
+  const { user, token, openAuthModal } = useAuth();
   const toast = useToast();
 
   const [product, setProduct] = useState<ProductItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadProduct() {
@@ -70,18 +73,51 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     }
   }, [productId]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
-    toast.success('Added to Cart', `${quantity} ${product.unit} of ${product.title} added.`);
+    if (!user || !token) {
+      toast.info('Authentication Required', 'Please sign in to add items to cart.');
+      openAuthModal('login');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const res = await apiService.addToCart(token, product.id, quantity);
+      if (res.success) {
+        toast.success('Added to Cart', `${quantity} ${product.unit} of ${product.title} added to cart.`);
+        setIsCartOpen(true);
+      } else {
+        toast.error('Add to Cart Failed', res.message || 'Unable to add item to cart.');
+      }
+    } catch (err) {
+      toast.error('Error', 'Network error adding to cart.');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  const handleBuyNow = () => {
-    if (!user) {
+  const handleBuyNow = async () => {
+    if (!product) return;
+    if (!user || !token) {
       toast.info('Authentication Required', 'Please sign in to proceed to Checkout.');
       openAuthModal('login');
       return;
     }
-    toast.success('Order Initialized', `Proceeding to checkout for ${quantity} ${product?.unit} of ${product?.title}.`);
+
+    setActionLoading(true);
+    try {
+      const res = await apiService.addToCart(token, product.id, quantity);
+      if (res.success) {
+        setIsCartOpen(true);
+      } else {
+        toast.error('Checkout Error', res.message || 'Unable to proceed to checkout.');
+      }
+    } catch (err) {
+      toast.error('Error', 'Network error.');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -92,6 +128,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         onNavigate={(tab) => onNavigateTab(tab)}
         user={user}
         onOpenAuth={(mode) => openAuthModal(mode)}
+        onOpenCart={() => setIsCartOpen(true)}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
@@ -251,6 +288,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   <Button
                     variant="outline"
                     size="lg"
+                    isLoading={actionLoading}
                     leftIcon={<ShoppingCart className="w-5 h-5 text-emerald-700" />}
                     onClick={handleAddToCart}
                   >
@@ -259,6 +297,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   <Button
                     variant="primary"
                     size="lg"
+                    isLoading={actionLoading}
                     rightIcon={<Zap className="w-5 h-5 fill-white" />}
                     onClick={handleBuyNow}
                   >
@@ -280,6 +319,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           </div>
         )}
       </main>
+
+      {/* Cart Drawer */}
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        onOrderPlacedSuccess={() => onNavigateTab('orders')}
+      />
 
       {/* Footer */}
       <Footer onNavigate={(tab) => onNavigateTab(tab)} />

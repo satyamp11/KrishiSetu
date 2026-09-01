@@ -19,6 +19,7 @@ import { KrishiLandingPage } from './components/landing/KrishiLandingPage';
 import { UIFoundationShowcase } from './pages/UIFoundationShowcase';
 import { MarketplacePage } from './pages/MarketplacePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
+import { OrdersPage } from './pages/OrdersPage';
 import { ToastProvider, useToast } from './components/ui/Toast';
 import { Navbar, Footer, Button, Badge } from './components/ui';
 
@@ -46,7 +47,7 @@ import { apiService, UserRole } from './services/apiService';
 const PROTECTED_TABS: TabType[] = ['home', 'scan', 'result', 'map', 'alerts', 'report', 'community', 'profile'];
 
 export function AppContent() {
-  // App State - Default to 'marketplace' for Phase 4 Agricultural Marketplace
+  // App State - Default to 'marketplace' for Agricultural Marketplace & Escrow Orders
   const [activeTab, setActiveTab] = useState<string>('marketplace');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [language, setLanguage] = useState<Language>('hi');
@@ -215,7 +216,7 @@ export function AppContent() {
     }
   };
 
-  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase' && activeTab !== 'role-dashboard' && activeTab !== 'marketplace' && activeTab !== 'product-detail';
+  const showHeaderAndNav = activeTab !== 'splash' && activeTab !== 'login' && activeTab !== 'landing' && activeTab !== 'ui-showcase' && activeTab !== 'role-dashboard' && activeTab !== 'marketplace' && activeTab !== 'product-detail' && activeTab !== 'orders';
 
   const activeUserRole: UserRole = user?.role || simulatedRole;
 
@@ -279,6 +280,13 @@ export function AppContent() {
           <ProductDetailPage
             productId={selectedProductId || '1'}
             onBackToMarketplace={() => setActiveTab('marketplace')}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+          />
+        )}
+
+        {/* PHASE 5: Orders History & Escrow Page */}
+        {activeTab === 'orders' && (
+          <OrdersPage
             onNavigateTab={(tab) => setActiveTab(tab)}
           />
         )}
