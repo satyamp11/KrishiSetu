@@ -54,7 +54,12 @@ export const useRazorpayCheckout = ({ onSuccess, onPaymentHeld }: UseRazorpayChe
     setIsProcessing(true);
     try {
       // 1. Initiate order from backend
-      const res = await apiService.request('/api/payments/create', 'POST', { orderId }, token);
+      const resInitiate = await fetch(`/api/payments/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ orderId }),
+      });
+      const res = await resInitiate.json();
       
       if (!res.success || !res.razorpayOrderId) {
         throw new Error(res.message || 'Failed to initiate payment.');
@@ -72,11 +77,16 @@ export const useRazorpayCheckout = ({ onSuccess, onPaymentHeld }: UseRazorpayChe
         handler: async function (response: any) {
           // 3. Confirm payment verification on backend
           try {
-            const verifyRes = await apiService.request('/api/payments/verify', 'POST', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            }, token);
+            const verifyReq = await fetch(`/api/payments/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            const verifyRes = await verifyReq.json();
 
             if (verifyRes.success) {
               toast.success('Payment Secured', 'Your funds are securely held in escrow.');
