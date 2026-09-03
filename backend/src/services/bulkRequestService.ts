@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { BulkRequest, IBulkRequest, BulkRequestStatus } from '../models/BulkRequest.js';
 import { Product } from '../models/Product.js';
 import { UserResponse } from '../models/User.js';
+import { farmerMatchingService } from './farmerMatchingService.js';
 
 export interface CreateBulkRequestPayload {
   productTitle: string;
@@ -123,20 +124,21 @@ export const bulkRequestService = {
 
     const requestNumber = `RFQ-2026-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    // Query matching Farmers/FPOs producing this crop
-    const matchingProducts = await Product.find({
-      $or: [
-        { title: { $regex: payload.productTitle, $options: 'i' } },
-        { category: { $regex: payload.category || payload.productTitle, $options: 'i' } }
-      ]
-    }).limit(5);
+    // Query matching Farmers/FPOs using the shared AI matching service
+    const matches = await farmerMatchingService.findMatchingFarmers({
+      productTitle: payload.productTitle,
+      productCategory: payload.category,
+      quantity: payload.targetQuantity,
+      buyerDistrict: payload.deliveryCity, // Mapping city to district for simplicity
+      buyerState: payload.deliveryState
+    });
 
-    const matchingFarmers = matchingProducts.map((p) => ({
-      farmerId: p.farmerId,
-      farmerName: p.farmerName,
-      fpoName: p.fpoName || 'Gorakhpur FPO Producer Co.',
-      district: p.location?.district || 'Gorakhpur',
-      availableQty: p.availableQuantity || 10000
+    const matchingFarmers = matches.slice(0, 5).map((m: any) => ({
+      farmerId: new mongoose.Types.ObjectId(m.farmerId),
+      farmerName: m.farmerName,
+      fpoName: m.fpoName || 'Gorakhpur FPO Producer Co.',
+      district: m.location?.district || 'Gorakhpur',
+      availableQty: m.availableQuantity
     }));
 
     // Fallback default matching FPO if none in DB

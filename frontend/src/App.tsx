@@ -63,6 +63,9 @@ export function AppContent() {
   // Test state for role previewing
   const [simulatedRole, setSimulatedRole] = useState<UserRole>('farmer');
 
+  // Increment this key every time we navigate to 'orders' tab to force OrdersPage to remount + refetch
+  const [ordersRefetchKey, setOrdersRefetchKey] = useState<number>(0);
+
   // Store intended destination tab for post-authentication redirect
   const pendingTabRef = useRef<string | null>(null);
 
@@ -73,10 +76,18 @@ export function AppContent() {
     }
   }, [user]);
 
+  // Central tab navigation — always forces fresh remount of OrdersPage
+  const navigateToTab = (targetTab: string) => {
+    if (targetTab === 'orders') {
+      setOrdersRefetchKey((k) => k + 1);
+    }
+    setActiveTab(targetTab);
+  };
+
   // Protected route guard logic
   const handleNavigateWithAuth = (targetTab: string) => {
     if (isAuthenticated || !PROTECTED_TABS.includes(targetTab as TabType)) {
-      setActiveTab(targetTab);
+      navigateToTab(targetTab);
     } else {
       pendingTabRef.current = targetTab;
       openAuthModal('login');
@@ -281,7 +292,7 @@ export function AppContent() {
         {activeTab === 'marketplace' && (
           <MarketplacePage
             onNavigateToProductDetail={(id) => handleViewProductDetail(id)}
-            onNavigateTab={(tab) => setActiveTab(tab)}
+            onNavigateTab={(tab) => navigateToTab(tab)}
           />
         )}
 
@@ -297,7 +308,11 @@ export function AppContent() {
         {/* PHASE 5 & 6: Orders History & Escrow Page */}
         {activeTab === 'orders' && (
           <OrdersPage
-            onNavigateTab={(tab) => setActiveTab(tab)}
+            key={ordersRefetchKey}
+            onNavigateTab={(tab) => {
+              if (tab === 'orders') setOrdersRefetchKey((k) => k + 1);
+              setActiveTab(tab);
+            }}
           />
         )}
 

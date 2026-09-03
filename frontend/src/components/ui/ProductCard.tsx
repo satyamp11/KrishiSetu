@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, ShieldCheck, ShoppingCart, ArrowRight, Star, Leaf, UserCheck } from 'lucide-react';
+import { MapPin, ShieldCheck, ShoppingCart, ArrowRight, Star, Leaf, UserCheck, Sparkles } from 'lucide-react';
 import { Badge } from './Badge';
 import { Button } from './Button';
 
@@ -23,6 +23,7 @@ export interface ProductCardProps {
   onBuyNow?: (id: string) => void;
   onViewDetails?: (id: string) => void;
   className?: string;
+  matchReasons?: string[];
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -45,6 +46,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onBuyNow,
   onViewDetails,
   className = '',
+  matchReasons,
 }) => {
   const formattedLocation =
     typeof location === 'string'
@@ -57,6 +59,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     <div
       className={`bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col group ${className}`}
     >
+      {matchReasons && matchReasons.length > 0 && (
+        <div className="bg-indigo-50 border-b border-indigo-100 p-2 flex gap-1 overflow-x-auto scrollbar-none items-center">
+          <span className="text-[10px] font-black uppercase text-indigo-700 mr-1 whitespace-nowrap shrink-0"><Sparkles className="w-3 h-3 inline mr-1 -mt-0.5" />AI Match</span>
+          {matchReasons.map((reason, idx) => (
+            <span key={idx} className="bg-white border border-indigo-200 text-indigo-800 text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">
+              {reason}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Product Image & Badges */}
       <div
         className="relative h-48 w-full bg-slate-100 overflow-hidden cursor-pointer"

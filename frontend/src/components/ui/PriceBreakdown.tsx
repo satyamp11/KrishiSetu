@@ -26,9 +26,9 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
   return (
     <div className={`bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 space-y-4 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className="flex flex-row flex-wrap items-center justify-between border-b border-slate-800 pb-3 gap-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-emerald-400" />
+          <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
           <h4 className="text-xs font-black uppercase tracking-wider text-emerald-300">
             Transparent Direct Trade Breakdown
           </h4>

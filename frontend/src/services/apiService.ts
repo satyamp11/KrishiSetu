@@ -915,7 +915,8 @@ export const apiService = {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        cache: 'no-store'
       });
       return await response.json();
     } catch (err) {
@@ -929,7 +930,8 @@ export const apiService = {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        cache: 'no-store'
       });
       return await response.json();
     } catch (err) {

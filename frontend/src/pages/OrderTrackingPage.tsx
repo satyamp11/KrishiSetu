@@ -26,6 +26,7 @@ import {
   useToast,
 } from '../components/ui';
 import { apiService, DeliveryTrackingData, DeliveryStatus } from '../services/apiService';
+import { EscrowStatusTimeline } from '../components/checkout/EscrowStatusTimeline';
 import { useAuth } from '../context/AuthContext';
 
 export interface OrderTrackingPageProps {
@@ -39,10 +40,11 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({
   onBackToOrders = () => {},
   onNavigateTab = () => {},
 }) => {
-  const { user, openAuthModal } = useAuth();
+  const { user, token, openAuthModal } = useAuth();
   const toast = useToast();
 
   const [tracking, setTracking] = useState<DeliveryTrackingData | null>(null);
+  const [paymentState, setPaymentState] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +61,17 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({
         setTracking(res.tracking);
       } else {
         setError(res.message || 'Unable to load tracking details.');
+      }
+
+      // Fetch payment/escrow status
+      if (token) {
+        const paymentRes = await fetch(`/api/payments/${orderId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const paymentData = await paymentRes.json();
+        if (paymentData.success) {
+          setPaymentState(paymentData.payment || paymentData); // paymentData.payment has paymentState and escrowTimeline
+        }
       }
     } catch (err) {
       setError('Network error connecting to tracking API.');
@@ -357,6 +370,14 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({
                   Temperature-controlled cold chain vehicle maintaining 4°C for crop freshness.
                 </p>
               </div>
+
+              {/* Escrow Status Timeline */}
+              {paymentState && paymentState.escrowTimeline && (
+                <EscrowStatusTimeline
+                  timeline={paymentState.escrowTimeline}
+                  currentPaymentState={paymentState.paymentState}
+                />
+              )}
             </div>
           </div>
         )}
