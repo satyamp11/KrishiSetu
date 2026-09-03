@@ -60,13 +60,14 @@ export const FarmerDashboardView: React.FC<FarmerDashboardViewProps> = ({
     loadFarmerData();
   }, [token]);
 
-  // Derived StatCard Metrics (Phase 8 Specs)
-  const totalSalesQty = orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 480);
-  const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 1450000);
-  const currentOrdersCount = orders.filter((o) => o.orderStatus !== 'DELIVERED' && o.orderStatus !== 'CANCELLED').length || 12;
-  const availableStockQty = products.reduce((sum, p) => sum + p.availableQuantity, 1750);
-  const pendingDeliveriesCount = orders.filter((o) => o.orderStatus === 'PACKED' || o.orderStatus === 'PICKED_UP').length || 3;
-  const avgSellingPrice = Math.round(totalRevenue / (totalSalesQty || 1)) || 3020;
+  // Derived StatCard Metrics — sourced from real DB data only (no fake fallbacks)
+  const salesOrders = orders.filter(o => o.seller?.id === user?.id || (o as any).sellerId === user?.id);
+  const totalSalesQty = salesOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0);
+  const totalRevenue = salesOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+  const currentOrdersCount = salesOrders.filter((o) => o.orderStatus !== 'DELIVERED' && o.orderStatus !== 'CANCELLED').length;
+  const availableStockQty = products.reduce((sum, p) => sum + p.availableQuantity, 0);
+  const pendingDeliveriesCount = salesOrders.filter((o) => o.orderStatus === 'PACKED' || o.orderStatus === 'PICKED_UP').length;
+  const avgSellingPrice = totalSalesQty > 0 ? Math.round(totalRevenue / totalSalesQty) : 0;
 
   return (
     <div className="space-y-6 animate-in fade-in pb-12">

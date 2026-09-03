@@ -17,6 +17,7 @@
     "express-rate-limit": "^8.7.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.4",
+    "razorpay": "^2.9.8",
     "twilio": "^6.1.0"
   },
   "devDependencies": {

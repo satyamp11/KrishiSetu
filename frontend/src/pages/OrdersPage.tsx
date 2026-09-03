@@ -25,7 +25,8 @@ import {
   ErrorState,
   useToast,
 } from '../components/ui';
-import { PriceBreakdown } from '../components/ui/PriceBreakdown';
+import { CheckoutSummaryCard, EscrowStatus } from '../components/checkout/CheckoutSummaryCard';
+import { useRazorpayCheckout } from '../hooks/useRazorpayCheckout';
 import { apiService, OrderItem, OrderStatus, ExtendedPaymentState } from '../services/apiService';
 import { useAuth } from '../context/AuthContext';
 
@@ -48,9 +49,19 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
   const toast = useToast();
 
   const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const { initiatePayment, isProcessing } = useRazorpayCheckout({
+    onSuccess: () => {
+      fetchOrders();
+    },
+    onPaymentHeld: () => {
+      fetchOrders();
+    }
+  });
 
   const fetchOrders = async () => {
     if (!token) return;
@@ -60,6 +71,16 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
       const res = await apiService.getUserOrders(token);
       if (res.success) {
         setOrders(res.orders);
+        if (res.orders.length > 0) {
+          setSelectedOrderId(prev => {
+            if (!prev || !res.orders.find(o => o.id === prev)) {
+              return res.orders[0].id;
+            }
+            return prev;
+          });
+        } else {
+          setSelectedOrderId(null);
+        }
       } else {
         setError(res.message || 'Failed to fetch orders.');
       }
@@ -193,7 +214,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
         </div>
       </section>
 
-      {/* Orders List */}
+      {/* Orders List & Detail View */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
         {loading && <LoadingState message="Fetching direct trade orders from database..." />}
 
@@ -209,24 +230,74 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
         )}
 
         {!loading && !error && orders.length > 0 && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-              <span>Showing {orders.length} Order(s)</span>
-              <span>Logged in as: <strong>{user.name} ({user.role.toUpperCase()})</strong></span>
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            
+            {/* Master List Column */}
+            <div className="w-full lg:w-1/3 space-y-3 sticky top-32">
+              <div className="flex items-center justify-between text-xs text-slate-500 font-bold px-1 mb-2">
+                <span>{orders.length} Order(s)</span>
+                <span>{user.name}</span>
+              </div>
+              
+              <div className="flex flex-col gap-3 max-h-[800px] overflow-y-auto pr-2 scrollbar-thin">
+                {orders.map((listOrd) => {
+                  const isSelected = selectedOrderId === listOrd.id;
+                  const isCancelledList = listOrd.orderStatus === 'CANCELLED';
+                  return (
+                    <button
+                      key={listOrd.id}
+                      onClick={() => setSelectedOrderId(listOrd.id)}
+                      className={`w-full text-left p-4 rounded-2xl border transition-all ${
+                        isSelected 
+                          ? 'bg-emerald-50 border-emerald-500 shadow-sm ring-1 ring-emerald-500' 
+                          : 'bg-white border-slate-200 hover:border-emerald-300 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className={`font-black text-sm ${isSelected ? 'text-emerald-900' : 'text-slate-900'}`}>
+                          {listOrd.orderNumber}
+                        </span>
+                        <span className="font-bold text-slate-900 text-sm">
+                          ₹{listOrd.totalAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2 mt-1">
+                        <span className="text-xs text-slate-500 line-clamp-1">
+                          {listOrd.items.map(i => i.title).join(', ')}
+                        </span>
+                        <div className="flex gap-2 flex-wrap mt-1">
+                          <Badge variant={isCancelledList ? 'danger' : listOrd.orderStatus === 'DELIVERED' ? 'success' : 'warning'} size="sm">
+                            {listOrd.orderStatus.replace('_', ' ')}
+                          </Badge>
+                          <Badge variant={listOrd.paymentStatus === 'RELEASED' ? 'success' : listOrd.paymentStatus === 'HELD_FOR_ORDER' ? 'warning' : listOrd.paymentStatus === 'REFUNDED' ? 'danger' : 'earth'} size="sm">
+                            Escrow: {listOrd.paymentStatus}
+                          </Badge>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {orders.map((ord) => {
-              const currentStepIndex = ORDER_STATUS_STEPS.findIndex((s) => s.status === ord.orderStatus);
-              const isCancelled = ord.orderStatus === 'CANCELLED';
-              const breakdown = ord.priceBreakdown || {
-                consumerTotal: ord.totalAmount,
-                farmerEarnings: Math.round(ord.subtotalAmount * 0.82),
-                logisticsCost: ord.logisticsFee + Math.round(ord.subtotalAmount * 0.11),
-                platformFee: Math.round(ord.subtotalAmount * 0.07),
-                intermediarySavings: Math.round(ord.subtotalAmount * 0.35),
-              };
+            {/* Detail View Column */}
+            <div className="w-full lg:w-2/3">
+              {(() => {
+                const ord = orders.find(o => o.id === selectedOrderId);
+                if (!ord) return null;
 
-              return (
+                const currentStepIndex = ORDER_STATUS_STEPS.findIndex((s) => s.status === ord.orderStatus);
+                const isCancelled = ord.orderStatus === 'CANCELLED';
+                const breakdown = ord.priceBreakdown || {
+                  consumerTotal: ord.totalAmount,
+                  farmerEarnings: Math.round(ord.subtotalAmount * 0.82),
+                  logisticsCost: ord.logisticsFee + Math.round(ord.subtotalAmount * 0.11),
+                  platformFee: Math.round(ord.subtotalAmount * 0.07),
+                  intermediarySavings: Math.round(ord.subtotalAmount * 0.35),
+                };
+                const isBuyer = user.id === ord.buyer.id;
+
+                return (
                 <div key={ord.id} className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
                   {/* Order Header Bar */}
                   <div className="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -410,19 +481,30 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
                     </div>
 
                     {/* Right Column: Dynamic Price Breakdown Component */}
-                    <div className="lg:col-span-5">
-                      <PriceBreakdown
-                        consumerTotal={breakdown.consumerTotal}
-                        farmerEarnings={breakdown.farmerEarnings}
-                        logisticsCost={breakdown.logisticsCost}
-                        platformFee={breakdown.platformFee}
-                        intermediarySavings={breakdown.intermediarySavings}
+                    <div className="lg:col-span-5 space-y-4">
+                      <CheckoutSummaryCard
+                        orderId={ord.id}
+                        amount={ord.totalAmount}
+                        priceBreakdown={{
+                          consumerTotal: breakdown.consumerTotal,
+                          farmerEarnings: breakdown.farmerEarnings,
+                          logisticsCost: breakdown.logisticsCost,
+                          platformFee: breakdown.platformFee,
+                          intermediarySavings: breakdown.intermediarySavings,
+                        }}
+                        escrowStatus={ord.paymentStatus as EscrowStatus}
+                        onPay={() => initiatePayment(ord.id)}
+                        isLoading={isProcessing}
+                        showPayButton={isBuyer}
+                        isBuyer={isBuyer}
                       />
                     </div>
                   </div>
                 </div>
-              );
-            })}
+                );
+              })()}
+            </div>
+            
           </div>
         )}
       </main>

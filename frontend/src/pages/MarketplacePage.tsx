@@ -82,6 +82,8 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
 
   // Products Data State
   const [products, setProducts] = useState<ProductItem[]>([]);
+  const [matchedProducts, setMatchedProducts] = useState<any[]>([]);
+  const [showSmartMatches, setShowSmartMatches] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -138,9 +140,38 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     }
   };
 
+  const fetchSmartMatches = async () => {
+    if (!token) {
+      toast.error('Authentication Required', 'Please login to view personalized AI matches.');
+      setShowSmartMatches(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/products/matches?category=${selectedCategory === 'All' ? '' : selectedCategory}&qualityPreference=${organicOnly ? 'organic' : verifiedOnly ? 'fpo_verified' : 'any'}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMatchedProducts(data.matches);
+      } else {
+        setError(data.message || 'Failed to load smart matches.');
+      }
+    } catch (err) {
+      setError('Network error connecting to smart matching API.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory, searchQuery, minPrice, maxPrice, organicOnly, verifiedOnly, sortOption, page]);
+    if (showSmartMatches) {
+      fetchSmartMatches();
+    } else {
+      fetchProducts();
+    }
+  }, [selectedCategory, searchQuery, minPrice, maxPrice, organicOnly, verifiedOnly, sortOption, page, showSmartMatches]);
 
   // Handle Add To Cart
   const handleAddToCart = async (productId: string) => {
@@ -473,6 +504,31 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           </div>
         )}
 
+        {/* AI Smart Matching Toggle */}
+        {user && user.role !== 'farmer' && (
+          <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <h4 className="font-black text-indigo-900 text-sm">AI Smart Matching</h4>
+                <p className="text-xs text-indigo-700">Find the best farmers based on price, location proximity, quality, and stock.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowSmartMatches(!showSmartMatches)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                showSmartMatches 
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' 
+                  : 'bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+              }`}
+            >
+              {showSmartMatches ? 'View All Produce' : 'Show Best Matches'}
+            </button>
+          </div>
+        )}
+
         {/* Loading Skeletons */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -512,19 +568,19 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
         )}
 
         {/* Products Grid */}
-        {!loading && !error && products.length > 0 && (
+        {!loading && !error && (showSmartMatches ? matchedProducts : products).length > 0 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-              <span>Showing {products.length} of {total} produce items</span>
+              <span>Showing {(showSmartMatches ? matchedProducts : products).length} {showSmartMatches ? 'matches' : `of ${total} produce items`}</span>
               <span>Category: <strong>{selectedCategory}</strong></span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((prod) => {
+              {(showSmartMatches ? matchedProducts : products).map((prod) => {
                 const isOwner = user?.id === prod.farmerId || user?.role === 'admin';
 
                 return (
-                  <div key={prod.id} className="relative group">
+                  <div key={prod.id || prod.productId} className="relative group">
                     <ProductCard
                       id={prod.id}
                       title={prod.title}
@@ -544,6 +600,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                       onAddToCart={() => handleAddToCart(prod.id)}
                       onBuyNow={() => onNavigateToProductDetail(prod.id)}
                       onViewDetails={() => onNavigateToProductDetail(prod.id)}
+                      matchReasons={prod.matchReasons}
                     />
 
                     {/* Farmer Management Action Overlay */}

@@ -7,6 +7,9 @@ export const productRouter = Router();
 // GET /api/products - Public Marketplace Search & Filtering
 productRouter.get('/', productController.getProducts);
 
+// GET /api/products/matches - AI-Assisted Smart Matching (Authenticated)
+productRouter.get('/matches', authenticateUser, productController.getMatchingFarmers);
+
 // GET /api/products/my-products - Authenticated Farmer's own listings
 productRouter.get('/my-products', authenticateUser, authorizeRole('farmer', 'admin'), productController.getMyProducts);
 

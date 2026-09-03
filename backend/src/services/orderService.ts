@@ -244,7 +244,7 @@ export const orderService = {
         priceBreakdown,
 
         deliveryAddress: payload.deliveryAddress,
-        paymentStatus: 'HELD_FOR_ORDER',
+        paymentStatus: 'PENDING',
         paymentMethod: payload.paymentMethod || 'ESCROW',
         orderStatus: 'PENDING',
         statusHistory: [
@@ -283,7 +283,12 @@ export const orderService = {
     let query: any = {};
 
     if (user.role === 'farmer') {
-      query = { sellerId: new mongoose.Types.ObjectId(user.id) };
+      query = {
+        $or: [
+          { sellerId: new mongoose.Types.ObjectId(user.id) },
+          { buyerId: new mongoose.Types.ObjectId(user.id) }
+        ]
+      };
     } else if (user.role === 'consumer' || user.role === 'bulk_buyer') {
       query = { buyerId: new mongoose.Types.ObjectId(user.id) };
     } else if (user.role === 'delivery_partner') {
@@ -387,6 +392,20 @@ export const orderService = {
     }
 
     const updated = await doc.save();
-    return { success: true, order: this.toOrderDTO(updated) };
+
+    // AUTO-RELEASE ESCROW TRIGGER
+    if (newStatus === 'DELIVERED') {
+      try {
+        // We import paymentService here to avoid circular dependency if they import each other
+        const { paymentService } = await import('./paymentService.js');
+        await paymentService.releaseEscrowToFarmer(orderId, user.id, user.role);
+      } catch (err) {
+        console.error('Failed to auto-release escrow:', err);
+      }
+    }
+
+    // Return the latest doc after escrow release if it happened
+    const finalDoc = await Order.findById(orderId);
+    return { success: true, order: this.toOrderDTO(finalDoc || updated) };
   }
 };

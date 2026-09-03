@@ -1,8 +1,42 @@
 import { Request, Response } from 'express';
 import { productService, ProductQueryFilter } from '../services/productService.js';
+import { farmerMatchingService } from '../services/farmerMatchingService.js';
 import { AuthenticatedRequest } from '../middleware/authMiddleware.js';
 
 export const productController = {
+  // GET /api/products/matches
+  async getMatchingFarmers(req: AuthenticatedRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Authentication required.' });
+      }
+
+      const { category, quantity, qualityPreference } = req.query;
+      
+      const buyerDistrict = req.user.deliveryAddress?.city || req.user.district;
+      const buyerState = req.user.deliveryAddress?.state || req.user.state;
+
+      const matches = await farmerMatchingService.findMatchingFarmers({
+        productCategory: category as string,
+        quantity: quantity ? Number(quantity) : undefined,
+        qualityPreference: qualityPreference as 'organic' | 'fpo_verified' | 'any',
+        buyerDistrict: req.query.district as string || buyerDistrict,
+        buyerState: req.query.state as string || buyerState
+      });
+
+      return res.status(200).json({
+        success: true,
+        matches
+      });
+    } catch (error) {
+      console.error('Error fetching matching farmers:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Unable to fetch smart matches. Please try again.'
+      });
+    }
+  },
+
   // GET /api/products
   async getProducts(req: Request, res: Response) {
     try {
