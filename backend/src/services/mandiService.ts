@@ -1,7 +1,7 @@
 import { MarketRate, MarketRatesFilterQuery } from '../models/MarketRate.js';
 import { ALL_INDIAN_STATES, INITIAL_MARKET_RATES } from '../utils/seedData.js';
 
-// In-memory cache to optimize API requests and prevent hitting rate limits
+
 interface CacheEntry {
   timestamp: number;
   data: any;
@@ -9,7 +9,7 @@ interface CacheEntry {
 const cacheMap = new Map<string, CacheEntry>();
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes cache
 
-// Map crop names to local image assets
+
 function getCropImage(commodityName: string): string {
   const name = commodityName.toLowerCase();
   if (name.includes('wheat') || name.includes('gehun')) return '/images/crops/wheat.jpg';
@@ -32,7 +32,7 @@ function getCropImage(commodityName: string): string {
   return '/images/crops/wheat.jpg'; // fallback
 }
 
-// Category detector
+
 function detectCategory(commodityName: string): string {
   const name = commodityName.toLowerCase();
   if (name.includes('rice') || name.includes('wheat') || name.includes('maize') || name.includes('paddy') || name.includes('barley') || name.includes('bajra') || name.includes('jowar') || name.includes('cotton') || name.includes('sugarcane') || name.includes('tea')) return 'Grains';
@@ -42,7 +42,7 @@ function detectCategory(commodityName: string): string {
   return 'Grains';
 }
 
-// Extended authentic Indian Mandi Dataset covering districts and mandis
+
 const COMPREHENSIVE_MANDI_DATABASE: MarketRate[] = [
   // Uttar Pradesh - Gorakhpur District Mandis
   {
@@ -888,7 +888,7 @@ export const mandiService = {
     if (apiUrl && apiKey) {
       try {
         let fetchUrl = `${apiUrl}?api-key=${apiKey}&format=json&limit=200`;
-        if (selectedState) fetchUrl += `&filters[state]=${encodeURIComponent(selectedState)}`;
+        if (selectedState) fetchUrl += `&filters[state.keyword]=${encodeURIComponent(selectedState)}`;
         if (selectedDistrict) fetchUrl += `&filters[district]=${encodeURIComponent(selectedDistrict)}`;
         if (selectedCommodity) fetchUrl += `&filters[commodity]=${encodeURIComponent(selectedCommodity)}`;
 
@@ -942,16 +942,16 @@ export const mandiService = {
           }
         }
       } catch (err) {
-        // Silent fallback to comprehensive Indian Mandi dataset
+      
       }
     }
 
-    // If API returned no records or hit rate-limiting, filter comprehensive Mandi database
+    
     if (rawRecords.length === 0) {
       rawRecords = [...COMPREHENSIVE_MANDI_DATABASE, ...INITIAL_MARKET_RATES];
     }
 
-    // Apply exact State filter
+   
     if (selectedState) {
       const stateFiltered = rawRecords.filter(
         (r) => r.state.toLowerCase() === selectedState.toLowerCase()
@@ -971,22 +971,20 @@ export const mandiService = {
       }
     }
 
-    // Apply Mandi filter
+    
     if (selectedMandi) {
       rawRecords = rawRecords.filter((r) => r.mandi.toLowerCase().includes(selectedMandi.toLowerCase()));
     }
 
-    // Apply Commodity filter
     if (selectedCommodity) {
       rawRecords = rawRecords.filter((r) => r.name.toLowerCase().includes(selectedCommodity.toLowerCase()));
     }
 
-    // Apply Category filter
+   
     if (selectedCategory) {
       rawRecords = rawRecords.filter((r) => r.category.toLowerCase() === selectedCategory.toLowerCase());
     }
 
-    // Apply Search Query
     if (searchQuery) {
       rawRecords = rawRecords.filter(
         (r) =>
@@ -998,15 +996,13 @@ export const mandiService = {
       );
     }
 
-    // Store in cache
+   
     cacheMap.set(cacheKey, { timestamp: Date.now(), data: rawRecords });
 
     return this.paginateResults(rawRecords, page, limit);
   },
 
-  /**
-   * Helper to generate list of available districts for a state
-   */
+ 
   getDistricts(stateName?: string): string[] {
     const list = [...COMPREHENSIVE_MANDI_DATABASE, ...INITIAL_MARKET_RATES];
     const filtered = stateName && stateName !== 'All' 
@@ -1021,9 +1017,7 @@ export const mandiService = {
     return ['All', ...Array.from(districtsSet).sort()];
   },
 
-  /**
-   * Helper to paginate results cleanly without artificial limits
-   */
+ 
   paginateResults(allRecords: MarketRate[], page: number, limit: number) {
     const total = allRecords.length;
     const totalPages = Math.ceil(total / limit) || 1;

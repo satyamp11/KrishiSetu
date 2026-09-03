@@ -1,28 +1,48 @@
 import { Router } from 'express';
 import { authController } from '../controllers/authController.js';
 import { authenticateUser, authorizeRole, AuthenticatedRequest } from '../middleware/authMiddleware.js';
+import rateLimit from 'express-rate-limit';
 
 export const authRouter = Router();
 
-// POST /api/auth/send-otp - Request 6-digit OTP
-authRouter.post('/send-otp', authController.sendOtp);
 
-// POST /api/auth/verify-otp - Verify OTP and Authenticate User
+const keyGenerator = (req: any) => {
+  return req.body.identifier || req.body.emailOrPhone || req.body.phone || 'unknown';
+};
+
+const otpLimiter10Min = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 3,
+  keyGenerator,
+  validate: { ip: false }, // Prevent IPv6 validation warnings
+  message: { success: false, message: 'Too many OTP requests. Please wait 10 minutes before trying again.' }
+});
+
+
+const otpLimiter1Hour = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  keyGenerator,
+  validate: { ip: false },
+  message: { success: false, message: 'Hourly OTP limit reached. Please try again later.' }
+});
+
+
+authRouter.post('/send-otp', otpLimiter10Min, otpLimiter1Hour, authController.sendOtp);
+
 authRouter.post('/verify-otp', authController.verifyOtp);
 
-// POST /api/auth/register - User Registration with Role Selection
 authRouter.post('/register', authController.register);
 
-// POST /api/auth/login - User Login
+
 authRouter.post('/login', authController.login);
 
-// GET /api/auth/me - Fetch authenticated user profile and active role
+
 authRouter.get('/me', authenticateUser, authController.getCurrentUser);
 
-// POST /api/auth/logout - Logout user
 authRouter.post('/logout', authController.logout);
 
-// --- Role Authorization Test Endpoints ---
+
 authRouter.get('/admin-only', authenticateUser, authorizeRole('admin'), (req: AuthenticatedRequest, res) => {
   res.json({ success: true, message: 'Welcome Admin', user: req.user });
 });

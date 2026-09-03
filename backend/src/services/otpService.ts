@@ -107,7 +107,7 @@ export const otpService = {
 
     await newOtp.save();
 
-    // 6. DEVELOPMENT MODE: Log OTP to console in non-production environments
+    // 6. DEVELOPMENT MODE: Always log OTP to console so you can test even if telecom blocks the SMS
     if (process.env.NODE_ENV !== 'production') {
       console.log('\n======================================================');
       console.log(`🔑 [DEV OTP] OTP generated for ${normalized}: ${otpCode}`);
@@ -115,17 +115,13 @@ export const otpService = {
       console.log('======================================================\n');
     }
 
-    // =========================================================================
-    // 💡 PRODUCTION SMS / EMAIL PROVIDER INTEGRATION PLACEHOLDER
-    // =========================================================================
-    // To send real SMS / Email in production, plug in your provider here:
-    //
-    // if (validation.isPhone) {
-    //   // e.g. await smsProvider.sendSms({ to: normalized, body: `Your Krishi Shield AI OTP is ${otpCode}` });
-    // } else if (validation.isEmail) {
-    //   // e.g. await mailProvider.sendMail({ to: normalized, subject: 'Your Krishi Shield AI OTP', text: `Your OTP is ${otpCode}` });
-    // }
-    // =========================================================================
+    // 7. PRODUCTION SMS / EMAIL INTEGRATION PLACEHOLDER
+    // Plug in your Indian SMS provider (Fast2SMS/MSG91) here when ready for production
+    if (validation.isPhone) {
+      // e.g. await fast2sms.send({ to: normalized, message: `OTP is ${otpCode}` });
+    } else {
+      // e.g. await emailService.sendOtpEmail(normalized, otpCode);
+    }
 
     return {
       success: true,

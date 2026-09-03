@@ -26,8 +26,7 @@ dist-ssr
 # Raw uncompressed PNG frames
 public/images/ezgif-frame-*.png
 
-
-# Environment variables
+# Environment variables - NEVER commit .env to Git
 .env
 .env.*
-!.env.example  
+!.env.example
