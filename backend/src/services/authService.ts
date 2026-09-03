@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { User, IUser, RegisterDTO, LoginDTO, UserResponse } from '../models/User.js';
 import { userService } from './userService.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'KrishiSetuDefaultSecretKey2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'krishi_shield_ai_secure_jwt_secret_2026_key_987654321';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 export interface AuthResult {

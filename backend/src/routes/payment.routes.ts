@@ -1,22 +1,28 @@
 import { Router } from 'express';
 import { paymentController } from '../controllers/paymentController.js';
 import { authenticateUser } from '../middleware/authMiddleware.js';
+import express from 'express';
 
 export const paymentRouter = Router();
 
-// POST /api/payments/create - Initiate Gateway Session
+// ⚠️ WEBHOOK ROUTE MUST COME BEFORE express.json() middleware is applied
+// Raw body is required for Razorpay webhook signature verification
+// This is handled in server.ts by applying express.raw() only to this route
+paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), paymentController.webhook);
+
+// POST /api/payments/create — Create Razorpay order + local Payment record
 paymentRouter.post('/create', authenticateUser, paymentController.createPayment);
 
-// POST /api/payments/verify - Verify Signature & Move State to HELD_FOR_ORDER
+// POST /api/payments/verify — Verify Razorpay signature & move to HELD_FOR_ORDER
 paymentRouter.post('/verify', authenticateUser, paymentController.verifyPayment);
 
-// POST /api/payments/webhook - Gateway Webhook Endpoint
-paymentRouter.post('/webhook', paymentController.webhook);
-
-// GET /api/payments/:orderId - Payment Details & History
+// GET /api/payments/:orderId — Payment details & escrow timeline
 paymentRouter.get('/:orderId', authenticateUser, paymentController.getPaymentByOrder);
 
-// POST /api/payments/:orderId/release - Confirm Delivery & Release Escrow to Farmer
+// POST /api/payments/:orderId/release — Confirm delivery & release escrow to farmer
 paymentRouter.post('/:orderId/release', authenticateUser, paymentController.releaseEscrow);
+
+// POST /api/payments/:orderId/refund — Refund via Razorpay (buyer/admin)
+paymentRouter.post('/:orderId/refund', authenticateUser, paymentController.refundPayment);
 
 export default paymentRouter;
