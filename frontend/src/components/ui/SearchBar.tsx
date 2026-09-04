@@ -1,6 +1,10 @@
-import React, { useState, FormEvent } from 'react';
-import { Search, X, SlidersHorizontal, MapPin } from 'lucide-react';
+import React, { useState, FormEvent, useEffect } from 'react';
+import { Search, X, SlidersHorizontal, MapPin, Mic } from 'lucide-react';
 import { Button } from './Button';
+import { useVoiceSearch } from '../../hooks/useVoiceSearch';
+import { parseVoiceCommand } from '../../utils/voiceCommandParser';
+import type { Language } from '../../types';
+import { translations } from '../../translations';
 
 export interface SearchBarProps {
   placeholder?: string;
@@ -10,6 +14,8 @@ export interface SearchBarProps {
   initialCategory?: string;
   initialLocation?: string;
   className?: string;
+  enableVoice?: boolean;
+  language?: Language;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -20,11 +26,35 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   initialCategory = 'All Crops',
   initialLocation = 'All States',
   className = '',
+  enableVoice = false,
+  language = 'en',
 }) => {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState(initialCategory);
   const [location, setLocation] = useState(initialLocation);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const t = translations[language] || translations.en;
+
+  const handleVoiceResult = (transcript: string) => {
+    const parsed = parseVoiceCommand(transcript);
+    setQuery(parsed.productKeyword);
+    // Auto submit search on voice result
+    onSearch(parsed.productKeyword, category, location);
+  };
+
+  const { isListening, isSupported, startListening, stopListening, error } = useVoiceSearch({
+    language,
+    onResult: handleVoiceResult,
+    onError: (err) => console.error(err)
+  });
+
+  // Display error toast could be done here, but omitting for simplicity per requirements
+  useEffect(() => {
+    if (error) {
+      console.warn("Voice search error:", error);
+    }
+  }, [error]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -34,6 +64,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const handleClear = () => {
     setQuery('');
     onSearch('', category, location);
+  };
+
+  const toggleVoiceSearch = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
   };
 
   return (
@@ -77,20 +115,41 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         <Search className="w-5 h-5 text-slate-400 absolute left-3 shrink-0" />
         <input
           type="text"
-          value={query}
+          value={isListening ? t.voiceListening : query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full pl-10 pr-9 py-2.5 text-sm text-slate-900 bg-transparent placeholder:text-slate-400 focus:outline-none"
+          className="w-full pl-10 pr-20 py-2.5 text-sm text-slate-900 bg-transparent placeholder:text-slate-400 focus:outline-none"
+          disabled={isListening}
         />
-        {query && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="absolute right-3 text-slate-400 hover:text-slate-600 p-0.5"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
+        
+        <div className="absolute right-2 flex items-center gap-1">
+          {query && !isListening && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+              aria-label="Clear search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          
+          {enableVoice && isSupported && (
+            <button
+              type="button"
+              onClick={toggleVoiceSearch}
+              className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
+                isListening 
+                  ? 'bg-emerald-100 text-emerald-600 shadow-[0_0_0_4px_rgba(16,185,129,0.2)] animate-pulse' 
+                  : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
+              }`}
+              title={t.voiceTapToSearch}
+              aria-label={t.voiceAriaLabel}
+            >
+              <Mic className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Mobile Filter Toggle Button */}
@@ -138,9 +197,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       )}
 
       {/* Search Submit Button */}
-      <Button type="submit" variant="primary" size="md" className="w-full md:w-auto shrink-0">
+      <Button type="submit" variant="primary" size="md" className="w-full md:w-auto shrink-0" disabled={isListening}>
         Search Produce
       </Button>
     </form>
   );
 };
+
