@@ -293,6 +293,7 @@ export function AppContent() {
           <MarketplacePage
             onNavigateToProductDetail={(id) => handleViewProductDetail(id)}
             onNavigateTab={(tab) => navigateToTab(tab)}
+            language={language}
           />
         )}
 
