@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sprout, Globe, Menu, X, ArrowRight, User, LogOut, Sparkles } from 'lucide-react';
 import type { Language } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -17,7 +17,27 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateSection,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
   const { user, isAuthenticated, openAuthModal, logout } = useAuth();
+
+  useEffect(() => {
+    const heroElement = document.getElementById('hero');
+    if (!heroElement) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // When hero is no longer intersecting sufficiently, transition to solid white navbar
+        setIsScrolledPastHero(!entry.isIntersecting);
+      },
+      {
+        threshold: 0.05,
+        rootMargin: '-80px 0px 0px 0px',
+      }
+    );
+
+    observer.observe(heroElement);
+    return () => observer.disconnect();
+  }, []);
 
   const navLinks = [
     { id: 'hero', labelEn: 'Home', labelHi: 'मुख्य पृष्ठ', active: true },
@@ -35,7 +55,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-stone-200 shadow-2xs font-sans">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 font-sans ${
+        isScrolledPastHero
+          ? 'bg-white border-b border-stone-200 shadow-2xs'
+          : 'bg-transparent border-b border-transparent shadow-none'
+      }`}
+    >
       {/* 1. Top Announcement Bar */}
       <div className="bg-[#1b4332] text-white py-1.5 px-4 text-xs font-bold text-center flex items-center justify-center gap-2 border-b border-emerald-900">
         <Sprout className="w-4 h-4 text-emerald-400 shrink-0" />

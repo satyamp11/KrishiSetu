@@ -68,7 +68,7 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
     };
     window.addEventListener('resize', handleResize);
 
-    // 4. Draw Frame in object-fit: cover mode
+    // 4. Draw Frame (Fit complete frame without cropping or unnecessary zoom)
     const imagesCache: HTMLImageElement[] = new Array(totalFrames);
     imagesRef.current = imagesCache;
     loadedCountRef.current = 0;
@@ -80,24 +80,17 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
 
       const containerW = canvas.width;
       const containerH = canvas.height;
-      const imgW = img.naturalWidth;
-      const imgH = img.naturalHeight;
+      const imgW = img.naturalWidth || 1280;
+      const imgH = img.naturalHeight || 720;
 
-      const imgAspect = imgW / imgH;
-      const containerAspect = containerW / containerH;
+      // Scale to fit the ENTIRE source frame inside the hero canvas without cropping or zooming
+      const scale = Math.min(containerW / imgW, containerH / imgH);
 
-      let renderW = containerW;
-      let renderH = containerH;
-      let offsetX = 0;
-      let offsetY = 0;
+      const renderW = imgW * scale;
+      const renderH = imgH * scale;
 
-      if (containerAspect > imgAspect) {
-        renderH = containerW / imgAspect;
-        offsetY = (containerH - renderH) / 2;
-      } else {
-        renderW = containerH * imgAspect;
-        offsetX = (containerW - renderW) / 2;
-      }
+      const offsetX = (containerW - renderW) / 2;
+      const offsetY = (containerH - renderH) / 2;
 
       ctx.clearRect(0, 0, containerW, containerH);
       ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
@@ -107,7 +100,7 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
     let isCancelled = false;
 
     const loadAllFrames = () => {
-      const concurrencyLimit = 16;
+      const concurrencyLimit = 12;
       let activeIndex = 0;
 
       const loadNext = () => {
@@ -116,7 +109,7 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
         const numStr = String(i + 1).padStart(3, '0');
         
         const img = new Image();
-        img.src = `${folder}/frame_${numStr}.webp`;
+        img.src = `/images/ezgif-frame-${numStr}.png`;
 
         img.onload = () => {
           if (isCancelled) return;
@@ -137,21 +130,8 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
 
         img.onerror = () => {
           if (isCancelled) return;
-          // Fallback to root png frame if webp missing
-          const fallbackImg = new Image();
-          fallbackImg.src = `/ezgif-frame-${numStr}.png`;
-          fallbackImg.onload = () => {
-            if (isCancelled) return;
-            imagesCache[i] = fallbackImg;
-            loadedCountRef.current += 1;
-            if (i === 0) {
-              drawFrame(0);
-              setIsInitialReady(true);
-            }
-            setLoadProgress(Math.floor((loadedCountRef.current / totalFrames) * 100));
-            loadNext();
-          };
-          fallbackImg.onerror = () => loadNext();
+          // Retry once if needed
+          loadNext();
         };
       };
 
