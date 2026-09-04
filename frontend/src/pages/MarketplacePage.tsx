@@ -45,26 +45,27 @@ export interface MarketplacePageProps {
   onNavigateToProductDetail?: (productId: string) => void;
   onNavigateTab?: (tab: string) => void;
   language?: Language;
+  onLanguageChange?: (lang: Language) => void;
 }
 
-const CATEGORIES: { id: string; label: string; icon: string }[] = [
-  { id: 'All', label: 'All Produce', icon: '🌾' },
-  { id: 'Vegetables', label: 'Vegetables', icon: '🥦' },
-  { id: 'Fruits', label: 'Fruits', icon: '🍎' },
-  { id: 'Grains', label: 'Grains', icon: '🌾' },
-  { id: 'Pulses', label: 'Pulses', icon: '🫘' },
-  { id: 'Spices', label: 'Spices', icon: '🌶️' },
-  { id: 'Dairy', label: 'Dairy', icon: '🥛' },
-  { id: 'Organic Products', label: 'Organic Products', icon: '🌿' },
-  { id: 'Seeds', label: 'Seeds', icon: '🌱' },
-  { id: 'Fertilizers', label: 'Fertilizers', icon: '🧪' },
-  { id: 'Farm Equipment', label: 'Farm Equipment', icon: '🚜' },
+const CATEGORIES: { id: string; labelEn: string; labelHi: string; icon: string }[] = [
+  { id: 'All', labelEn: 'All Produce', labelHi: 'सभी फसलें', icon: '🌾' },
+  { id: 'Vegetables', labelEn: 'Vegetables', labelHi: 'सब्जियां', icon: '🥦' },
+  { id: 'Fruits', labelEn: 'Fruits', labelHi: 'फल', icon: '🍎' },
+  { id: 'Food Grains', labelEn: 'Food Grains', labelHi: 'अनाज (गेहूं/चावल)', icon: '🌾' },
+  { id: 'Pulses', labelEn: 'Pulses & Dal', labelHi: 'दालें', icon: '🫘' },
+  { id: 'Oilseeds', labelEn: 'Oilseeds', labelHi: 'तिलहन', icon: '🌻' },
+  { id: 'Spices', labelEn: 'Spices & Herbs', labelHi: 'मसाले', icon: '🌶️' },
+  { id: 'Organic Produce', labelEn: 'Organic Certified', labelHi: 'जैविक प्रमाणित', icon: '🌱' },
+  { id: 'Fertilizers', labelEn: 'Fertilizers', labelHi: 'खाद व उर्वरक', icon: '🧪' },
+  { id: 'Farm Equipment', labelEn: 'Farm Equipment', labelHi: 'कृषि उपकरण', icon: '🚜' },
 ];
 
 export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   onNavigateToProductDetail = () => {},
   onNavigateTab = () => {},
   language = 'en',
+  onLanguageChange = () => {},
 }) => {
   const { user, token, openAuthModal } = useAuth();
   const toast = useToast();
@@ -356,6 +357,8 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
         user={user}
         onOpenAuth={(mode) => openAuthModal(mode)}
         onOpenCart={() => setIsCartOpen(true)}
+        language={language}
+        onLanguageChange={onLanguageChange}
       />
 
       {/* Marketplace Header Hero */}
@@ -365,17 +368,19 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="primary" size="sm">
-                  Phase 4 & 5: Marketplace & Escrow Orders
+                  {language === 'hi' ? 'सीधा कृषि बाज़ार एवं एस्क्रो' : 'Direct Agriculture Marketplace & Escrow'}
                 </Badge>
                 <Badge variant="earth" size="sm" icon={<ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />}>
-                  Direct Intermediary Elimination
+                  {language === 'hi' ? 'शून्य बिचौलिए कमीशन' : 'Zero Intermediary Margins'}
                 </Badge>
               </div>
               <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                Agricultural Produce Marketplace
+                {language === 'hi' ? 'नोवाकृषि कृषि बाज़ार' : 'NovaKrishi Produce Marketplace'}
               </h1>
               <p className="text-sm text-emerald-200 mt-1 max-w-2xl">
-                Direct trade connecting Indian Farmers & FPOs directly with Consumers and Bulk Buyers. Zero middleman margins.
+                {language === 'hi'
+                  ? 'भारतीय किसानों और FPOs को ग्राहकों और थोक खरीदारों से सीधे जोड़ने वाली पारदर्शी डिजिटल मंडी।'
+                  : 'Direct trade connecting Indian Farmers & FPOs directly with Consumers and Bulk Buyers. Zero middleman margins.'}
               </p>
             </div>
 
@@ -387,7 +392,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 leftIcon={<Plus className="w-4 h-4" />}
                 onClick={() => handleOpenProductModal()}
               >
-                Post Produce Listing
+                {language === 'hi' ? 'अपनी फसल की बिक्री जोड़ें' : 'Post Produce Listing'}
               </Button>
             )}
           </div>
@@ -414,7 +419,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                   }`}
                 >
                   <span>{cat.icon}</span>
-                  <span>{cat.label}</span>
+                  <span>{language === 'hi' ? cat.labelHi : cat.labelEn}</span>
                 </button>
               );
             })}
@@ -736,7 +741,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
               >
                 {CATEGORIES.filter((c) => c.id !== 'All').map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.label}
+                    {language === 'hi' ? c.labelHi : c.labelEn}
                   </option>
                 ))}
               </select>

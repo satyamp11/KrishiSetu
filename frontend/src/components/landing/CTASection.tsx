@@ -9,6 +9,7 @@ interface CTASectionProps {
 }
 
 export const CTASection: React.FC<CTASectionProps> = ({
+  language = 'en',
   onExploreMarketplace = () => {},
   onJoinNovaKrishi = () => {},
 }) => {
@@ -24,11 +25,11 @@ export const CTASection: React.FC<CTASectionProps> = ({
         </div>
 
         <h2 className="text-4xl sm:text-5xl font-extrabold font-sans tracking-tight text-white leading-tight">
-          Build a Fairer Food Supply Chain.
+          {language === 'hi' ? 'निष्पक्ष खाद्य आपूर्ति श्रृंखला बनाएं।' : 'Build a Fairer Food Supply Chain.'}
         </h2>
 
         <p className="text-base sm:text-lg text-emerald-100 max-w-2xl mx-auto font-medium">
-          Connect directly. Trade transparently. Deliver intelligently.
+          {language === 'hi' ? 'सीधे जुड़ें। पारदर्शी व्यापार करें। स्मार्ट डिलीवरी पाएँ।' : 'Connect directly. Trade transparently. Deliver intelligently.'}
         </p>
 
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -36,7 +37,7 @@ export const CTASection: React.FC<CTASectionProps> = ({
             onClick={onExploreMarketplace}
             className="bg-white text-[#1b4332] hover:bg-emerald-50 px-8 py-4 rounded-2xl font-black text-base shadow-lg transition-all flex items-center justify-center gap-2 border border-emerald-200 w-full sm:w-auto"
           >
-            <span>Explore Marketplace</span>
+            <span>{language === 'hi' ? 'मंडी बाज़ार देखें' : 'Explore Marketplace'}</span>
             <ArrowRight className="w-5 h-5 text-[#1b4332]" />
           </button>
 
@@ -44,7 +45,7 @@ export const CTASection: React.FC<CTASectionProps> = ({
             onClick={onJoinNovaKrishi}
             className="bg-emerald-800 hover:bg-emerald-700 text-white border-2 border-emerald-500 px-8 py-4 rounded-2xl font-extrabold text-base shadow-md transition-all w-full sm:w-auto"
           >
-            <span>Join NovaKrishi</span>
+            <span>{language === 'hi' ? 'नोवाकृषि से जुड़ें' : 'Join NovaKrishi'}</span>
           </button>
         </div>
 

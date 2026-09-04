@@ -45,13 +45,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { id: 'landing', label: 'Home' },
-    { id: 'marketplace', label: 'Marketplace' },
-    { id: 'how-it-works', label: 'How It Works' },
-    { id: 'role-dashboard', label: 'Farmers & FPOs' },
-    { id: 'bulk-buyer-nav', label: 'Bulk Buyers' },
-    { id: 'ai-forecast-nav', label: 'AI Insights' },
-    { id: 'logistics', label: 'Logistics' },
+    { id: 'landing', label: language === 'hi' ? 'मुख्य पृष्ठ' : 'Home' },
+    { id: 'marketplace', label: language === 'hi' ? 'मंडी बाज़ार' : 'Marketplace' },
+    { id: 'how-it-works', label: language === 'hi' ? 'यह कैसे काम करता है' : 'How It Works' },
+    { id: 'role-dashboard', label: language === 'hi' ? 'किसान व FPO' : 'Farmers & FPOs' },
+    { id: 'bulk-buyer-nav', label: language === 'hi' ? 'थोक खरीदार' : 'Bulk Buyers' },
+    { id: 'ai-forecast-nav', label: language === 'hi' ? 'एआई सलाह' : 'AI Insights' },
+    { id: 'logistics', label: language === 'hi' ? 'लॉजिस्टिक्स' : 'Logistics' },
   ];
 
   const handleNavClick = (tabId: string) => {
@@ -76,7 +76,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* 1. Thin Announcement Bar */}
       <div className="bg-[#1b4332] text-emerald-100 py-1.5 px-4 text-[11px] font-bold text-center flex items-center justify-center gap-2 border-b border-emerald-900">
         <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-        <span>Direct Trade Agricultural Marketplace • 100% Escrow Protected • Zero Intermediary Margins</span>
+        <span>{language === 'hi' ? 'सीधा व्यापार कृषि बाज़ार • 100% एस्क्रो सुरक्षित • शून्य बिचौलिए कमीशन' : 'Direct Trade Agricultural Marketplace • 100% Escrow Protected • Zero Intermediary Margins'}</span>
       </div>
 
       {/* 2. Primary Navigation Bar */}

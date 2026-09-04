@@ -29,18 +29,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Small Green Pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/90 border border-emerald-300 text-emerald-900 text-xs font-black">
               <Sprout className="w-3.5 h-3.5 text-emerald-700" />
-              <span>SMART AGRICULTURE MARKETPLACE</span>
+              <span>{language === 'hi' ? 'स्मार्ट कृषि डिजिटल बाज़ार' : 'SMART AGRICULTURE MARKETPLACE'}</span>
             </div>
 
             {/* Simple Headline Font */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#143022] tracking-tight leading-[1.15] font-sans">
-              From Farm to Market,<br />
-              <span className="text-emerald-700">Without the Middlemen.</span>
+              {language === 'hi' ? (
+                <>खेत से बाज़ार तक,<br /><span className="text-emerald-700">बिना किसी बिचौलिए के।</span></>
+              ) : (
+                <>From Farm to Market,<br /><span className="text-emerald-700">Without the Middlemen.</span></>
+              )}
             </h1>
 
             {/* Paragraph */}
             <p className="text-base sm:text-lg text-slate-700 max-w-xl leading-relaxed font-medium">
-              Connect directly with farmers, FPOs, consumers and bulk buyers through a transparent digital marketplace powered by intelligent logistics and AI-driven insights.
+              {language === 'hi'
+                ? 'किसानों, FPOs, ग्राहकों और थोक खरीदारों को पारदर्शी डिजिटल मंडी, स्मार्ट लॉजिस्टिक्स और AI सलाह से सीधे जोड़ें।'
+                : 'Connect directly with farmers, FPOs, consumers and bulk buyers through a transparent digital marketplace powered by intelligent logistics and AI-driven insights.'}
             </p>
 
             {/* Buttons */}
@@ -49,7 +54,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 onClick={onExploreMarketplace}
                 className="bg-[#1b4332] hover:bg-[#143022] text-white px-8 py-4 rounded-2xl font-black text-base shadow-md transition-all flex items-center justify-center gap-3 group border border-emerald-900"
               >
-                <span>Explore Marketplace</span>
+                <span>{language === 'hi' ? 'मंडी बाज़ार देखें' : 'Explore Marketplace'}</span>
                 <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
               </button>
 
@@ -57,7 +62,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 onClick={onJoinAsFarmer}
                 className="bg-white hover:bg-emerald-50 text-[#1b4332] border-2 border-[#1b4332] px-7 py-4 rounded-2xl font-extrabold text-base shadow-2xs transition-all flex items-center justify-center gap-2"
               >
-                <span>Join as Farmer</span>
+                <span>{language === 'hi' ? 'किसान के रूप में जुड़ें' : 'Join as Farmer'}</span>
               </button>
             </div>
 

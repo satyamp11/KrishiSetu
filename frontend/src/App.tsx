@@ -294,6 +294,7 @@ export function AppContent() {
             onNavigateToProductDetail={(id) => handleViewProductDetail(id)}
             onNavigateTab={(tab) => navigateToTab(tab)}
             language={language}
+            onLanguageChange={setLanguage}
           />
         )}
 

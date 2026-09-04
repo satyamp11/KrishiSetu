@@ -2,9 +2,9 @@ import type { Language } from './types';
 
 export const translations: Record<Language, Record<string, string>> = {
   en: {
-    appName: "Krishi Shield AI",
-    appSubhead: "Community Crop Early Warning",
-    tagline: "Detect Early. Alert Nearby. Protect Crops.",
+    appName: "NovaKrishi",
+    appSubhead: "Direct Farm to Market Agriculture Marketplace",
+    tagline: "From Farm to Market, Fair & Direct.",
     splashButton: "Get Started / शुरू करें",
     selectLanguage: "Select Language / भाषा चुनें",
     
@@ -119,9 +119,9 @@ export const translations: Record<Language, Record<string, string>> = {
     voiceAriaLabel: "Search by voice"
   },
   hi: {
-    appName: "कृषि शील्ड AI",
-    appSubhead: "सामुदायिक फसल बीमारी चेतावनी",
-    tagline: "शुरुआती पहचान। पास में सतर्कता। फसल सुरक्षा।",
+    appName: "नोवाकृषि",
+    appSubhead: "खेत से बाज़ार तक, निष्पक्ष एवं सीधा व्यापार",
+    tagline: "खेत से बाज़ार तक, निष्पक्ष एवं सीधा।",
     splashButton: "शुरू करें",
     selectLanguage: "भाषा चुनें",
 

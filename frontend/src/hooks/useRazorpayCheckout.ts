@@ -103,11 +103,11 @@ export const useRazorpayCheckout = ({ onSuccess, onPaymentHeld }: UseRazorpayChe
         },
         prefill: {
           name: user?.name || '',
-          email: user?.email || '',
-          contact: user?.phone || user?.emailOrPhone || '',
+          email: user?.emailOrPhone?.includes('@') ? user.emailOrPhone : '',
+          contact: user?.emailOrPhone || '',
         },
         notes: {
-          krishisetu_order_id: orderId,
+          novakrishi_order_id: orderId,
         },
         theme: {
           color: '#059669', // Tailwind emerald-600 to match primary brand
