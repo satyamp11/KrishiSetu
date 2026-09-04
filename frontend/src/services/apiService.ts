@@ -675,7 +675,7 @@ export const apiService = {
         },
         optimizedRoute: [],
         aiEngineInfo: {
-          engineName: 'KrishiSetu Genetic VRP Engine v2.1 (Fallback)',
+          engineName: 'NovaKrishi Genetic VRP Engine v2.1 (Fallback)',
           algorithm: 'Multi-Objective Nearest Neighbor + Simulated Annealing',
           isDemoEngine: true,
           pythonEndpointConfigured: false

@@ -116,11 +116,11 @@ export const UIFoundationShowcase: React.FC = () => {
                   Phase 1: UI Foundation
                 </Badge>
                 <Badge variant="earth" size="md">
-                  KrishiSetu Design System
+                  NovaKrishi Design System
                 </Badge>
               </div>
               <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-                Krishi<span className="text-emerald-400">Setu</span> Startup Design System
+                Nova<span className="text-emerald-400">Krishi</span> Startup Design System
               </h1>
               <p className="text-sm text-stone-300 mt-2 max-w-2xl leading-relaxed">
                 A clean, modern, agricultural startup design foundation built with React 19, TypeScript, and Tailwind CSS v4. Features responsive components, accessible form controls, card design tokens, and state managers.
@@ -422,7 +422,7 @@ export const UIFoundationShowcase: React.FC = () => {
       >
         <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
           <p className="font-semibold text-slate-800">
-            By agreeing to this Direct Trade contract on KrishiSetu:
+            By agreeing to this Direct Trade contract on NovaKrishi:
           </p>
           <ul className="list-disc pl-4 space-y-1">
             <li>Produce will be picked up directly from the farmer's village hub.</li>

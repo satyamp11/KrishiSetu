@@ -57,8 +57,8 @@ export const FarmerBenefitsSection: React.FC<FarmerBenefitsProps> = ({ language 
 
           <p className="text-slate-600 text-base sm:text-lg font-medium">
             {language === 'hi'
-              ? 'कृषि शील्ड AI की हर तकनीक किसान की ज़रूरतों को ध्यान में रखकर तैयार की गई है।'
-              : 'Every feature of Krishi Shield AI is designed to protect farmer livelihoods and maximize yield.'}
+              ? 'नोवाकृषि AI की हर तकनीक किसान की ज़रूरतों को ध्यान में रखकर तैयार की गई है।'
+              : 'Every feature of NovaKrishi AI is designed to protect farmer livelihoods and maximize yield.'}
           </p>
         </div>
 

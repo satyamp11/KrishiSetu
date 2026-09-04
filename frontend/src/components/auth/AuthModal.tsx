@@ -335,7 +335,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
               <ShieldCheck className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
-              <span className="text-[10px] font-extrabold text-emerald-300 uppercase tracking-widest block">KrishiSetu Platform</span>
+              <span className="text-[10px] font-extrabold text-emerald-300 uppercase tracking-widest block">NovaKrishi Platform</span>
               <h3 className="text-xl sm:text-2xl font-black">
                 {activeTab === 'login' ? 'Account Sign In' : 'Platform Registration'}
               </h3>
@@ -484,7 +484,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 9876543210 or user@krishisetu.com"
+                    placeholder="e.g. 9876543210 or user@novakrishi.com"
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
                     className="w-full h-10 pl-10 pr-4 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none font-semibold"

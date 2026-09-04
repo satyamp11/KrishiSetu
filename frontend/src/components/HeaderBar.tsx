@@ -60,13 +60,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         >
           <img 
             src="/logo.png" 
-            alt="Krishi Shield AI Logo" 
+            alt="NovaKrishi Logo" 
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
             className="h-12 w-auto object-contain rounded-xl shadow-sm group-hover:scale-105 transition-transform" 
           />
           <div>
             <h1 className="font-serif-title font-extrabold text-2xl text-[#1b4332] leading-none tracking-tight flex items-center gap-1.5">
-              <span>KrishiShield</span>
+              <span>NovaKrishi</span>
               <span className="text-[10px] font-sans-body font-black uppercase px-2 py-0.5 rounded-full bg-[#e8f5e9] text-[#1b4332] border border-[#2d6a4f]/30">
                 AI Defense
               </span>

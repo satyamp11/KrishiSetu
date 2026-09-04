@@ -183,6 +183,8 @@ export const paymentService = {
 
     console.log(`[paymentService] ✅ Razorpay order created: ${razorpayOrder.id} for order ${order.orderNumber}`);
 
+    const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_NovaKrishi2026';
+
     return {
       success: true,
       transactionId: paymentDoc.transactionId,
@@ -274,7 +276,7 @@ export const paymentService = {
       triggeredBy
     );
     addTimelineEntry(paymentDoc, 'HELD_FOR_ORDER',
-      `Funds of ₹${paymentDoc.totalAmount} held securely in KrishiSetu escrow. Farmer will receive ₹${paymentDoc.farmerAmount} upon delivery.`,
+      `Funds of ₹${paymentDoc.totalAmount} held securely in NovaKrishi escrow. Farmer will receive ₹${paymentDoc.farmerAmount} upon delivery.`,
       'system'
     );
 

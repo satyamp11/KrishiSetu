@@ -168,7 +168,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         <div className="text-center space-y-2">
           <img 
             src="/logo.png" 
-            alt="Krishi Shield AI Logo" 
+            alt="NovaKrishi Logo" 
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
             className="w-24 h-24 object-contain rounded-2xl mx-auto shadow-md"
           />

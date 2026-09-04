@@ -76,8 +76,8 @@ export const CommunityNetworkSection: React.FC<CommunityNetworkProps> = ({ langu
           </h2>
           <p className="text-slate-600 text-base sm:text-lg font-medium">
             {language === 'hi'
-              ? 'जब एक किसान बीमारी की रिपोर्ट दर्ज करता है, तो कृषि शील्ड AI 5 किमी दायरे में आने वाले सभी किसानों को समय रहते अलर्ट करता है।'
-              : 'When one farmer reports a potential crop disease, Krishi Shield AI instantly alerts farmers within a 5 km radius around the village.'}
+              ? 'जब एक किसान बीमारी की रिपोर्ट दर्ज करता है, तो नोवाकृषि AI 5 किमी दायरे में आने वाले सभी किसानों को समय रहते अलर्ट करता है।'
+              : 'When one farmer reports a potential crop disease, NovaKrishi AI instantly alerts farmers within a 5 km radius around the village.'}
           </p>
         </div>
 

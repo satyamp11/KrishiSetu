@@ -28,7 +28,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         <div className="relative mb-2">
           <img 
             src="/logo.png" 
-            alt="Krishi Shield AI Logo" 
+            alt="NovaKrishi Logo" 
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
             className="w-36 h-36 object-contain rounded-3xl shadow-2xl ring-4 ring-[#e8f5e9]"
           />

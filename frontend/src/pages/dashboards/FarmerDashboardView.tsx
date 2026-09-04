@@ -195,7 +195,7 @@ export const FarmerDashboardView: React.FC<FarmerDashboardViewProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-black text-slate-900">1. My Published Produce Products</h3>
-              <p className="text-xs text-slate-500">Crop produce listings active on KrishiSetu Marketplace.</p>
+              <p className="text-xs text-slate-500">Crop produce listings active on NovaKrishi Marketplace.</p>
             </div>
             <Button variant="primary" size="sm" onClick={() => onNavigate('marketplace')}>
               Manage Listings

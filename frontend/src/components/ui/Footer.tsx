@@ -17,12 +17,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate = () => {} }) => {
                 <Sprout className="w-6 h-6 text-emerald-300" />
               </div>
               <span className="text-2xl font-black font-serif tracking-tight text-white">
-                Krishi<span className="text-emerald-400 font-sans">Setu</span>
+                Nova<span className="text-emerald-400 font-sans">Krishi</span>
               </span>
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              Connecting farms directly to the people who need them. Eliminating middleman markups through transparent trade, smart logistics, and AI insights.
+              NovaKrishi connects farmers, FPOs, consumers and bulk buyers through a transparent digital marketplace powered by AI-driven insights and smart logistics.
             </p>
 
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
@@ -60,7 +60,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate = () => {} }) => {
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-emerald-400" />
-                <span>support@krishisetu.gov.in</span>
+                <span>support@novakrishi.gov.in</span>
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5 text-emerald-400" />
@@ -72,7 +72,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate = () => {} }) => {
         </div>
 
         <div className="pt-8 border-t border-emerald-950 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-400">
-          <p>© 2026 KrishiSetu Direct Agriculture Platform. All Rights Reserved.</p>
+          <p>© 2026 NovaKrishi Direct Agriculture Platform. All Rights Reserved.</p>
           <div className="flex items-center gap-4">
             <a href="#" className="hover:text-emerald-400">Privacy Policy</a>
             <span>•</span>

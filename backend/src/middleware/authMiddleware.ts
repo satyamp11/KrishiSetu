@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { UserResponse, UserRole } from '../models/User.js';
 import { authService } from '../services/authService.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'krishi_shield_ai_secure_jwt_secret_2026_key_987654321';
+const JWT_SECRET = process.env.JWT_SECRET || 'NovaKrishiDefaultSecretKey2026';
 
 export interface AuthenticatedRequest extends Request {
   user?: UserResponse;

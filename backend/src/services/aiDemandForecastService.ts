@@ -58,7 +58,7 @@ export const aiDemandForecastService = {
           return mlData;
         }
       } catch (err) {
-        console.warn('⚠️ Python ML service unreachable fallback to KrishiSetu ML Engine v1.2 prototype:', err);
+        console.warn('⚠️ Python ML service unreachable fallback to NovaKrishi ML Engine v1.2 prototype:', err);
       }
     }
 
@@ -161,7 +161,7 @@ export const aiDemandForecastService = {
       historicalDemandSeries,
       forecastedDemandSeries,
       aiModelMetaData: {
-        modelName: 'KrishiSetu Prophet-XGBoost Ensemble v1.2',
+        modelName: 'NovaKrishi Prophet-XGBoost Ensemble v1.2',
         modelType: 'Time-Series Demand & Price Predictive Engine',
         lastTrained: new Date().toISOString().split('T')[0],
         pythonEndpointConfigured: !!process.env.PYTHON_ML_SERVICE_URL

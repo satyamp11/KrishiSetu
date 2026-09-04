@@ -123,7 +123,7 @@ export const RouteOptimizationPage: React.FC<RouteOptimizationPageProps> = ({
           <div className="flex items-center gap-2">
             <Cpu className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
-              <strong>AI VRP Engine:</strong> KrishiSetu Genetic VRP Engine v2.1 (Prototype Engine)
+              <strong>AI VRP Engine:</strong> NovaKrishi Genetic VRP Engine v2.1 (Prototype Engine)
             </span>
           </div>
           <span className="text-[10px] bg-emerald-900 px-2 py-0.5 rounded font-mono font-bold text-emerald-300">

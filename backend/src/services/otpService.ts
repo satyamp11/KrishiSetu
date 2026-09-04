@@ -5,7 +5,7 @@ import { Otp } from '../models/Otp.js';
 import { User, IUser, UserResponse } from '../models/User.js';
 import { userService } from './userService.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'krishi_shield_ai_secure_jwt_secret_2026_key_987654321';
+const JWT_SECRET = process.env.JWT_SECRET || 'novakrishi_ai_secure_jwt_secret_2026_key_987654321';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 export interface OtpResult {
@@ -246,7 +246,7 @@ export const otpService = {
     } else {
       // Create new Farmer User in MongoDB
       const defaultName = registrationDetails?.name?.trim() || (validation.isPhone ? `Farmer ${normalized.slice(-4)}` : normalized.split('@')[0]);
-      const emailVal = validation.isEmail ? normalized : `${normalized}@krishishield.farmer`;
+      const emailVal = validation.isEmail ? normalized : `${normalized}@novakrishi.farmer`;
       const phoneVal = validation.isPhone ? normalized : '';
 
       user = new User({

@@ -56,7 +56,7 @@ export const HowItWorksSection: React.FC<HowItWorksProps> = ({ language }) => {
             TRANSPARENT DIRECT WORKFLOW
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#143022] font-sans tracking-tight">
-            How KrishiSetu Works
+            How NovaKrishi Works
           </h2>
           <p className="text-sm text-slate-600">
             A seamless 6-step agricultural trade workflow connecting farmers directly with buyers.

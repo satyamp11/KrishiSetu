@@ -118,7 +118,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <div className="bg-[#0f281e] text-white p-3 rounded-t-[30px] flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Sprout className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs font-black tracking-tight">Krishi Setu</span>
+                  <span className="text-xs font-black tracking-tight">NovaKrishi</span>
                 </div>
               </div>
 
@@ -180,7 +180,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <div className="relative rounded-xl overflow-hidden">
                 <img
                   src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=400&q=80"
-                  alt="KrishiSetu Delivery Truck"
+                  alt="NovaKrishi Delivery Truck"
                   className="w-full h-24 object-cover"
                 />
                 <div className="absolute top-1 right-1 bg-[#1b4332] text-white text-[9px] font-black px-1.5 py-0.5 rounded">

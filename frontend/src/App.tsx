@@ -246,7 +246,7 @@ export function AppContent() {
       <div className="w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-3 text-white">
         <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
         <span className="text-xs font-bold text-emerald-200 tracking-wider">
-          Validating KrishiSetu session token...
+          Validating NovaKrishi session token...
         </span>
       </div>
     );
@@ -385,7 +385,7 @@ export function AppContent() {
                 user={user || {
                   id: 'mock-farmer',
                   name: 'Rameshwar Singh',
-                  emailOrPhone: 'farmer@krishisetu.agri',
+                  emailOrPhone: 'farmer@novakrishi.agri',
                   role: 'farmer',
                   state: 'Uttar Pradesh',
                   district: 'Gorakhpur',
@@ -450,7 +450,7 @@ export function AppContent() {
                 user={user || {
                   id: 'mock-admin',
                   name: 'System Governance Administrator',
-                  emailOrPhone: 'admin@krishisetu.gov.in',
+                  emailOrPhone: 'admin@novakrishi.gov.in',
                   role: 'admin',
                   state: 'New Delhi',
                   district: 'Central Delhi',

@@ -30,7 +30,7 @@ export const FarmerImpactSection: React.FC<FarmerImpactProps> = ({
             <div className="absolute -bottom-6 -right-4 bg-emerald-950 text-white p-5 rounded-3xl shadow-xl border border-emerald-800 hidden sm:block max-w-xs">
               <div className="flex items-center gap-2 mb-1">
                 <Sprout className="w-5 h-5 text-emerald-400" />
-                <span className="font-black text-sm text-emerald-300">KrishiSetu Impact</span>
+                <span className="font-black text-sm text-emerald-300">NovaKrishi Impact</span>
               </div>
               <p className="text-xs text-slate-300">
                 140+ Verified FPOs connected across UP, Maharashtra, and MP.
@@ -51,7 +51,7 @@ export const FarmerImpactSection: React.FC<FarmerImpactProps> = ({
             </h2>
 
             <p className="text-base text-slate-600 leading-relaxed">
-              KrishiSetu equips farmers and agricultural producer organizations (FPOs) with direct buyer connections, fair mandi price benchmarks, and smart logistics to maximize revenue.
+              NovaKrishi equips farmers and agricultural producer organizations (FPOs) with direct buyer connections, fair mandi price benchmarks, and smart logistics to maximize revenue.
             </p>
 
             {/* Benefit Bullets */}

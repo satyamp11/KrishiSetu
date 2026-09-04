@@ -53,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-black font-brand tracking-tight text-[#1b4332] leading-tight">
-                Krishi Setu
+                NovaKrishi
               </span>
               <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
                 FROM FARM TO MARKET, WITHOUT MIDDLEMEN

@@ -73,7 +73,7 @@ export const AIDemandForecastSection: React.FC<{ district?: string; state?: stri
         <div className="flex items-center gap-2">
           <Cpu className="w-4 h-4 text-amber-400 shrink-0" />
           <span>
-            <strong>AI Model Engine:</strong> KrishiSetu Prophet-XGBoost Ensemble v1.2 (Prototype ML Engine)
+            <strong>AI Model Engine:</strong> NovaKrishi Prophet-XGBoost Ensemble v1.2 (Prototype ML Engine)
           </span>
         </div>
         <span className="text-[10px] bg-amber-900 px-2 py-0.5 rounded font-mono font-bold text-amber-300">

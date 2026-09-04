@@ -67,8 +67,8 @@ export const ProblemSolutionSection: React.FC<ProblemSolutionProps> = ({ languag
 
           <p className="text-slate-600 text-base sm:text-lg font-medium leading-relaxed">
             {language === 'hi'
-              ? 'अकेले किसान के लिए समय पर बीमारी पहचानना मुश्किल होता है। कृषि शील्ड AI व्यक्तिगत जांच को पूरे गांव के सुरक्षा घेरे में बदल देता है।'
-              : 'Traditional disease detection happens when crops are already damaged. Krishi Shield AI turns early detection into community-wide crop defense.'}
+              ? 'अकेले किसान के लिए समय पर बीमारी पहचानना मुश्किल होता है। नोवाकृषि AI व्यक्तिगत जांच को पूरे गांव के सुरक्षा घेरे में बदल देता है।'
+              : 'Traditional disease detection happens when crops are already damaged. NovaKrishi AI turns early detection into community-wide crop defense.'}
           </p>
         </div>
 

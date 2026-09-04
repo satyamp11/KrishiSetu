@@ -67,7 +67,7 @@ export const aiRouteOptimizationService = {
           return await res.json();
         }
       } catch (err) {
-        console.warn('⚠️ Python Routing service unreachable, falling back to KrishiSetu Genetic VRP Engine:', err);
+        console.warn('⚠️ Python Routing service unreachable, falling back to NovaKrishi Genetic VRP Engine:', err);
       }
     }
 
@@ -151,7 +151,7 @@ export const aiRouteOptimizationService = {
       },
       optimizedRoute: routeWaypoints,
       aiEngineInfo: {
-        engineName: 'KrishiSetu Genetic VRP Engine v2.1',
+        engineName: 'NovaKrishi Genetic VRP Engine v2.1',
         algorithm: 'Multi-Objective Nearest Neighbor + Simulated Annealing',
         isDemoEngine: true,
         pythonEndpointConfigured: !!process.env.PYTHON_ROUTING_SERVICE_URL

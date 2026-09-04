@@ -894,7 +894,7 @@ export const mandiService = {
 
         const response = await fetch(fetchUrl, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) KrishiShieldAI/1.0',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) NovaKrishiAI/1.0',
             'Accept': 'application/json'
           }
         });

@@ -212,7 +212,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-6 h-6 text-emerald-400" />
                   <span className="font-serif-title font-bold text-base text-emerald-100">
-                    KrishiShield Neural Net v2.4
+                    NovaKrishi Neural Net v2.4
                   </span>
                 </div>
                 <p className="text-xs text-emerald-200 font-medium leading-relaxed">

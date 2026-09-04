@@ -89,7 +89,7 @@ export const KrishiLandingPage: React.FC<KrishiLandingPageProps> = ({
       <CTASection
         language={language}
         onExploreMarketplace={onLaunchApp}
-        onJoinKrishiSetu={onLaunchApp}
+        onJoinNovaKrishi={onLaunchApp}
       />
 
       {/* 12. DARK FOREST-GREEN FOOTER */}

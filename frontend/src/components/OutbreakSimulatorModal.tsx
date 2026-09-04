@@ -38,7 +38,7 @@ export const OutbreakSimulatorModal: React.FC<OutbreakSimulatorModalProps> = ({
         </div>
 
         <p className="text-xs text-slate-300 mb-4 leading-relaxed bg-slate-800/60 p-3 rounded-lg border border-slate-700">
-          This simulator demonstrates how Krishi Shield AI turns individual crop scans into a collective regional outbreak defense network.
+          This simulator demonstrates how NovaKrishi AI turns individual crop scans into a collective regional outbreak defense network.
         </p>
 
         {/* Step-by-Step Flow Preview */}

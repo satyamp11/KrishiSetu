@@ -5,12 +5,12 @@ import type { Language } from '../../types';
 interface CTASectionProps {
   language?: Language;
   onExploreMarketplace?: () => void;
-  onJoinKrishiSetu?: () => void;
+  onJoinNovaKrishi?: () => void;
 }
 
 export const CTASection: React.FC<CTASectionProps> = ({
   onExploreMarketplace = () => {},
-  onJoinKrishiSetu = () => {},
+  onJoinNovaKrishi = () => {},
 }) => {
   return (
     <section className="py-20 bg-[#1b4332] text-white font-sans border-t border-emerald-900 relative overflow-hidden">
@@ -41,10 +41,10 @@ export const CTASection: React.FC<CTASectionProps> = ({
           </button>
 
           <button
-            onClick={onJoinKrishiSetu}
+            onClick={onJoinNovaKrishi}
             className="bg-emerald-800 hover:bg-emerald-700 text-white border-2 border-emerald-500 px-8 py-4 rounded-2xl font-extrabold text-base shadow-md transition-all w-full sm:w-auto"
           >
-            <span>Join KrishiSetu</span>
+            <span>Join NovaKrishi</span>
           </button>
         </div>
 

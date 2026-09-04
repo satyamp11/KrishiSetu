@@ -13,7 +13,7 @@ export interface ErrorStateProps {
 
 export const ErrorState: React.FC<ErrorStateProps> = ({
   title = 'Unable to Load Data',
-  message = 'A network error occurred while connecting to the KrishiSetu servers. Please verify your internet connection and try again.',
+  message = 'A network error occurred while connecting to the NovaKrishi servers. Please verify your internet connection and try again.',
   onRetry,
   icon = <AlertCircle className="w-6 h-6 text-red-600 shrink-0" />,
   variant = 'card',
