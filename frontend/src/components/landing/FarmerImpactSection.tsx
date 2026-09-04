@@ -12,16 +12,26 @@ export const FarmerImpactSection: React.FC<FarmerImpactProps> = ({
   onStartSelling = () => {},
 }) => {
   return (
-    <section id="farmers" className="relative w-full py-20 min-h-[580px] bg-stone-900 overflow-hidden font-sans border-b border-stone-200 flex items-center">
-      {/* Background Image */}
+    <section id="farmers" className="relative w-full py-20 min-h-[580px] bg-white overflow-hidden font-sans border-b border-stone-200 flex items-center">
+      {/* Background Image with Top & Bottom Soft Edge Fades */}
       <div className="absolute inset-0 w-full h-full z-0">
         <img
           src="/images/novakrishi-empowering-farmers.jpg"
           alt="NovaKrishi Empowering Farmers in Green Fields"
           className="w-full h-full object-cover object-center"
+          style={{
+            maskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)',
+          }}
         />
+        {/* Soft top edge vertical fade from surrounding background */}
+        <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white via-white/70 to-transparent z-10 pointer-events-none" />
+
+        {/* Soft bottom edge vertical fade into surrounding background */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/70 to-transparent z-10 pointer-events-none" />
+
         {/* White gradient mask strictly on left ~52% to keep text readable while leaving right photo 100% clear */}
-        <div className="absolute inset-y-0 left-0 w-full md:w-3/5 lg:w-[52%] bg-gradient-to-r from-white via-white/90 to-transparent z-0" />
+        <div className="absolute inset-y-0 left-0 w-full md:w-3/5 lg:w-[52%] bg-gradient-to-r from-white via-white/90 to-transparent z-10" />
       </div>
 
       {/* Content Container (Constrained on Left) */}
