@@ -233,13 +233,13 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             
             {/* Master List Column */}
-            <div className="w-full lg:w-1/3 space-y-3 sticky top-32">
+            <div className="w-full lg:w-1/3 space-y-3 relative lg:sticky lg:top-32">
               <div className="flex items-center justify-between text-xs text-slate-500 font-bold px-1 mb-2">
                 <span>{orders.length} Order(s)</span>
                 <span>{user.name}</span>
               </div>
               
-              <div className="flex flex-col gap-3 max-h-[800px] overflow-y-auto pr-2 scrollbar-thin">
+              <div className="flex flex-col gap-3 max-h-[360px] lg:max-h-[800px] overflow-y-auto pr-1 sm:pr-2 scrollbar-thin">
                 {orders.map((listOrd) => {
                   const isSelected = selectedOrderId === listOrd.id;
                   const isCancelledList = listOrd.orderStatus === 'CANCELLED';
@@ -391,8 +391,8 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateTab = () => {}
 
                   {/* Clean Order Status Progress Timeline */}
                   {!isCancelled ? (
-                    <div className="p-4 sm:p-6 bg-slate-50/50 border-b border-slate-100">
-                      <div className="flex items-center justify-between overflow-x-auto py-2 scrollbar-none">
+                    <div className="p-3.5 sm:p-6 bg-slate-50/50 border-b border-slate-100">
+                      <div className="flex items-center justify-between overflow-x-auto py-2 scrollbar-none touch-pan-x">
                         {ORDER_STATUS_STEPS.map((step, idx) => {
                           const isDone = idx <= currentStepIndex;
                           const isCurrent = idx === currentStepIndex;

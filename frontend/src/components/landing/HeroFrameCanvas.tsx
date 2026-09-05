@@ -5,12 +5,14 @@ interface HeroFrameCanvasProps {
   totalFrames?: number;
   targetFps?: number;
   fullScreenBackground?: boolean;
+  className?: string;
 }
 
 export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
   totalFrames = 300,
   targetFps = 25,
   fullScreenBackground = true,
+  className = '',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -83,8 +85,10 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
       const imgW = img.naturalWidth || 1280;
       const imgH = img.naturalHeight || 720;
 
-      // Scale to fit the ENTIRE source frame inside the hero canvas without cropping or zooming
-      const scale = Math.min(containerW / imgW, containerH / imgH);
+      // Scale to cover the entire canvas without black bars or letterboxing
+      const scale = fullScreenBackground
+        ? Math.max(containerW / imgW, containerH / imgH)
+        : Math.min(containerW / imgW, containerH / imgH);
 
       const renderW = imgW * scale;
       const renderH = imgH * scale;
@@ -92,6 +96,8 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
       const offsetX = (containerW - renderW) / 2;
       const offsetY = (containerH - renderH) / 2;
 
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.clearRect(0, 0, containerW, containerH);
       ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
     };
@@ -100,7 +106,8 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
     let isCancelled = false;
 
     const loadAllFrames = () => {
-      const concurrencyLimit = 12;
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+      const concurrencyLimit = isMobile ? 4 : 8;
       let activeIndex = 0;
 
       const loadNext = () => {
@@ -216,13 +223,16 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
     return (
       <div
         ref={containerRef}
-        className="absolute inset-0 w-full h-full overflow-hidden bg-slate-950 pointer-events-none"
+        className="absolute inset-0 w-full h-full overflow-hidden bg-[#eef5ec] pointer-events-none"
       >
         {/* Full-Screen Canvas */}
         <canvas
           ref={canvasRef}
-          className="w-full h-full block transition-opacity duration-700"
-          style={{ opacity: isInitialReady ? 1 : 0 }}
+          className="w-full h-full block transition-opacity duration-500"
+          style={{
+            opacity: isInitialReady ? 1 : 0,
+            filter: 'contrast(1.06) saturate(1.08)',
+          }}
         />
 
         {/* Poster Skeleton Fallback */}
@@ -252,7 +262,7 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-xl mx-auto rounded-3xl overflow-hidden border-2 border-white/80 bg-slate-900 shadow-2xl"
+      className={`relative w-full mx-auto overflow-hidden bg-slate-950 ${className || 'rounded-3xl border-2 border-white/80 shadow-2xl'}`}
       style={{ aspectRatio: '16 / 9' }}
     >
       <canvas
@@ -260,6 +270,27 @@ export const HeroFrameCanvas: React.FC<HeroFrameCanvasProps> = ({
         className="w-full h-full block transition-opacity duration-500"
         style={{ opacity: isInitialReady ? 1 : 0 }}
       />
+
+      {/* Poster Skeleton Fallback */}
+      {!isInitialReady && (
+        <div className="absolute inset-0 bg-[#0d2319] flex flex-col items-center justify-center space-y-2 text-white z-10">
+          <Sparkles className="w-7 h-7 text-emerald-400 animate-spin" />
+          <span className="text-xs font-bold text-emerald-200 tracking-wider">
+            Loading Simulation...
+          </span>
+        </div>
+      )}
+
+      {/* Subtle Preload Line Bar */}
+      {loadProgress < 100 && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40 z-30 pointer-events-none">
+          <div
+            className="h-full bg-gradient-to-r from-emerald-500 via-amber-300 to-emerald-400 transition-all duration-300"
+            style={{ width: `${loadProgress}%` }}
+          />
+        </div>
+      )}
+
       {isReducedMotion && (
         <div className="absolute top-4 right-4 z-20 bg-amber-900/80 backdrop-blur-md px-3 py-1 rounded-full text-amber-200 text-[10px] font-bold flex items-center gap-1">
           <AlertCircle className="w-3 h-3" />

@@ -21,12 +21,12 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   const t = translations[language];
 
   return (
-    <nav className={`md:hidden fixed bottom-0 left-0 right-0 w-full z-40 border-t transition-colors shadow-2xl ${
+    <nav className={`md:hidden fixed bottom-0 left-0 right-0 w-full z-40 border-t transition-colors shadow-2xl safe-pb ${
       sunlightMode 
         ? 'bg-black border-yellow-400 text-white' 
-        : 'bg-white border-slate-200 text-slate-700 font-sans-body'
+        : 'bg-white/95 backdrop-blur-md border-slate-200 text-slate-700 font-sans-body'
     }`}>
-      <div className="flex items-center justify-around h-16 px-2 relative max-w-lg mx-auto">
+      <div className="flex items-center justify-around h-16 px-1 sm:px-2 relative max-w-lg mx-auto pb-[env(safe-area-inset-bottom,0px)]">
         
         {/* Tab 1: Home */}
         <button

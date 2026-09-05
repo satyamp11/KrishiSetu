@@ -12,6 +12,31 @@
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
+/* Global Mobile Viewport & Touch Optimization */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Mobile Safe Area Insets for iPhones with Home Indicator / Notches */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+.safe-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-pt {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 @layer utilities {
   /* Outdoor High-Contrast Sunlight Mode Utility */
   .sunlight-mode {

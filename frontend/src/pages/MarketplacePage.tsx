@@ -401,7 +401,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
 
       {/* 10 Categories Bar */}
       <section className="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto py-2.5 scrollbar-none">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 overflow-x-auto py-2.5 scrollbar-none touch-pan-x">
           <div className="flex items-center space-x-2 shrink-0">
             {CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
@@ -428,9 +428,9 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
       </section>
 
       {/* Main Content Body */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full space-y-4 sm:space-y-6">
         {/* Search, Filter Toolbar & Sorting */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
           <div className="relative flex-1 w-full flex items-center">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 shrink-0" />
             <input
@@ -731,7 +731,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="font-bold text-slate-700 block mb-1">Category *</label>
               <select
@@ -760,7 +760,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="font-bold text-slate-700 block mb-1">Unit *</label>
               <select

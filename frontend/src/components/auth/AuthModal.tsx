@@ -319,10 +319,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in">
-      <div className="bg-white w-full max-w-xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in overflow-y-auto safe-pb">
+      <div className="bg-white w-full max-w-xl rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="bg-[#1b4332] p-6 text-white relative shrink-0">
+        <div className="bg-[#1b4332] p-4 sm:p-6 text-white relative shrink-0">
           <button
             onClick={closeAuthModal}
             className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
@@ -381,7 +381,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-6 overflow-y-auto space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
           {/* Error Banner */}
           {errorMessage && (
             <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-red-800 text-xs font-bold flex items-center gap-2">
@@ -398,16 +398,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ language }) => {
             </div>
           )}
 
-          {/* STEP 1: Main Form */}
+          {/* Step 1: Login or Register Form */}
           {step === 'form' && (
             <form onSubmit={activeTab === 'login' ? handleLoginSubmit : handleRegisterSubmit} className="space-y-4">
-              {/* REGISTER ONLY: Select Role Grid */}
+              {/* REGISTER ONLY: Role Selector */}
               {activeTab === 'register' && (
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block">
                     Select Platform Role *
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {roleOptions.map((r) => {
                       const isSelected = role === r.id;
                       return (

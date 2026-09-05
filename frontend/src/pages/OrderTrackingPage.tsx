@@ -215,12 +215,12 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({
                 </div>
 
                 {/* Visual Map Representation Area */}
-                <div className="h-80 sm:h-96 w-full bg-slate-950 relative flex flex-col justify-between p-6 overflow-hidden">
+                <div className="min-h-[420px] sm:min-h-[384px] h-auto w-full bg-slate-950 relative flex flex-col justify-between p-4 sm:p-6 overflow-hidden gap-4">
                   {/* Subtle Grid Map Pattern Overlay */}
                   <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30" />
 
                   {/* Highway Route Path Line */}
-                  <div className="absolute top-1/2 left-12 right-12 h-1.5 bg-slate-800 rounded-full">
+                  <div className="absolute top-1/2 left-6 sm:left-12 right-6 sm:right-12 h-1.5 bg-slate-800 rounded-full hidden sm:block">
                     <div
                       className="h-full bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-400 rounded-full transition-all duration-1000 shadow-[0_0_12px_#10b981]"
                       style={{
@@ -230,50 +230,50 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({
                   </div>
 
                   {/* Origin Node (Gorakhpur FPO Hub) */}
-                  <div className="relative z-10 flex items-center justify-between">
-                    <div className="bg-slate-900/90 border border-slate-700 p-3 rounded-2xl shadow-lg backdrop-blur-xs flex items-center gap-2 max-w-xs">
-                      <div className="w-8 h-8 rounded-xl bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
+                  <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                    <div className="bg-slate-900/90 border border-slate-700 p-2.5 sm:p-3 rounded-2xl shadow-lg backdrop-blur-xs flex items-center gap-2 max-w-full sm:max-w-xs">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
                         A
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <span className="text-[10px] font-bold text-slate-400 uppercase block">Pickup Origin</span>
-                        <span className="text-xs font-black text-white">{tracking.pickupLocation.address}</span>
+                        <span className="text-xs font-black text-white truncate block">{tracking.pickupLocation.address}</span>
                       </div>
                     </div>
 
                     {/* Destination Node (Lucknow) */}
-                    <div className="bg-slate-900/90 border border-slate-700 p-3 rounded-2xl shadow-lg backdrop-blur-xs flex items-center gap-2 max-w-xs text-right">
-                      <div>
+                    <div className="bg-slate-900/90 border border-slate-700 p-2.5 sm:p-3 rounded-2xl shadow-lg backdrop-blur-xs flex items-center justify-between sm:justify-end gap-2 max-w-full sm:max-w-xs text-left sm:text-right">
+                      <div className="min-w-0">
                         <span className="text-[10px] font-bold text-slate-400 uppercase block">Destination</span>
-                        <span className="text-xs font-black text-white">{tracking.destination.address}</span>
+                        <span className="text-xs font-black text-white truncate block">{tracking.destination.address}</span>
                       </div>
-                      <div className="w-8 h-8 rounded-xl bg-indigo-950 text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-950 text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
                         B
                       </div>
                     </div>
                   </div>
 
                   {/* Active Vehicle Marker Position on Map */}
-                  <div className="relative z-20 my-auto text-center">
+                  <div className="relative z-20 my-auto text-center py-4 sm:py-0">
                     <div className="inline-flex flex-col items-center animate-bounce">
                       <div className="bg-emerald-500 text-slate-950 px-3 py-1.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-1.5 border border-emerald-300">
-                        <Truck className="w-4 h-4 text-slate-950" />
-                        <span>{tracking.deliveryPartner.vehicleNumber} ({tracking.currentLocation.speedKmH} km/h)</span>
+                        <Truck className="w-4 h-4 text-slate-950 shrink-0" />
+                        <span className="truncate">{tracking.deliveryPartner.vehicleNumber} ({tracking.currentLocation.speedKmH} km/h)</span>
                       </div>
                       <div className="w-2 h-2 bg-emerald-400 rotate-45 -mt-1 shadow-xs" />
                     </div>
                   </div>
 
                   {/* Map Bottom Telemetry Bar */}
-                  <div className="relative z-10 flex items-center justify-between bg-slate-900/90 border border-slate-800 p-3 rounded-2xl backdrop-blur-xs text-xs">
-                    <div className="flex items-center gap-2 text-slate-300">
-                      <MapPin className="w-4 h-4 text-emerald-400" />
-                      <span className="font-semibold text-white truncate max-w-sm">
-                        Current Position: {tracking.currentLocation.address}
+                  <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-900/90 border border-slate-800 p-3 rounded-2xl backdrop-blur-xs text-xs gap-2">
+                    <div className="flex items-center gap-2 text-slate-300 min-w-0">
+                      <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="font-semibold text-white truncate">
+                        Position: {tracking.currentLocation.address}
                       </span>
                     </div>
 
-                    <div className="text-right">
+                    <div className="text-left sm:text-right shrink-0">
                       <span className="text-[10px] font-bold text-slate-400 uppercase block">Distance Remaining</span>
                       <span className="text-sm font-black text-emerald-400">{tracking.distanceRemainingKm} km</span>
                     </div>

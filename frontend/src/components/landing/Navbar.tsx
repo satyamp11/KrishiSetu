@@ -59,29 +59,29 @@ export const Navbar: React.FC<NavbarProps> = ({
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 font-sans ${
         isScrolledPastHero
           ? 'bg-white border-b border-stone-200 shadow-2xs'
-          : 'bg-transparent border-b border-transparent shadow-none'
+          : 'bg-white/90 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-b border-stone-200/70 sm:border-transparent'
       }`}
     >
       {/* 1. Top Announcement Bar */}
-      <div className="bg-[#1b4332] text-white py-1.5 px-4 text-xs font-bold text-center flex items-center justify-center gap-2 border-b border-emerald-900">
-        <Sprout className="w-4 h-4 text-emerald-400 shrink-0" />
-        <span>Direct Trade Agricultural Marketplace • 100% Escrow Protected • Zero Intermediary Margins</span>
+      <div className="bg-[#1b4332] text-white py-1.5 px-3 sm:px-4 text-[10px] sm:text-xs font-bold text-center flex items-center justify-center gap-1.5 sm:gap-2 border-b border-emerald-900 leading-snug">
+        <Sprout className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+        <span className="truncate">Direct Trade Agricultural Marketplace • 100% Escrow Protected • Zero Middlemen</span>
       </div>
 
       {/* 2. Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           
           {/* Left Brand Logo */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleLinkClick('hero')}>
-            <div className="w-11 h-11 rounded-2xl bg-[#1b4332] flex items-center justify-center text-white shadow-xs border border-emerald-800">
-              <Sprout className="w-6.5 h-6.5 text-emerald-400" />
+          <div className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none" onClick={() => handleLinkClick('hero')}>
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-[#1b4332] flex items-center justify-center text-white shadow-xs border border-emerald-800 shrink-0">
+              <Sprout className="w-5 h-5 sm:w-6.5 sm:h-6.5 text-emerald-400" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-black font-brand tracking-tight text-[#1b4332] leading-tight">
+            <div className="flex flex-col min-w-0">
+              <span className="text-xl sm:text-2xl font-black font-brand tracking-tight text-[#1b4332] leading-tight">
                 NovaKrishi
               </span>
-              <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+              <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-slate-500 hidden sm:block">
                 FROM FARM TO MARKET, WITHOUT MIDDLEMEN
               </span>
             </div>
@@ -105,19 +105,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {/* Language Pill */}
             <button
               onClick={() => onLanguageChange(language === 'en' ? 'hi' : 'en')}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100/80 hover:bg-slate-200 px-3 py-1.5 rounded-full border border-slate-200"
+              className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-700 bg-slate-100/80 hover:bg-slate-200 px-2.5 sm:px-3 py-1.5 rounded-full border border-slate-200"
             >
               <Globe className="w-3.5 h-3.5 text-emerald-700" />
               <span>{language === 'en' ? 'हिन्दी' : 'English'}</span>
             </button>
 
-            {/* Login / Sign Up */}
+            {/* Desktop Login / Sign Up */}
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2">
                 <button
                   onClick={onGetStarted}
                   className="px-4 py-2 text-xs font-bold bg-emerald-50 text-[#1b4332] rounded-xl border border-emerald-200 hover:bg-emerald-100 flex items-center gap-1.5"
@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-3">
                 <button
                   onClick={() => openAuthModal('login')}
                   className="text-xs font-extrabold text-slate-800 hover:text-[#1b4332]"
@@ -155,26 +155,64 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 text-slate-700 hover:text-[#1b4332] hover:bg-slate-100 rounded-xl"
+              aria-label="Toggle navigation menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
 
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer with Auth CTAs */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-stone-200 p-4 space-y-2 shadow-lg animate-in slide-in-from-top-2">
-          {navLinks.map((link) => (
-            <button
-              key={link.id}
-              onClick={() => handleLinkClick(link.id)}
-              className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-[#1b4332]"
-            >
-              {language === 'hi' ? link.labelHi : link.labelEn}
-            </button>
-          ))}
+        <div className="lg:hidden bg-white border-b border-stone-200 p-4 space-y-3 shadow-xl animate-in slide-in-from-top-2 max-h-[80vh] overflow-y-auto">
+          <div className="space-y-1">
+            {navLinks.map((link) => (
+              <button
+                key={link.id}
+                onClick={() => handleLinkClick(link.id)}
+                className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-[#1b4332]"
+              >
+                {language === 'hi' ? link.labelHi : link.labelEn}
+              </button>
+            ))}
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            {isAuthenticated && user ? (
+              <div className="flex items-center justify-between gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                <button
+                  onClick={() => { onGetStarted(); setMobileMenuOpen(false); }}
+                  className="flex items-center gap-2 text-xs font-bold text-slate-900"
+                >
+                  <User className="w-4 h-4 text-emerald-700" />
+                  <span>{user.name} ({user.role?.toUpperCase()})</span>
+                </button>
+                <button
+                  onClick={() => { logout(); setMobileMenuOpen(false); }}
+                  className="text-xs text-red-600 font-bold px-2 py-1 hover:bg-red-50 rounded-lg"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => { openAuthModal('login'); setMobileMenuOpen(false); }}
+                  className="w-full py-2.5 px-3 rounded-xl border border-slate-300 text-slate-800 text-xs font-bold hover:bg-slate-50"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => { openAuthModal('register'); setMobileMenuOpen(false); }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#1b4332] text-white text-xs font-bold hover:bg-[#143022]"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </header>

@@ -101,9 +101,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in pb-12">
       {/* Admin Governance Banner */}
-      <div className="bg-slate-950 text-white p-6 rounded-3xl shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-slate-950 text-white p-4 sm:p-6 rounded-3xl shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <Badge variant="primary" size="sm" icon={<ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />}>
               Phase 12: Admin Governance & Escrow Audit
             </Badge>
@@ -244,7 +244,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {/* Section Content */}
       {/* SECTION 2: FARMERS/FPOS VERIFICATION WORKFLOW */}
       {activeSection === 'farmers' && (
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+        <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-lg font-black text-slate-900">2. Farmer & FPO Producer Verification</h3>

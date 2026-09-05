@@ -286,7 +286,7 @@ export function AppContent() {
       )}
 
       {/* Screen Router */}
-      <div className={sunlightMode ? 'sunlight-mode' : ''}>
+      <div className={`${sunlightMode ? 'sunlight-mode' : ''} ${showHeaderAndNav ? 'pb-20 md:pb-0' : ''} w-full min-w-0 overflow-x-hidden`}>
         
         {/* PHASE 4: Agricultural Marketplace Page */}
         {activeTab === 'marketplace' && (
@@ -347,15 +347,15 @@ export function AppContent() {
           <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
             
             {/* Multi-Role Testing Toolbar */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase text-slate-500">Test Role Dashboard Views:</span>
-                <div className="flex flex-wrap gap-1.5">
+            <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <span className="text-[11px] sm:text-xs font-black uppercase text-slate-500 shrink-0">Test Role Dashboard Views:</span>
+                <div className="flex flex-wrap gap-1 sm:gap-1.5">
                   {(['farmer', 'consumer', 'bulk_buyer', 'delivery_partner', 'admin'] as UserRole[]).map((r) => (
                     <button
                       key={r}
                       onClick={() => setSimulatedRole(r)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                      className={`px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all ${
                         activeUserRole === r
                           ? 'bg-emerald-700 text-white shadow-xs'
                           : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -368,8 +368,8 @@ export function AppContent() {
               </div>
 
               {/* Backend Role Authorization Tester */}
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-slate-500">Backend Middleware Test:</span>
+              <div className="flex flex-wrap items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-500">Backend Middleware Test:</span>
                 <Button
                   variant="outline"
                   size="xs"

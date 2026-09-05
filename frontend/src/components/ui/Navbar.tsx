@@ -74,23 +74,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-stone-200 shadow-xs font-sans">
       {/* 1. Thin Announcement Bar */}
-      <div className="bg-[#1b4332] text-emerald-100 py-1.5 px-4 text-[11px] font-bold text-center flex items-center justify-center gap-2 border-b border-emerald-900">
+      <div className="bg-[#1b4332] text-emerald-100 py-1.5 px-3 sm:px-4 text-[10px] sm:text-[11px] font-bold text-center flex items-center justify-center gap-1.5 sm:gap-2 border-b border-emerald-900">
         <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-        <span>{language === 'hi' ? 'सीधा व्यापार कृषि बाज़ार • 100% एस्क्रो सुरक्षित • शून्य बिचौलिए कमीशन' : 'Direct Trade Agricultural Marketplace • 100% Escrow Protected • Zero Intermediary Margins'}</span>
+        <span className="truncate">{language === 'hi' ? 'सीधा व्यापार कृषि बाज़ार • 100% एस्क्रो सुरक्षित • शून्य बिचौलिए कमीशन' : 'Direct Trade Agricultural Marketplace • 100% Escrow Protected • Zero Intermediary Margins'}</span>
       </div>
 
       {/* 2. Primary Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           
           {/* Logo Section */}
-          <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => handleNavClick('landing')}>
-            <div className="w-11 h-11 rounded-2xl bg-[#1b4332] flex items-center justify-center text-white shadow-xs border border-emerald-800">
-              <Sprout className="w-6 h-6 text-emerald-400" />
+          <div className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none" onClick={() => handleNavClick('landing')}>
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-[#1b4332] flex items-center justify-center text-white shadow-xs border border-emerald-800 shrink-0">
+              <Sprout className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-2xl font-black font-brand tracking-tight text-[#1b4332]">
+                <span className="text-xl sm:text-2xl font-black font-brand tracking-tight text-[#1b4332]">
                   Nova<span className="text-emerald-600 font-brand italic">Krishi</span>
                 </span>
               </div>
@@ -156,7 +156,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Authentication Action Buttons */}
             {user ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -165,12 +165,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   {user.name} ({user.role?.toUpperCase()})
                 </Button>
-                <Button variant="ghost" size="xs" onClick={onLogout} className="text-slate-500 hover:text-red-600">
+                <Button variant="ghost" size="xs" onClick={onLogout} className="text-slate-500 hover:text-red-600 hidden sm:inline-flex">
                   Logout
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -194,8 +194,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 text-slate-700 hover:text-[#1b4332] hover:bg-slate-100 rounded-xl"
+              aria-label="Toggle navigation menu"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>
@@ -203,7 +204,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Navigation Drawer */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-stone-200 p-4 space-y-3 shadow-lg animate-in slide-in-from-top-2">
+        <div className="lg:hidden bg-white border-b border-stone-200 p-4 space-y-3 shadow-xl animate-in slide-in-from-top-2 max-h-[85vh] overflow-y-auto">
           <div className="space-y-1">
             {navLinks.map((link) => (
               <button
@@ -220,9 +221,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             ))}
           </div>
 
-          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
+            {/* Mobile Language Switcher */}
+            <button
+              onClick={() => onLanguageChange(language === 'en' ? 'hi' : 'en')}
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800"
+            >
+              <span className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-emerald-700" />
+                <span>Switch Language</span>
+              </span>
+              <span className="text-emerald-700 font-extrabold">{language === 'en' ? 'हिन्दी (Hindi)' : 'English'}</span>
+            </button>
+
             {!user ? (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 pt-1">
                 <Button variant="outline" size="sm" onClick={() => { onOpenAuth('login'); setIsMobileMenuOpen(false); }}>
                   Login
                 </Button>
@@ -231,9 +244,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </Button>
               </div>
             ) : (
-              <Button variant="outline" size="sm" onClick={() => { onNavigate('role-dashboard'); setIsMobileMenuOpen(false); }}>
-                {user.name} ({user.role?.toUpperCase()})
-              </Button>
+              <div className="flex flex-col gap-2 pt-1">
+                <Button variant="outline" size="sm" onClick={() => { onNavigate('role-dashboard'); setIsMobileMenuOpen(false); }}>
+                  {user.name} ({user.role?.toUpperCase()})
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => { onLogout(); setIsMobileMenuOpen(false); }} className="text-red-600 hover:bg-red-50">
+                  Logout
+                </Button>
+              </div>
             )}
           </div>
         </div>

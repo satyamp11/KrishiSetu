@@ -134,8 +134,8 @@ export const CropScanner: React.FC<CropScannerProps> = ({
               </div>
 
               {/* Upload Controls */}
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <label className="flex-1 min-w-[200px] cursor-pointer bg-[#e8f5e9] hover:bg-[#d8f3dc] text-[#1b4332] font-bold text-xs py-3.5 px-4 rounded-2xl border border-[#2d6a4f]/20 flex items-center justify-center gap-2 transition-all">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+                <label className="flex-1 w-full sm:w-auto cursor-pointer bg-[#e8f5e9] hover:bg-[#d8f3dc] text-[#1b4332] font-bold text-xs py-3.5 px-4 rounded-2xl border border-[#2d6a4f]/20 flex items-center justify-center gap-2 transition-all">
                   <Upload className="w-4 h-4" />
                   <span>Upload High-Res Leaf Photo</span>
                   <input 
@@ -149,7 +149,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                 <button
                   onClick={() => handleStartScan()}
                   disabled={isScanning}
-                  className="flex-1 min-w-[200px] bg-[#1b4332] hover:bg-[#143326] disabled:opacity-50 text-white font-bold text-sm py-3.5 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95"
+                  className="flex-1 w-full sm:w-auto bg-[#1b4332] hover:bg-[#143326] disabled:opacity-50 text-white font-bold text-sm py-3.5 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95"
                 >
                   <Sparkles className="w-5 h-5 text-amber-300" />
                   <span>{isScanning ? 'Analyzing...' : t.scanButton}</span>
