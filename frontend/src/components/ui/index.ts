@@ -13,5 +13,3 @@ export * from './ErrorState';
 export * from './Toast';
 export * from './Navbar';
 export * from './Footer';
-export * from './ReliabilityBadge';
-export * from './PriceBreakdown';

@@ -26,7 +26,6 @@ import {
   useToast,
 } from '../components/ui';
 import { apiService, DeliveryTrackingData, DeliveryStatus } from '../services/apiService';
-import { ReliabilityBadge } from '../components/ui/ReliabilityBadge';
 import { EscrowStatusTimeline } from '../components/checkout/EscrowStatusTimeline';
 import { useAuth } from '../context/AuthContext';
 
@@ -46,7 +45,6 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({
 
   const [tracking, setTracking] = useState<DeliveryTrackingData | null>(null);
   const [paymentState, setPaymentState] = useState<any>(null);
-  const [deliveryPartnerProfile, setDeliveryPartnerProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,14 +59,6 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({
       const res = await apiService.getOrderTracking(orderId);
       if (res.success && res.tracking) {
         setTracking(res.tracking);
-        
-        // Fetch delivery partner profile for reliability badge
-        if (res.tracking.deliveryPartner?.id) {
-          const profileRes = await apiService.getUserProfile(res.tracking.deliveryPartner.id);
-          if (profileRes.success && profileRes.user) {
-            setDeliveryPartnerProfile(profileRes.user);
-          }
-        }
       } else {
         setError(res.message || 'Unable to load tracking details.');
       }
@@ -340,12 +330,7 @@ export const OrderTrackingPage: React.FC<OrderTrackingPageProps> = ({
                 <div className="space-y-3 text-xs">
                   <div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase block">Driver Name</span>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-sm font-black text-slate-900">{tracking.deliveryPartner.name}</span>
-                      {deliveryPartnerProfile && (
-                        <ReliabilityBadge metrics={deliveryPartnerProfile.reliability} />
-                      )}
-                    </div>
+                    <span className="text-sm font-black text-slate-900">{tracking.deliveryPartner.name}</span>
                   </div>
 
                   <div>

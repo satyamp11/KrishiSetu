@@ -20,11 +20,9 @@ import aiRouter from './routes/ai.routes.js';
 import deliveryRouter from './routes/delivery.routes.js';
 import bulkRequestRouter from './routes/bulkRequest.routes.js';
 import adminRouter from './routes/admin.routes.js';
-import reviewRouter from './routes/reviewRoutes.js';
-import disputeRouter from './routes/disputeRoutes.js';
 import { deliveryController } from './controllers/deliveryController.js';
 
-export const app = express();
+const app = express();
 
 app.use(corsOptions);
 app.use(express.json());
@@ -51,8 +49,6 @@ app.use('/api/payments', paymentRouter);
 app.use('/api/delivery', deliveryRouter);
 app.use('/api/bulk-requests', bulkRequestRouter);
 app.use('/api/admin', adminRouter);
-app.use('/api/reviews', reviewRouter);
-app.use('/api/disputes', disputeRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/scans', scanRouter);
 app.use('/api/alerts', alertRouter);
@@ -65,9 +61,7 @@ app.use('/api/disease-scan', diseaseRouter);
 app.use(errorHandler);
 
 // Start HTTP Server & Connect MongoDB
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(appConfig.port, async () => {
-    console.log(`🚀 ${appConfig.appName} running at http://localhost:${appConfig.port}`);
-    await connectDB();
-  });
-}
+app.listen(appConfig.port, async () => {
+  console.log(`🚀 ${appConfig.appName} running at http://localhost:${appConfig.port}`);
+  await connectDB();
+});
